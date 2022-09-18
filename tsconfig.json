@@ -17,5 +17,6 @@
     "outDir": "dist",
     "sourceMap": true
   },
-  "include": ["api", "db", "electron"]
+  "include": ["api", "db", "electron", "src"],
+  "files": ["./types/global.d.ts"]
 }

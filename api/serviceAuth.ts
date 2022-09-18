@@ -26,7 +26,6 @@ export const saveAuthentication = async (
 export const fetchAuthentication = async (
   serviceName: ServiceName
 ): Promise<string | null> => {
-  console.log(serviceName);
   const result = await db<ServiceAuth>("ServiceAuth")
     .where({ serviceName })
     .first();

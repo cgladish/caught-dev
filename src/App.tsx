@@ -6,9 +6,7 @@ import "./App.css";
 function App() {
   useEffect(() => {
     (async () => {
-      console.log(
-        await (window as any).api.serviceAuth.fetchAuthentication("discord")
-      );
+      console.log(await window.api.serviceAuth.fetchAuthentication("discord"));
     })();
   }, []);
   return (
