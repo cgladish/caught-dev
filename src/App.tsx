@@ -1,9 +1,16 @@
+import React from "react";
 import { Button } from "@mui/material";
 import { useEffect } from "react";
 import "./App.css";
 
 function App() {
-  useEffect(() => {}, []);
+  useEffect(() => {
+    (async () => {
+      console.log(
+        await (window as any).api.serviceAuth.fetchAuthentication("discord")
+      );
+    })();
+  }, []);
   return (
     <div className="App">
       <header className="App-header">

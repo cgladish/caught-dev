@@ -1,8 +1,14 @@
-import { app, BrowserWindow, session } from "electron";
+import { app, BrowserWindow, session, ipcMain } from "electron";
 import isDev from "electron-is-dev";
 import debounce from "lodash/debounce";
 import path from "path";
-import { saveAuthentication } from "../api/serviceAuth";
+import { saveAuthentication, fetchAuthentication } from "../api/serviceAuth";
+
+const startApiListener = (moduleName: string, func: Function) => {
+  ipcMain.handle(`@@${moduleName}/${func.name}`, async (event, ...args) => {
+    return await func(...args);
+  });
+};
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({
@@ -46,4 +52,6 @@ app.whenReady().then(() => {
       }
     }, 1000)
   );
+
+  startApiListener("serviceAuth", fetchAuthentication);
 });

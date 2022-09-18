@@ -11,9 +11,9 @@ export const saveAuthentication = async (
   serviceName: ServiceName,
   token: string
 ): Promise<void> => {
-  const encryptedToken = safeStorage.encryptString(token).toString();
+  const encryptedToken = safeStorage.encryptString(token).toString("hex");
   const numUpdated = await db<ServiceAuth>("ServiceAuth")
-    .where("serviceName", serviceName)
+    .where({ serviceName })
     .update({ encryptedToken });
   if (!numUpdated) {
     await db<ServiceAuth>("ServiceAuth").insert({
@@ -26,10 +26,12 @@ export const saveAuthentication = async (
 export const fetchAuthentication = async (
   serviceName: ServiceName
 ): Promise<string | null> => {
+  console.log(serviceName);
   const result = await db<ServiceAuth>("ServiceAuth")
-    .where("serviceName", serviceName)
+    .where({ serviceName })
     .first();
   return result
-    ? safeStorage.decryptString(Buffer.from(result.encryptedToken))
+    ? safeStorage.decryptString(Buffer.from(result.encryptedToken, "hex"))
     : null;
 };
+export type FetchAuthentication = typeof fetchAuthentication;
