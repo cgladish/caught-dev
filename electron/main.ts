@@ -1,9 +1,8 @@
-const { app, BrowserWindow } = require("electron");
-const { session } = require("electron");
-const isDev = require("electron-is-dev");
-const debounce = require("lodash/debounce");
-const { saveAuthentication } = require("./api/serviceAuth.ts");
-const path = require("path");
+import { app, BrowserWindow, session } from "electron";
+import isDev from "electron-is-dev";
+import debounce from "lodash/debounce";
+import path from "path";
+import { saveAuthentication } from "../api/serviceAuth";
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({
