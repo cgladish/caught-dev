@@ -1,10 +1,9 @@
-const { app, BrowserWindow, safeStorage } = require("electron");
+const { app, BrowserWindow } = require("electron");
 const { session } = require("electron");
 const isDev = require("electron-is-dev");
-const { PrismaClient } = require("@prisma/client");
 const debounce = require("lodash/debounce");
-
-let prisma = new PrismaClient();
+const { saveAuthentication } = require("./api/serviceAuth.ts");
+const path = require("path");
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({
@@ -12,8 +11,18 @@ app.whenReady().then(() => {
     height: 800,
     autoHideMenuBar: true,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
+      preload: path.join(__dirname, "preload.js"),
     },
+  });
+  win.webContents.setWindowOpenHandler(() => {
+    return {
+      action: "allow",
+      overrideBrowserWindowOptions: {
+        autoHideMenuBar: true,
+        webPreferences: { nodeIntegration: false },
+      },
+    };
   });
   if (isDev) {
     win.loadURL("http://localhost:3000");
@@ -22,27 +31,14 @@ app.whenReady().then(() => {
     win.loadFile("public/index.html");
   }
 
-  win.webContents.setWindowOpenHandler(() => {
-    return {
-      action: "allow",
-      overrideBrowserWindowOptions: { autoHideMenuBar: true },
-    };
-  });
   session.defaultSession.webRequest.onBeforeSendHeaders(
     {
       urls: ["*://discord.com/*/users/@me/*"],
     },
     debounce(async (details) => {
-      const discordAuthorization = details.requestHeaders.Authorization;
-      const encryptedToken = safeStorage
-        .encryptString(discordAuthorization)
-        .toString();
-      await prisma.authentication.upsert({
-        where: { serviceName: "discord" },
-        create: { serviceName: "discord", encryptedToken },
-        update: { encryptedToken },
-      });
-      if (discordAuthorization) {
+      const token = details.requestHeaders.Authorization;
+      if (token) {
+        await saveAuthentication("discord", token);
         BrowserWindow.getAllWindows().forEach((window) => {
           if (window.webContents.getURL().includes("discord")) {
             window.close();
