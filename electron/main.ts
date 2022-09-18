@@ -10,6 +10,8 @@ const startApiListener = (moduleName: string, func: Function) => {
   });
 };
 
+startApiListener("serviceAuth", fetchAuthentication);
+
 app.whenReady().then(() => {
   const win = new BrowserWindow({
     width: 1200,
@@ -52,6 +54,4 @@ app.whenReady().then(() => {
       }
     }, 1000)
   );
-
-  startApiListener("serviceAuth", fetchAuthentication);
 });
