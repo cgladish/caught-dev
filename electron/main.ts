@@ -59,7 +59,7 @@ app.whenReady().then(() => {
       if (token) {
         await saveAuthentication("discord", token);
         BrowserWindow.getAllWindows().forEach((window) => {
-          if (window.webContents.getURL().includes("discord")) {
+          if (window.webContents.getURL().includes("discord.com")) {
             window.close();
           }
         });
