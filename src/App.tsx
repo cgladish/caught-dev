@@ -26,6 +26,16 @@ const theme = createTheme({
       primary: "#eee",
     },
   },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundImage:
+            "radial-gradient(circle at 10% 20%, rgb(20, 20, 20) 0%, rgb(10, 10, 10) 90.2%);",
+        },
+      },
+    },
+  },
 });
 
 const drawerWidth = 240;
@@ -83,10 +93,17 @@ function App() {
               />
             </List>
           </Drawer>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/apps/discord" element={<Discord />} />
-          </Routes>
+          <div
+            style={{
+              width: "100%",
+              height: "100vh",
+            }}
+          >
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/apps/discord" element={<Discord />} />
+            </Routes>
+          </div>
         </Box>
       </ThemeProvider>
     </HashRouter>
