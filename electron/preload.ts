@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { FetchAuthentication } from "../api/serviceAuth";
+import { fetchAuthentication } from "../api/serviceAuth";
 
 const makeInvoker =
   <TFuncType extends (...args: any[]) => Promise<any>>(
@@ -14,7 +14,7 @@ const makeInvoker =
 
 export const api = {
   serviceAuth: {
-    fetchAuthentication: makeInvoker<FetchAuthentication>(
+    fetchAuthentication: makeInvoker<typeof fetchAuthentication>(
       "serviceAuth",
       "fetchAuthentication"
     ),

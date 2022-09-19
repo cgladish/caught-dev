@@ -33,4 +33,3 @@ export const fetchAuthentication = async (
     ? safeStorage.decryptString(Buffer.from(result.encryptedToken, "hex"))
     : null;
 };
-export type FetchAuthentication = typeof fetchAuthentication;
