@@ -4,4 +4,5 @@ declare global {
   interface Window {
     api: typeof api;
   }
+  type AppName = "discord";
 }

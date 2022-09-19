@@ -2,15 +2,27 @@ import { app, BrowserWindow, session, ipcMain } from "electron";
 import isDev from "electron-is-dev";
 import debounce from "lodash/debounce";
 import path from "path";
-import { saveAuthentication, fetchAuthentication } from "../api/serviceAuth";
+import { saveAuthentication, fetchUserInfo } from "../api/serviceAuth";
 
 const startApiListener = (moduleName: string, func: Function) => {
   ipcMain.handle(`@@${moduleName}/${func.name}`, async (event, ...args) => {
-    return await func(...args);
+    try {
+      const result = await func(...args);
+      return {
+        data: result,
+        error: null,
+      };
+    } catch (err) {
+      console.error(err);
+      return {
+        data: null,
+        error: (err as Error)?.toString?.() ?? "Error",
+      };
+    }
   });
 };
 
-startApiListener("serviceAuth", fetchAuthentication);
+startApiListener("appLogin", fetchUserInfo);
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({

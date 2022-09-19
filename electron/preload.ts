@@ -1,22 +1,28 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { fetchAuthentication } from "../api/serviceAuth";
+import { fetchUserInfo } from "../api/serviceAuth";
 
 const makeInvoker =
   <TFuncType extends (...args: any[]) => Promise<any>>(
     moduleName: string,
     funcName: string
   ) =>
-  (...args: Parameters<TFuncType>) =>
-    ipcRenderer.invoke(
-      `@@${moduleName}/${funcName}`,
-      ...args
-    ) as ReturnType<TFuncType>;
+  async (...args: Parameters<TFuncType>) => {
+    const result: {
+      data: Awaited<ReturnType<TFuncType>>;
+      error: string | null;
+    } = await ipcRenderer.invoke(`@@${moduleName}/${funcName}`, ...args);
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+    return result.data;
+  };
 
 export const api = {
-  serviceAuth: {
-    fetchAuthentication: makeInvoker<typeof fetchAuthentication>(
-      "serviceAuth",
-      "fetchAuthentication"
+  appLogin: {
+    fetchUserInfo: makeInvoker<typeof fetchUserInfo>(
+      "appLogin",
+      "fetchUserInfo"
     ),
   },
 };
