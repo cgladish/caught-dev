@@ -17,6 +17,7 @@ import Home from "./views/Home";
 import { ListSubheader } from "@mui/material";
 import { Provider } from "react-redux";
 import { store } from "./redux";
+import Alerts from "./Alerts";
 
 const theme = createTheme({
   palette: {
@@ -77,51 +78,53 @@ function App() {
     <Provider store={store}>
       <HashRouter>
         <ThemeProvider theme={theme}>
-          <Box sx={{ display: "flex" }}>
-            <CssBaseline />
-            <Drawer
-              sx={{
-                width: drawerWidth,
-                flexShrink: 0,
-                "& .MuiDrawer-paper": {
+          <Alerts>
+            <Box sx={{ display: "flex" }}>
+              <CssBaseline />
+              <Drawer
+                sx={{
                   width: drawerWidth,
-                  boxSizing: "border-box",
-                },
-              }}
-              variant="permanent"
-              anchor="left"
-            >
-              <List>
-                <MenuLink to="/" text="Home" iconElement={<HomeIcon />} />
-              </List>
-              <Divider />
-              <List>
-                <ListSubheader>APPLICATIONS</ListSubheader>
-                <MenuLink
-                  to="/apps/discord"
-                  text="Discord"
-                  iconElement={
-                    <img
-                      src="/app-logos/discord.png"
-                      alt="discord"
-                      height={25}
-                    />
-                  }
-                />
-              </List>
-            </Drawer>
-            <div
-              style={{
-                width: "100%",
-                height: "100vh",
-              }}
-            >
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/apps/discord" element={<Discord />} />
-              </Routes>
-            </div>
-          </Box>
+                  flexShrink: 0,
+                  "& .MuiDrawer-paper": {
+                    width: drawerWidth,
+                    boxSizing: "border-box",
+                  },
+                }}
+                variant="permanent"
+                anchor="left"
+              >
+                <List>
+                  <MenuLink to="/" text="Home" iconElement={<HomeIcon />} />
+                </List>
+                <Divider />
+                <List>
+                  <ListSubheader>APPLICATIONS</ListSubheader>
+                  <MenuLink
+                    to="/apps/discord"
+                    text="Discord"
+                    iconElement={
+                      <img
+                        src="/app-logos/discord.png"
+                        alt="discord"
+                        height={25}
+                      />
+                    }
+                  />
+                </List>
+              </Drawer>
+              <div
+                style={{
+                  width: "100%",
+                  height: "100vh",
+                }}
+              >
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/apps/discord" element={<Discord />} />
+                </Routes>
+              </div>
+            </Box>
+          </Alerts>
         </ThemeProvider>
       </HashRouter>
     </Provider>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType as DiscordActionType } from "../../redux/discord/actions";
 import { Dispatch } from "../../redux";
@@ -15,9 +15,12 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Checkbox from "@mui/material/Checkbox";
 import LinearProgress from "@mui/material/LinearProgress";
+import { AlertContext } from "../../Alerts";
 
 export default function ChannelGrid() {
   const dispatch = useDispatch<Dispatch>();
+
+  const { showAlert } = useContext(AlertContext);
 
   const userInfo = useSelector(getDiscordUserInfo);
   const guilds = useSelector(getGuilds);
@@ -28,6 +31,10 @@ export default function ChannelGrid() {
     if (userInfo) {
       dispatch({ type: DiscordActionType.fetchGuildsStart });
     }
+
+    showAlert({ type: "error", message: "test" });
+    showAlert({ type: "error", message: "test2" });
+    showAlert({ type: "error", message: "test3" });
   }, [userInfo?.id]);
 
   useEffect(() => {
