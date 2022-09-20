@@ -50,6 +50,7 @@ export const fetchGuilds = async (): Promise<FetchedGuildInfo[]> => {
 type FetchedChannelInfo = {
   id: string;
   name: string;
+  guild_id: string;
 };
 export const fetchChannels = async (
   guildId: string

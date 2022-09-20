@@ -35,7 +35,13 @@ function* fetchChannels(action: FetchChannelsStartAction) {
     > = yield call(window.api.discord.fetchChannels, action.payload.guildId);
     yield put<FetchChannelSuccessAction>({
       type: ActionType.fetchChannelsSuccess,
-      payload: { guildId: action.payload.guildId, channels },
+      payload: {
+        guildId: action.payload.guildId,
+        channels: channels.map(({ guild_id, ...rest }) => ({
+          guildId: guild_id,
+          ...rest,
+        })),
+      },
     });
   } catch (e) {
     yield put<FetchChannelFailureAction>({

@@ -9,6 +9,7 @@ export type Guild = {
 export type Channel = {
   id: string;
   name: string;
+  guildId: string;
 };
 export type State = {
   fetchStatus: ResourceStatus;
