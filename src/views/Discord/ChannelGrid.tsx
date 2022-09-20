@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { ActionType as DiscordActionType } from "../../redux/discord/actions";
 import { Dispatch } from "../../redux";
 import { getDiscordUserInfo } from "../../redux/appLogin/selectors";
-import { getFetchStatus, getGuilds } from "../../redux/discord/selectors";
+import { getGuilds } from "../../redux/discord/selectors";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import List from "@mui/material/List";
@@ -14,37 +14,32 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Checkbox from "@mui/material/Checkbox";
-import { Guild } from "../../redux/discord/state";
+import LinearProgress from "@mui/material/LinearProgress";
 
 export default function ChannelGrid() {
   const dispatch = useDispatch<Dispatch>();
 
   const userInfo = useSelector(getDiscordUserInfo);
-  const fetchStatus = useSelector(getFetchStatus);
   const guilds = useSelector(getGuilds);
 
-  const [selectedGuild, setSelectedGuild] = useState<Guild | null>(null);
+  const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userInfo && fetchStatus !== "pending") {
+    if (userInfo) {
       dispatch({ type: DiscordActionType.fetchGuildsStart });
     }
   }, [userInfo?.id]);
 
   useEffect(() => {
-    if (selectedGuild) {
+    if (selectedGuildId) {
       dispatch({
         type: DiscordActionType.fetchChannelsStart,
-        payload: { guildId: selectedGuild.id },
+        payload: { guildId: selectedGuildId },
       });
     }
-  }, [selectedGuild?.id]);
+  }, [selectedGuildId]);
 
-  console.log(selectedGuild);
-
-  if (!guilds) {
-    return null;
-  }
+  const channels = selectedGuildId ? guilds?.[selectedGuildId]?.channels : null;
 
   return (
     <Card style={{ width: 600, height: 400 }}>
@@ -58,24 +53,28 @@ export default function ChannelGrid() {
           }}
           item
         >
-          <List dense>
-            {Object.values(guilds).map((guild) => (
-              <ListItem key={guild.id} disablePadding>
-                <ListItemButton onClick={() => setSelectedGuild(guild)}>
-                  <ListItemAvatar>
-                    <Avatar
-                      src={
-                        guild.icon
-                          ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}`
-                          : "/app-logos/discord.png"
-                      }
-                    />
-                  </ListItemAvatar>
-                  <ListItemText>{guild.name}</ListItemText>
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+          {guilds ? (
+            <List dense>
+              {Object.values(guilds).map((guild) => (
+                <ListItem key={guild.id} disablePadding>
+                  <ListItemButton onClick={() => setSelectedGuildId(guild.id)}>
+                    <ListItemAvatar>
+                      <Avatar
+                        src={
+                          guild.icon
+                            ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}`
+                            : "/app-logos/discord.png"
+                        }
+                      />
+                    </ListItemAvatar>
+                    <ListItemText>{guild.name}</ListItemText>
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <LinearProgress />
+          )}
         </Grid>
         <Grid
           xs={7}
@@ -86,9 +85,9 @@ export default function ChannelGrid() {
           }}
           item
         >
-          {selectedGuild?.channels && (
+          {channels ? (
             <List dense>
-              {Object.values(selectedGuild.channels).map((channel) => (
+              {Object.values(channels).map((channel) => (
                 <ListItem key={channel.id} disablePadding>
                   <ListItemButton onClick={() => console.log(channel.id)}>
                     <ListItemText
@@ -114,6 +113,8 @@ export default function ChannelGrid() {
                 </ListItem>
               ))}
             </List>
+          ) : (
+            selectedGuildId && <LinearProgress />
           )}
         </Grid>
       </Grid>

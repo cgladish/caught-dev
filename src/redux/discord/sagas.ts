@@ -1,11 +1,4 @@
-import {
-  actionChannel,
-  all,
-  call,
-  put,
-  take,
-  takeLatest,
-} from "redux-saga/effects";
+import { all, call, put, takeLatest } from "redux-saga/effects";
 import {
   ActionType,
   FetchChannelFailureAction,
@@ -52,13 +45,7 @@ function* fetchChannels(action: FetchChannelsStartAction) {
   }
 }
 function* fetchChannelsSaga() {
-  // @ts-ignore
-  const channel = yield actionChannel(ActionType.fetchChannelsStart);
-  while (true) {
-    // @ts-ignore
-    const action = yield take(channel);
-    yield call(fetchChannels, action);
-  }
+  yield takeLatest(ActionType.fetchChannelsStart, fetchChannels);
 }
 
 export function* saga() {
