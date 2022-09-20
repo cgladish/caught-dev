@@ -32,12 +32,7 @@ function* fetchGuilds(action: FetchGuildsStartAction) {
   }
 }
 function* fetchGuildsSaga() {
-  // @ts-ignore
-  const channel = yield actionChannel(ActionType.fetchGuildsStart);
-  while (true) {
-    const { payload } = yield take(channel);
-    yield call(fetchGuilds, payload);
-  }
+  yield takeLatest(ActionType.fetchGuildsStart, fetchGuilds);
 }
 
 function* fetchChannels(action: FetchChannelsStartAction) {
