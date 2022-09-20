@@ -4,6 +4,7 @@ export type Guild = {
   id: string;
   name: string;
   icon?: string;
+  channels?: { [channelId: string]: Channel } | null;
 };
 export type Channel = {
   id: string;
@@ -12,11 +13,7 @@ export type Channel = {
 export type State = {
   fetchStatus: ResourceStatus;
   guilds: {
-    [guildId: string]: Guild & {
-      channels: {
-        [channelId: string]: Channel;
-      } | null;
-    };
+    [guildId: string]: Guild;
   } | null;
 };
 

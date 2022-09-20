@@ -55,8 +55,9 @@ function* fetchChannelsSaga() {
   // @ts-ignore
   const channel = yield actionChannel(ActionType.fetchChannelsStart);
   while (true) {
-    const { payload } = yield take(channel);
-    yield call(fetchChannels, payload);
+    // @ts-ignore
+    const action = yield take(channel);
+    yield call(fetchChannels, action);
   }
 }
 

@@ -2,18 +2,16 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import ChannelGrid from "./ChannelGrid";
 import { Dispatch } from "../../redux";
 import { ActionType as AppLoginActionType } from "../../redux/appLogin/actions";
-import { ActionType as DiscordActionType } from "../../redux/discord/actions";
 import { getDiscordUserInfo } from "../../redux/appLogin/selectors";
 import Login from "./Login";
-import { getGuilds } from "../../redux/discord/selectors";
 
 export default function Discord() {
   const dispatch = useDispatch<Dispatch>();
 
   const userInfo = useSelector(getDiscordUserInfo);
-  const guilds = useSelector(getGuilds);
 
   const [fetchUserInfoInterval, setFetchUserInterval] = useState<ReturnType<
     typeof setInterval
@@ -39,56 +37,59 @@ export default function Discord() {
     }
   }, [userInfo, fetchUserInfoInterval]);
 
-  useEffect(() => {
-    if (userInfo) {
-      dispatch({ type: DiscordActionType.fetchGuildsStart });
-    }
-  }, [userInfo]);
-
   if (!userInfo) {
     return <Login />;
   }
-
-  console.log(guilds);
 
   return (
     <div
       style={{
         display: "flex",
-        height: 100,
+        flexDirection: "column",
         width: "100%",
-        alignItems: "center",
-        paddingLeft: 40,
-        paddingRight: 40,
-        backgroundColor: "#222",
       }}
     >
-      <img
-        src={
-          userInfo.avatar
-            ? `https://cdn.discordapp.com/avatars/${userInfo.id}/${userInfo.avatar}`
-            : "/app-logos/discord.png"
-        }
-        alt="avatar"
-        width={60}
-        style={{ borderRadius: 30 }}
-      />
-      <div style={{ marginLeft: 10 }}>
-        <Typography variant="h6">{userInfo.username}</Typography>
-        <Typography>#{userInfo.discriminator}</Typography>
-      </div>
-      <Button
-        variant="contained"
-        style={{ marginLeft: "auto" }}
-        onClick={() =>
-          dispatch({
-            type: AppLoginActionType.logoutStart,
-            payload: { appName: "discord" },
-          })
-        }
+      <div
+        style={{
+          display: "flex",
+          height: 100,
+          width: "100%",
+          alignItems: "center",
+          paddingLeft: 40,
+          paddingRight: 40,
+          backgroundColor: "#222",
+        }}
       >
-        Log out
-      </Button>
+        <img
+          src={
+            userInfo.avatar
+              ? `https://cdn.discordapp.com/avatars/${userInfo.id}/${userInfo.avatar}`
+              : "/app-logos/discord.png"
+          }
+          alt="avatar"
+          width={60}
+          style={{ borderRadius: 30 }}
+        />
+        <div style={{ marginLeft: 10 }}>
+          <Typography variant="h6">{userInfo.username}</Typography>
+          <Typography>#{userInfo.discriminator}</Typography>
+        </div>
+        <Button
+          variant="contained"
+          style={{ marginLeft: "auto" }}
+          onClick={() =>
+            dispatch({
+              type: AppLoginActionType.logoutStart,
+              payload: { appName: "discord" },
+            })
+          }
+        >
+          Log out
+        </Button>
+      </div>
+      <div style={{ marginLeft: 40, marginTop: 20 }}>
+        <ChannelGrid />
+      </div>
     </div>
   );
 }

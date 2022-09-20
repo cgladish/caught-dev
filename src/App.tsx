@@ -35,6 +35,16 @@ const theme = createTheme({
           backgroundImage:
             "radial-gradient(circle at 10% 20%, rgb(20, 20, 20) 0%, rgb(10, 10, 10) 90.2%);",
         },
+        "&::-webkit-scrollbar": {
+          width: 10,
+        },
+        "&::-webkit-scrollbar-track": {
+          boxShadow: `inset 0 0 6px rgba(0, 0, 0, 0.3)`,
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "#663399",
+          borderRadius: 6,
+        },
       },
     },
   },
