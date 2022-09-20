@@ -34,11 +34,18 @@ export const fetchAuthentication = async (
     : null;
 };
 
+export const deleteAuthentication = async (
+  serviceName: AppName
+): Promise<void> => {
+  await db<ServiceAuth>("ServiceAuth").where({ serviceName }).delete();
+};
+
 type FetchedUserInfo = {
   id: string;
   username: string;
-  avatar: string;
+  avatar?: string;
   email: string;
+  discriminator: string;
 };
 export const fetchUserInfo = async (
   serviceName: AppName

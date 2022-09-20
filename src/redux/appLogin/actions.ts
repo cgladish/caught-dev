@@ -4,6 +4,9 @@ export enum ActionType {
   fetchStart = "@@appLogin/FETCH_START",
   fetchSuccess = "@@appLogin/FETCH_SUCCESS",
   fetchFailure = "@@appLogin/FETCH_FAILURE",
+  logoutStart = "@@appLogin/LOGOUT_START",
+  logoutSuccess = "@@appLogin/LOGOUT_SUCCESS",
+  logoutFailure = "@@appLogin/LOGOUT_FAILURE",
 }
 
 export type FetchStartAction = {
@@ -19,4 +22,23 @@ export type FetchFailureAction = {
   payload: { appName: AppName; error: Error };
 };
 
-export type Action = FetchStartAction | FetchSuccessAction | FetchFailureAction;
+export type LogoutStartAction = {
+  type: ActionType.logoutStart;
+  payload: { appName: AppName };
+};
+export type LogoutSuccessAction = {
+  type: ActionType.logoutSuccess;
+  payload: { appName: AppName };
+};
+export type LogoutFailureAction = {
+  type: ActionType.logoutFailure;
+  payload: { appName: AppName; error: Error };
+};
+
+export type Action =
+  | FetchStartAction
+  | FetchSuccessAction
+  | FetchFailureAction
+  | LogoutStartAction
+  | LogoutSuccessAction
+  | LogoutFailureAction;

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { fetchUserInfo } from "../api/serviceAuth";
+import { deleteAuthentication, fetchUserInfo } from "../api/appLogin";
 
 const makeInvoker =
   <TFuncType extends (...args: any[]) => Promise<any>>(
@@ -23,6 +23,10 @@ export const api = {
     fetchUserInfo: makeInvoker<typeof fetchUserInfo>(
       "appLogin",
       "fetchUserInfo"
+    ),
+    logout: makeInvoker<typeof deleteAuthentication>(
+      "appLogin",
+      "deleteAuthentication"
     ),
   },
 };

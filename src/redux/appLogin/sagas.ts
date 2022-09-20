@@ -1,9 +1,12 @@
-import { call, put, takeLatest } from "redux-saga/effects";
+import { all, call, put, takeLatest } from "redux-saga/effects";
 import {
   ActionType,
   FetchFailureAction,
   FetchStartAction,
   FetchSuccessAction,
+  LogoutFailureAction,
+  LogoutStartAction,
+  LogoutSuccessAction,
 } from "./actions";
 
 function* fetchAppLogin(action: FetchStartAction) {
@@ -22,7 +25,28 @@ function* fetchAppLogin(action: FetchStartAction) {
     });
   }
 }
+function* fetchAppLoginSaga() {
+  yield takeLatest(ActionType.fetchStart, fetchAppLogin);
+}
+
+function* logout(action: LogoutStartAction) {
+  try {
+    yield call(window.api.appLogin.logout, action.payload.appName);
+    yield put<LogoutSuccessAction>({
+      type: ActionType.logoutSuccess,
+      payload: { appName: action.payload.appName },
+    });
+  } catch (e) {
+    yield put<LogoutFailureAction>({
+      type: ActionType.logoutFailure,
+      payload: { appName: action.payload.appName, error: e as Error },
+    });
+  }
+}
+function* logoutSaga() {
+  yield takeLatest(ActionType.logoutStart, logout);
+}
 
 export function* saga() {
-  yield takeLatest(ActionType.fetchStart, fetchAppLogin);
+  yield all([fetchAppLoginSaga(), logoutSaga()]);
 }
