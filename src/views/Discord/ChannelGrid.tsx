@@ -18,6 +18,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import NavigateNext from "@mui/icons-material/NavigateNext";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { IconButton } from "@mui/material";
+import type {} from "@mui/x-date-pickers/themeAugmentation";
 
 export default function ChannelGrid() {
   const dispatch = useDispatch<Dispatch>();

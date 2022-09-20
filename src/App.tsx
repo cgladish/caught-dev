@@ -18,12 +18,14 @@ import { ListSubheader } from "@mui/material";
 import { Provider } from "react-redux";
 import { store } from "./redux";
 import Alerts from "./Alerts";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 const theme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#663399",
+      main: "#A45EE5",
     },
     text: {
       primary: "#eee",
@@ -43,7 +45,7 @@ const theme = createTheme({
           boxShadow: `inset 0 0 6px rgba(0, 0, 0, 0.3)`,
         },
         "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "#663399",
+          backgroundColor: "#A45EE5",
           borderRadius: 6,
         },
       },
@@ -77,55 +79,59 @@ function App() {
   return (
     <Provider store={store}>
       <HashRouter>
-        <ThemeProvider theme={theme}>
-          <Alerts>
-            <Box sx={{ display: "flex" }}>
-              <CssBaseline />
-              <Drawer
-                sx={{
-                  width: drawerWidth,
-                  flexShrink: 0,
-                  "& .MuiDrawer-paper": {
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <ThemeProvider theme={theme}>
+            <Alerts>
+              <Box sx={{ display: "flex" }}>
+                <CssBaseline />
+                <Drawer
+                  sx={{
                     width: drawerWidth,
-                    boxSizing: "border-box",
-                  },
-                }}
-                variant="permanent"
-                anchor="left"
-              >
-                <List>
-                  <MenuLink to="/" text="Home" iconElement={<HomeIcon />} />
-                </List>
-                <Divider />
-                <List>
-                  <ListSubheader>APPLICATIONS</ListSubheader>
-                  <MenuLink
-                    to="/apps/discord"
-                    text="Discord"
-                    iconElement={
-                      <img
-                        src="/app-logos/discord.png"
-                        alt="discord"
-                        height={25}
-                      />
-                    }
-                  />
-                </List>
-              </Drawer>
-              <div
-                style={{
-                  width: "100%",
-                  height: "100vh",
-                }}
-              >
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/apps/discord" element={<Discord />} />
-                </Routes>
-              </div>
-            </Box>
-          </Alerts>
-        </ThemeProvider>
+                    flexShrink: 0,
+                    "& .MuiDrawer-paper": {
+                      width: drawerWidth,
+                      boxSizing: "border-box",
+                    },
+                  }}
+                  variant="permanent"
+                  anchor="left"
+                >
+                  <List>
+                    <MenuLink to="/" text="Home" iconElement={<HomeIcon />} />
+                  </List>
+                  <Divider />
+                  <List>
+                    <ListSubheader>APPLICATIONS</ListSubheader>
+                    <MenuLink
+                      to="/apps/discord"
+                      text="Discord"
+                      iconElement={
+                        <img
+                          src="/app-logos/discord.png"
+                          alt="discord"
+                          height={25}
+                        />
+                      }
+                    />
+                  </List>
+                </Drawer>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100vh",
+                    paddingBottom: 50,
+                    overflow: "auto",
+                  }}
+                >
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/apps/discord" element={<Discord />} />
+                  </Routes>
+                </div>
+              </Box>
+            </Alerts>
+          </ThemeProvider>
+        </LocalizationProvider>
       </HashRouter>
     </Provider>
   );
