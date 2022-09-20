@@ -118,6 +118,7 @@ export default function ChannelGrid({
             backgroundColor: "#222",
             overflowY: "scroll",
             maxHeight: 400,
+            height: "100%",
           }}
           item
         >
@@ -197,6 +198,7 @@ export default function ChannelGrid({
             backgroundColor: "#333",
             overflowY: "scroll",
             maxHeight: 400,
+            height: "100%",
           }}
           item
         >

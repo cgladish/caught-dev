@@ -15,6 +15,7 @@ import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import Save from "@mui/icons-material/Save";
 import Refresh from "@mui/icons-material/Refresh";
 import { Tooltip } from "@mui/material";
+import Header from "./Header";
 
 const combineDateAndTime = (date: Date, time: Date | null) => {
   if (!time) {
@@ -73,6 +74,8 @@ export default function Discord() {
     return startDatetime < endDatetime;
   }, [startDate, startTime, endDate, endTime]);
 
+  const submitForm = () => {};
+
   if (!userInfo) {
     return <Login />;
   }
@@ -85,44 +88,7 @@ export default function Discord() {
         width: "100%",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          height: 100,
-          width: "100%",
-          alignItems: "center",
-          paddingLeft: 40,
-          paddingRight: 40,
-          backgroundColor: "#222",
-        }}
-      >
-        <img
-          src={
-            userInfo.avatar
-              ? `https://cdn.discordapp.com/avatars/${userInfo.id}/${userInfo.avatar}`
-              : "/app-logos/discord.png"
-          }
-          alt="avatar"
-          width={60}
-          style={{ borderRadius: 30 }}
-        />
-        <div style={{ marginLeft: 10 }}>
-          <Typography variant="h6">{userInfo.username}</Typography>
-          <Typography>#{userInfo.discriminator}</Typography>
-        </div>
-        <Button
-          variant="contained"
-          style={{ marginLeft: "auto" }}
-          onClick={() =>
-            dispatch({
-              type: AppLoginActionType.logoutStart,
-              payload: { appName: "discord" },
-            })
-          }
-        >
-          Log out
-        </Button>
-      </div>
+      <Header />
       <div style={{ marginLeft: 40, marginTop: 20 }}>
         <ChannelGrid
           selectedGuilds={selectedGuilds}
@@ -208,9 +174,7 @@ export default function Discord() {
         </div>
         <div style={{ marginTop: 40 }}>
           <Button
-            variant="outlined"
             startIcon={<Refresh />}
-            style={{ width: 100 }}
             onClick={() => {
               setSelectedGuilds({});
               setSelectedChannels({});
@@ -235,6 +199,7 @@ export default function Discord() {
                 !Object.values(selectedChannels).some((selected) => selected))
             }
             size="large"
+            onClick={() => submitForm()}
           >
             Save
           </Button>
