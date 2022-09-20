@@ -3,21 +3,27 @@ import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch } from "../../redux";
-import { ActionType } from "../../redux/appLogin/actions";
+import { ActionType as AppLoginActionType } from "../../redux/appLogin/actions";
+import { ActionType as DiscordActionType } from "../../redux/discord/actions";
 import { getDiscordUserInfo } from "../../redux/appLogin/selectors";
 import Login from "./Login";
+import { getGuilds } from "../../redux/discord/selectors";
 
 export default function Discord() {
   const dispatch = useDispatch<Dispatch>();
+
   const userInfo = useSelector(getDiscordUserInfo);
+  const guilds = useSelector(getGuilds);
+
   const [fetchUserInfoInterval, setFetchUserInterval] = useState<ReturnType<
     typeof setInterval
   > | null>(null);
+
   useEffect(() => {
     if (!userInfo && !fetchUserInfoInterval) {
       const interval = setInterval(() => {
         dispatch({
-          type: ActionType.fetchStart,
+          type: AppLoginActionType.fetchStart,
           payload: { appName: "discord" },
         });
       }, 1000);
@@ -25,6 +31,7 @@ export default function Discord() {
       return () => clearInterval(interval);
     }
   }, [userInfo]);
+
   useEffect(() => {
     if (userInfo && fetchUserInfoInterval) {
       clearInterval(fetchUserInfoInterval);
@@ -32,9 +39,17 @@ export default function Discord() {
     }
   }, [userInfo, fetchUserInfoInterval]);
 
+  useEffect(() => {
+    if (userInfo) {
+      dispatch({ type: DiscordActionType.fetchGuildsStart });
+    }
+  }, [userInfo]);
+
   if (!userInfo) {
     return <Login />;
   }
+
+  console.log(guilds);
 
   return (
     <div
@@ -67,7 +82,7 @@ export default function Discord() {
         style={{ marginLeft: "auto" }}
         onClick={() =>
           dispatch({
-            type: ActionType.logoutStart,
+            type: AppLoginActionType.logoutStart,
             payload: { appName: "discord" },
           })
         }

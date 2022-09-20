@@ -75,4 +75,4 @@ export const userInfo = (
   }
 };
 
-export const reducer = combineReducers({ fetchStatus, userInfo });
+export const reducer = combineReducers({ fetchStatus, logoutStatus, userInfo });

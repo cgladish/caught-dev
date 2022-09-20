@@ -13,7 +13,7 @@ function* fetchAppLogin(action: FetchStartAction) {
   try {
     const userInfo: Awaited<
       ReturnType<typeof window.api.appLogin.fetchUserInfo>
-    > = yield call(window.api.appLogin.fetchUserInfo, action.payload.appName);
+    > = yield call(window.api.appLogin.fetchUserInfo);
     yield put<FetchSuccessAction>({
       type: ActionType.fetchSuccess,
       payload: { appName: action.payload.appName, userInfo },

@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { deleteAuthentication, fetchUserInfo } from "../api/appLogin";
+import { deleteAuthentication } from "../api/appLogin";
+import { fetchUserInfo, fetchGuilds, fetchChannels } from "../api/discord";
 
 const makeInvoker =
   <TFuncType extends (...args: any[]) => Promise<any>>(
@@ -27,6 +28,13 @@ export const api = {
     logout: makeInvoker<typeof deleteAuthentication>(
       "appLogin",
       "deleteAuthentication"
+    ),
+  },
+  discord: {
+    fetchGuilds: makeInvoker<typeof fetchGuilds>("discord", "fetchGuilds"),
+    fetchChannels: makeInvoker<typeof fetchChannels>(
+      "discord",
+      "fetchChannels"
     ),
   },
 };
