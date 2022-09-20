@@ -52,11 +52,17 @@ export default function Discord() {
     }
   }, [userInfo, fetchUserInfoInterval]);
 
+  const [ruleName, setRuleName] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [endTime, setEndTime] = useState<Date | null>(null);
-  const [ruleName, setRuleName] = useState<string>("");
+  const [selectedGuilds, setSelectedGuilds] = useState<{
+    [guildId: string]: boolean;
+  }>({});
+  const [selectedChannels, setSelectedChannels] = useState<{
+    [channelId: string]: boolean;
+  }>({});
 
   const areDatesValid = useMemo(() => {
     if (!startDate || !endDate) {
@@ -118,7 +124,12 @@ export default function Discord() {
         </Button>
       </div>
       <div style={{ marginLeft: 40, marginTop: 20 }}>
-        <ChannelGrid />
+        <ChannelGrid
+          selectedGuilds={selectedGuilds}
+          setSelectedGuilds={setSelectedGuilds}
+          selectedChannels={selectedChannels}
+          setSelectedChannels={setSelectedChannels}
+        />
         <TextField
           label="New Rule Name"
           value={ruleName}
@@ -128,8 +139,8 @@ export default function Discord() {
         />
         <Typography
           style={{
-            marginTop: 20,
-            marginBottom: 10,
+            marginTop: 30,
+            marginBottom: 15,
             display: "flex",
             alignItems: "center",
           }}
@@ -200,13 +211,30 @@ export default function Discord() {
             variant="outlined"
             startIcon={<Refresh />}
             style={{ width: 100 }}
+            onClick={() => {
+              setSelectedGuilds({});
+              setSelectedChannels({});
+              setRuleName("");
+              setStartDate(null);
+              setStartTime(null);
+              setEndDate(null);
+              setEndTime(null);
+            }}
+            size="large"
           >
             Reset
           </Button>
           <Button
             variant="contained"
             startIcon={<Save />}
-            style={{ marginLeft: 10, width: 100 }}
+            style={{ marginLeft: 10 }}
+            disabled={
+              !areDatesValid ||
+              !ruleName ||
+              (!Object.values(selectedGuilds).some((selected) => selected) &&
+                !Object.values(selectedChannels).some((selected) => selected))
+            }
+            size="large"
           >
             Save
           </Button>

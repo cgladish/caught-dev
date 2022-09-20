@@ -20,20 +20,27 @@ import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { IconButton } from "@mui/material";
 import type {} from "@mui/x-date-pickers/themeAugmentation";
 
-export default function ChannelGrid() {
+export default function ChannelGrid({
+  selectedGuilds,
+  setSelectedGuilds,
+  selectedChannels,
+  setSelectedChannels,
+}: {
+  selectedGuilds: { [guildId: string]: boolean };
+  setSelectedGuilds: (newSelectedGuilds: {
+    [guildId: string]: boolean;
+  }) => void;
+  selectedChannels: { [channelId: string]: boolean };
+  setSelectedChannels: (newSelectedChannels: {
+    [channelId: string]: boolean;
+  }) => void;
+}) {
   const dispatch = useDispatch<Dispatch>();
 
   const userInfo = useSelector(getDiscordUserInfo);
   const guilds = useSelector(getGuilds);
 
   const [viewedGuildId, setViewedGuildId] = useState<string | null>(null);
-  const [selectedGuilds, setSelectedGuilds] = useState<{
-    [guildId: string]: boolean;
-  }>({});
-  const [selectedChannels, setSelectedChannels] = useState<{
-    [channelId: string]: boolean;
-  }>({});
-
   const channels = viewedGuildId ? guilds?.[viewedGuildId]?.channels : null;
 
   useEffect(() => {
