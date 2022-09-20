@@ -91,7 +91,17 @@ export default function ChannelGrid() {
               {Object.values(selectedGuild.channels).map((channel) => (
                 <ListItem key={channel.id} disablePadding>
                   <ListItemButton onClick={() => console.log(channel.id)}>
-                    <ListItemText>{channel.name}</ListItemText>
+                    <ListItemText
+                      primaryTypographyProps={{
+                        sx: {
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        },
+                      }}
+                    >
+                      {channel.name}
+                    </ListItemText>
                     <ListItemIcon>
                       <Checkbox
                         edge="end"
