@@ -77,6 +77,15 @@ export default function Discord() {
     return startDatetime < endDatetime;
   }, [startDate, startTime, endDate, endTime]);
 
+  const isSaveDisabled = useMemo(
+    () =>
+      !areDatesValid ||
+      !ruleName ||
+      (!Object.values(selectedGuilds).some((selected) => selected) &&
+        !Object.values(selectedChannels).some((selected) => selected)),
+    [areDatesValid, !!ruleName, selectedGuilds, selectedChannels]
+  );
+
   const submitForm = () => {};
 
   if (!userInfo) {
@@ -198,12 +207,7 @@ export default function Discord() {
             variant="contained"
             startIcon={<Save />}
             style={{ marginLeft: 10 }}
-            disabled={
-              !areDatesValid ||
-              !ruleName ||
-              (!Object.values(selectedGuilds).some((selected) => selected) &&
-                !Object.values(selectedChannels).some((selected) => selected))
-            }
+            disabled={isSaveDisabled}
             size="large"
             onClick={() => submitForm()}
           >

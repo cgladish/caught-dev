@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType as DiscordActionType } from "../../redux/discord/actions";
 import { Dispatch } from "../../redux";
@@ -22,7 +22,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import type {} from "@mui/x-date-pickers/themeAugmentation";
 
-export default function ChannelGrid({
+function ChannelGrid({
   selectedGuilds,
   setSelectedGuilds,
   selectedChannels,
@@ -327,3 +327,5 @@ export default function ChannelGrid({
     </Card>
   );
 }
+
+export default memo(ChannelGrid);
