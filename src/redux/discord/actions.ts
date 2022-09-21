@@ -1,4 +1,4 @@
-import { Channel, Guild } from "./state";
+import { Channel, DmChannel, Guild } from "./state";
 
 export enum ActionType {
   fetchGuildsStart = "@@discord/FETCH_GUILDS_START",
@@ -7,6 +7,9 @@ export enum ActionType {
   fetchChannelsStart = "@@discord/FETCH_CHANNELS_START",
   fetchChannelsSuccess = "@@discord/FETCH_CHANNELS_SUCCESS",
   fetchChannelsFailure = "@@discord/FETCH_CHANNELS_FAILURE",
+  fetchDmChannelsStart = "@@discord/FETCH_DM_CHANNELS_START",
+  fetchDmChannelsSuccess = "@@discord/FETCH_DM_CHANNELS_SUCCESS",
+  fetchDmChannelsFailure = "@@discord/FETCH_DM_CHANNELS_FAILURE",
 }
 
 export type FetchGuildsStartAction = {
@@ -18,7 +21,7 @@ export type FetchGuildsSuccessAction = {
 };
 export type FetchGuildsFailureAction = {
   type: ActionType.fetchGuildsFailure;
-  payload: { error: Error };
+  payload: { error: string };
 };
 
 export type FetchChannelsStartAction = {
@@ -31,7 +34,19 @@ export type FetchChannelSuccessAction = {
 };
 export type FetchChannelFailureAction = {
   type: ActionType.fetchChannelsFailure;
-  payload: { guildId: string; error: Error };
+  payload: { guildId: string; error: string };
+};
+
+export type FetchDmChannelsStartAction = {
+  type: ActionType.fetchDmChannelsStart;
+};
+export type FetchDmChannelsSuccessAction = {
+  type: ActionType.fetchDmChannelsSuccess;
+  payload: { dmChannels: DmChannel[] };
+};
+export type FetchDmChannelsFailureAction = {
+  type: ActionType.fetchDmChannelsFailure;
+  payload: { error: string };
 };
 
 export type Action =
@@ -40,4 +55,7 @@ export type Action =
   | FetchGuildsFailureAction
   | FetchChannelsStartAction
   | FetchChannelSuccessAction
-  | FetchChannelFailureAction;
+  | FetchChannelFailureAction
+  | FetchDmChannelsStartAction
+  | FetchDmChannelsSuccessAction
+  | FetchDmChannelsFailureAction;

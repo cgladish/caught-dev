@@ -11,14 +11,31 @@ export type Channel = {
   name: string;
   guildId: string;
 };
+export type DmChannel = {
+  id: string;
+  recipients: {
+    id: string;
+    username: string;
+    discrimator: string;
+    avatar?: string;
+  }[];
+};
 export type State = {
-  fetchStatus: ResourceStatus;
+  guildsFetchStatus: ResourceStatus;
+  channelsFetchStatus: ResourceStatus;
+  dmChannelsFetchStatus: ResourceStatus;
   guilds: {
     [guildId: string]: Guild;
+  } | null;
+  dmChannels: {
+    [channelId: string]: DmChannel;
   } | null;
 };
 
 export const initialState: State = {
-  fetchStatus: "initial",
+  guildsFetchStatus: "initial",
+  channelsFetchStatus: "initial",
+  dmChannelsFetchStatus: "initial",
   guilds: null,
+  dmChannels: null,
 };

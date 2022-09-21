@@ -64,6 +64,9 @@ export default function Discord() {
   const [selectedChannels, setSelectedChannels] = useState<{
     [channelId: string]: boolean;
   }>({});
+  const [selectedDmChannels, setSelectedDmChannels] = useState<{
+    [dmChannelId: string]: boolean;
+  }>({});
 
   const areDatesValid = useMemo(() => {
     if (!startDate || !endDate) {
@@ -95,6 +98,8 @@ export default function Discord() {
           setSelectedGuilds={setSelectedGuilds}
           selectedChannels={selectedChannels}
           setSelectedChannels={setSelectedChannels}
+          selectedDmChannels={selectedDmChannels}
+          setSelectedDmChannels={setSelectedDmChannels}
         />
         <TextField
           label="New Rule Name"

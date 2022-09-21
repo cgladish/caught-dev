@@ -3,7 +3,12 @@ import isDev from "electron-is-dev";
 import debounce from "lodash/debounce";
 import path from "path";
 import { saveAuthentication, deleteAuthentication } from "../api/appLogin";
-import { fetchChannels, fetchGuilds, fetchUserInfo } from "../api/discord";
+import {
+  fetchChannels,
+  fetchDmChannels,
+  fetchGuilds,
+  fetchUserInfo,
+} from "../api/discord";
 
 const startApiListener = (moduleName: string, func: Function) => {
   ipcMain.handle(`@@${moduleName}/${func.name}`, async (event, ...args) => {
@@ -27,6 +32,7 @@ startApiListener("appLogin", fetchUserInfo);
 startApiListener("appLogin", deleteAuthentication);
 startApiListener("discord", fetchGuilds);
 startApiListener("discord", fetchChannels);
+startApiListener("discord", fetchDmChannels);
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({

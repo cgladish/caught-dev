@@ -3,21 +3,56 @@ import { combineReducers } from "redux";
 import { Action, ActionType } from "./actions";
 import { initialState, State } from "./state";
 
-export const fetchStatus = (
-  state = initialState.fetchStatus,
+export const guildsFetchStatus = (
+  state = initialState.guildsFetchStatus,
   action: Action
-): State["fetchStatus"] => {
+): State["guildsFetchStatus"] => {
   switch (action.type) {
-    case ActionType.fetchGuildsStart:
+    case ActionType.fetchGuildsStart: {
+      return "pending";
+    }
+    case ActionType.fetchGuildsSuccess: {
+      return "success";
+    }
+    case ActionType.fetchGuildsFailure: {
+      return "errored";
+    }
+    default:
+      return state;
+  }
+};
+
+export const channelsFetchStatus = (
+  state = initialState.channelsFetchStatus,
+  action: Action
+): State["channelsFetchStatus"] => {
+  switch (action.type) {
     case ActionType.fetchChannelsStart: {
       return "pending";
     }
-    case ActionType.fetchGuildsSuccess:
     case ActionType.fetchChannelsSuccess: {
       return "success";
     }
-    case ActionType.fetchGuildsFailure:
     case ActionType.fetchChannelsFailure: {
+      return "errored";
+    }
+    default:
+      return state;
+  }
+};
+
+export const dmChannelsFetchStatus = (
+  state = initialState.dmChannelsFetchStatus,
+  action: Action
+): State["dmChannelsFetchStatus"] => {
+  switch (action.type) {
+    case ActionType.fetchDmChannelsStart: {
+      return "pending";
+    }
+    case ActionType.fetchDmChannelsSuccess: {
+      return "success";
+    }
+    case ActionType.fetchDmChannelsFailure: {
       return "errored";
     }
     default:
@@ -32,7 +67,7 @@ export const guilds = (
   switch (action.type) {
     case ActionType.fetchGuildsStart:
     case ActionType.fetchGuildsFailure: {
-      return {};
+      return null;
     }
     case ActionType.fetchGuildsSuccess: {
       return keyBy(
@@ -62,4 +97,27 @@ export const guilds = (
   }
 };
 
-export const reducer = combineReducers({ fetchStatus, guilds });
+export const dmChannels = (
+  state = initialState.dmChannels,
+  action: Action
+): State["dmChannels"] => {
+  switch (action.type) {
+    case ActionType.fetchDmChannelsStart:
+    case ActionType.fetchDmChannelsFailure: {
+      return {};
+    }
+    case ActionType.fetchDmChannelsSuccess: {
+      return keyBy(action.payload.dmChannels, "id");
+    }
+    default:
+      return state;
+  }
+};
+
+export const reducer = combineReducers({
+  guildsFetchStatus,
+  channelsFetchStatus,
+  dmChannelsFetchStatus,
+  guilds,
+  dmChannels,
+});

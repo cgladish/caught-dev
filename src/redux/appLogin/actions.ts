@@ -19,7 +19,7 @@ export type FetchSuccessAction = {
 };
 export type FetchFailureAction = {
   type: ActionType.fetchFailure;
-  payload: { appName: AppName; error: Error };
+  payload: { appName: AppName; error: string };
 };
 
 export type LogoutStartAction = {
@@ -32,7 +32,7 @@ export type LogoutSuccessAction = {
 };
 export type LogoutFailureAction = {
   type: ActionType.logoutFailure;
-  payload: { appName: AppName; error: Error };
+  payload: { appName: AppName; error: string };
 };
 
 export type Action =

@@ -4,6 +4,9 @@ import {
   FetchChannelFailureAction,
   FetchChannelsStartAction,
   FetchChannelSuccessAction,
+  FetchDmChannelsFailureAction,
+  FetchDmChannelsStartAction,
+  FetchDmChannelsSuccessAction,
   FetchGuildsFailureAction,
   FetchGuildsStartAction,
   FetchGuildsSuccessAction,
@@ -20,7 +23,7 @@ function* fetchGuilds(action: FetchGuildsStartAction) {
   } catch (e) {
     yield put<FetchGuildsFailureAction>({
       type: ActionType.fetchGuildsFailure,
-      payload: { error: e as Error },
+      payload: { error: (e as Error).toString() },
     });
   }
 }
@@ -46,7 +49,10 @@ function* fetchChannels(action: FetchChannelsStartAction) {
   } catch (e) {
     yield put<FetchChannelFailureAction>({
       type: ActionType.fetchChannelsFailure,
-      payload: { guildId: action.payload.guildId, error: e as Error },
+      payload: {
+        guildId: action.payload.guildId,
+        error: (e as Error).toString(),
+      },
     });
   }
 }
@@ -54,6 +60,26 @@ function* fetchChannelsSaga() {
   yield takeLatest(ActionType.fetchChannelsStart, fetchChannels);
 }
 
+function* fetchDmChannels(action: FetchDmChannelsStartAction) {
+  try {
+    const dmChannels: Awaited<
+      ReturnType<typeof window.api.discord.fetchDmChannels>
+    > = yield call(window.api.discord.fetchDmChannels);
+    yield put<FetchDmChannelsSuccessAction>({
+      type: ActionType.fetchDmChannelsSuccess,
+      payload: { dmChannels },
+    });
+  } catch (e) {
+    yield put<FetchDmChannelsFailureAction>({
+      type: ActionType.fetchDmChannelsFailure,
+      payload: { error: (e as Error).toString() },
+    });
+  }
+}
+function* fetchDmChannelsSaga() {
+  yield takeLatest(ActionType.fetchDmChannelsStart, fetchDmChannels);
+}
+
 export function* saga() {
-  yield all([fetchGuildsSaga(), fetchChannelsSaga()]);
+  yield all([fetchGuildsSaga(), fetchChannelsSaga(), fetchDmChannelsSaga()]);
 }

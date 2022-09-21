@@ -66,3 +66,25 @@ export const fetchChannels = async (
   });
   return response.data;
 };
+
+type FetchedDmChannelInfo = {
+  id: string;
+  recipients: {
+    id: string;
+    username: string;
+    discrimator: string;
+    avatar?: string;
+  }[];
+};
+export const fetchDmChannels = async (): Promise<FetchedDmChannelInfo[]> => {
+  const token = await fetchAuthentication("discord");
+  if (!token) {
+    throw new Error("Not logged in!");
+  }
+  const response: AxiosResponse<FetchedDmChannelInfo[]> = await axios({
+    method: "get",
+    url: "https://discord.com/api/v9/users/@me/channels",
+    headers: { authorization: token },
+  });
+  return response.data;
+};

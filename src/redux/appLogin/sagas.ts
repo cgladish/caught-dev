@@ -21,7 +21,10 @@ function* fetchAppLogin(action: FetchStartAction) {
   } catch (e) {
     yield put<FetchFailureAction>({
       type: ActionType.fetchFailure,
-      payload: { appName: action.payload.appName, error: e as Error },
+      payload: {
+        appName: action.payload.appName,
+        error: (e as Error).toString(),
+      },
     });
   }
 }
@@ -39,7 +42,10 @@ function* logout(action: LogoutStartAction) {
   } catch (e) {
     yield put<LogoutFailureAction>({
       type: ActionType.logoutFailure,
-      payload: { appName: action.payload.appName, error: e as Error },
+      payload: {
+        appName: action.payload.appName,
+        error: (e as Error).toString(),
+      },
     });
   }
 }
