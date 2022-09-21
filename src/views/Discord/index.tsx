@@ -16,6 +16,7 @@ import Save from "@mui/icons-material/Save";
 import Refresh from "@mui/icons-material/Refresh";
 import { Tooltip } from "@mui/material";
 import Header from "./Header";
+import { ActionType } from "../../redux/preservationRules/actions";
 
 const combineDateAndTime = (date: Date, time: Date | null) => {
   if (!time) {
@@ -86,7 +87,25 @@ export default function Discord() {
     [areDatesValid, !!ruleName, selectedGuilds, selectedChannels]
   );
 
-  const submitForm = () => {};
+  const submitForm = () => {
+    if (!isSaveDisabled) {
+      dispatch({
+        type: ActionType.createStart,
+        payload: {
+          appName: "discord",
+          preservationRule: {
+            appName: "discord",
+            name: ruleName,
+            startDatetime: combineDateAndTime(startDate!, startTime),
+            endDatetime: combineDateAndTime(endDate!, endTime),
+            selected: {
+              guildIds: Object.keys(selectedGuilds),
+            },
+          },
+        },
+      });
+    }
+  };
 
   if (!userInfo) {
     return <Login />;

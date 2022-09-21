@@ -4,5 +4,5 @@ import { saga as discordSaga } from "./discord/sagas";
 import { saga as preservationRulesSaga } from "./preservationRules/sagas";
 
 export function* rootSaga() {
-  yield all([appLoginSaga(), discordSaga(), preservationRulesSaga]);
+  yield all([appLoginSaga(), discordSaga(), preservationRulesSaga()]);
 }

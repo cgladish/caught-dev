@@ -5,7 +5,6 @@ import { Dispatch } from "../../redux";
 import { getDiscordUserInfo } from "../../redux/appLogin/selectors";
 import { getDmChannels, getGuilds } from "../../redux/discord/selectors";
 import Card from "@mui/material/Card";
-import Grid from "@mui/material/Grid";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
@@ -21,6 +20,7 @@ import IconButton from "@mui/material/IconButton";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import type {} from "@mui/x-date-pickers/themeAugmentation";
+import { Typography, useTheme } from "@mui/material";
 
 function ChannelGrid({
   selectedGuilds,
@@ -44,6 +44,9 @@ function ChannelGrid({
   }) => void;
 }) {
   const dispatch = useDispatch<Dispatch>();
+  const {
+    palette: { primary },
+  } = useTheme();
 
   const userInfo = useSelector(getDiscordUserInfo);
   const guilds = useSelector(getGuilds);
@@ -52,7 +55,8 @@ function ChannelGrid({
   const [viewedGuildId, setViewedGuildId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<number>(0);
 
-  const channels = viewedGuildId ? guilds?.[viewedGuildId]?.channels : null;
+  const viewedGuild = viewedGuildId ? guilds?.[viewedGuildId] : null;
+  const channels = viewedGuild?.channels;
 
   useEffect(() => {
     const newSelectedChannels = { ...selectedChannels };
@@ -141,160 +145,143 @@ function ChannelGrid({
         <Tab label="Servers" />
         <Tab label="DMs" />
       </Tabs>
-      {selectedTab === 0 && (
-        <Grid container style={{ width: "100%", height: "100%" }}>
-          <Grid
-            xs={viewedGuildId ? 6 : 12}
-            style={{
-              backgroundColor: "#222",
-              overflowY: "scroll",
-              maxHeight: 400,
-              height: "100%",
-            }}
-            item
-          >
-            {guilds ? (
-              <List dense>
-                {Object.values(guilds).map((guild) => (
-                  <ListItem
-                    key={guild.id}
-                    secondaryAction={
-                      <IconButton
-                        onClick={() => {
-                          if (guild.id === viewedGuildId) {
-                            setViewedGuildId(null);
-                          } else {
-                            setViewedGuildId(guild.id);
-                          }
-                        }}
-                      >
-                        {guild.id === viewedGuildId ? (
-                          <NavigateBefore />
-                        ) : (
-                          <NavigateNext />
-                        )}
-                      </IconButton>
-                    }
-                    disablePadding
+      <div
+        style={{
+          backgroundColor: "#222",
+          overflowY: "scroll",
+          maxHeight: 400,
+          height: selectedTab === 0 && !viewedGuildId ? "100%" : 0,
+          width: selectedTab === 0 && !viewedGuildId ? "100%" : 0,
+        }}
+      >
+        {guilds ? (
+          <List dense>
+            {Object.values(guilds).map((guild) => (
+              <ListItem
+                key={guild.id}
+                secondaryAction={
+                  <IconButton onClick={() => setViewedGuildId(guild.id)}>
+                    <NavigateNext />
+                  </IconButton>
+                }
+                disablePadding
+              >
+                <ListItemButton
+                  onClick={() => toggleSelectedGuild(guild.id)}
+                  selected={guild.id === viewedGuildId}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      src={
+                        guild.icon
+                          ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}`
+                          : "/app-logos/discord.png"
+                      }
+                    />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primaryTypographyProps={{
+                      sx: {
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      },
+                    }}
                   >
-                    <ListItemButton
-                      onClick={() => toggleSelectedGuild(guild.id)}
-                      selected={guild.id === viewedGuildId}
-                    >
-                      <ListItemAvatar>
-                        <Avatar
-                          src={
-                            guild.icon
-                              ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}`
-                              : "/app-logos/discord.png"
-                          }
-                        />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primaryTypographyProps={{
-                          sx: {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      >
-                        {guild.name}
-                      </ListItemText>
-                      <ListItemIcon>
-                        <Checkbox
-                          edge="end"
-                          checked={selectedGuilds[guild.id] ?? false}
-                          indeterminate={
-                            !selectedGuilds[guild.id] &&
-                            !!guild.channels &&
-                            Object.keys(guild.channels).some(
-                              (channelId) => selectedChannels[channelId]
-                            )
-                          }
-                          tabIndex={-1}
-                          disableRipple
-                        />
-                      </ListItemIcon>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <LinearProgress />
+                    {guild.name}
+                  </ListItemText>
+                  <ListItemIcon>
+                    <Checkbox
+                      edge="end"
+                      checked={selectedGuilds[guild.id] ?? false}
+                      indeterminate={
+                        !selectedGuilds[guild.id] &&
+                        !!guild.channels &&
+                        Object.keys(guild.channels).some(
+                          (channelId) => selectedChannels[channelId]
+                        )
+                      }
+                      tabIndex={-1}
+                    />
+                  </ListItemIcon>
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <LinearProgress />
+        )}
+      </div>
+      <div
+        style={{
+          backgroundColor: "#222",
+          height: selectedTab === 0 && viewedGuildId ? "100%" : 0,
+          width: selectedTab === 0 && viewedGuildId ? "100%" : 0,
+        }}
+      >
+        {channels ? (
+          <>
+            {selectedTab === 0 && viewedGuildId && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: primary.dark,
+                  height: 50,
+                }}
+              >
+                <IconButton
+                  style={{ marginLeft: 5 }}
+                  onClick={() => setViewedGuildId(null)}
+                >
+                  <NavigateBefore />
+                </IconButton>
+                <Avatar
+                  style={{ marginLeft: 5 }}
+                  src={
+                    viewedGuild.icon
+                      ? `https://cdn.discordapp.com/icons/${viewedGuild.id}/${viewedGuild.icon}`
+                      : "/app-logos/discord.png"
+                  }
+                />
+                <Typography
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    marginLeft: "10px",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {viewedGuild.name}
+                </Typography>
+                <Checkbox
+                  style={{
+                    marginLeft: "auto",
+                    marginRight: "40px",
+                  }}
+                  edge="end"
+                  checked={selectedGuilds[viewedGuildId!] ?? false}
+                  indeterminate={
+                    !selectedGuilds[viewedGuildId!] &&
+                    Object.keys(channels).some(
+                      (channelId) => selectedChannels[channelId]
+                    )
+                  }
+                  tabIndex={-1}
+                />
+              </div>
             )}
-          </Grid>
-          <Grid
-            xs={6}
-            style={{
-              backgroundColor: "#333",
-              overflowY: "scroll",
-              maxHeight: 400,
-              height: "100%",
-            }}
-            item
-          >
-            {channels ? (
-              <List dense>
-                {Object.values(channels).map((channel) => (
-                  <ListItem key={channel.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => toggleSelectedChannel(channel.id)}
-                    >
-                      <ListItemText
-                        primaryTypographyProps={{
-                          sx: {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      >
-                        {channel.name}
-                      </ListItemText>
-                      <ListItemIcon>
-                        <Checkbox
-                          edge="end"
-                          checked={selectedChannels[channel.id] ?? false}
-                          tabIndex={-1}
-                          disableRipple
-                        />
-                      </ListItemIcon>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              viewedGuildId && <LinearProgress />
-            )}
-          </Grid>
-        </Grid>
-      )}
-      {selectedTab === 1 && (
-        <div
-          style={{
-            backgroundColor: "#222",
-            overflowY: "scroll",
-            maxHeight: 400,
-            height: "100%",
-          }}
-        >
-          {dmChannels ? (
-            <List dense>
-              {Object.values(dmChannels).map((dmChannel) => (
-                <ListItem key={dmChannel.id} disablePadding>
+            <List
+              style={{
+                maxHeight: 350,
+                overflowY: "scroll",
+              }}
+              dense
+            >
+              {Object.values(channels).map((channel) => (
+                <ListItem key={channel.id} disablePadding>
                   <ListItemButton
-                    onClick={() => toggleSelectedDmChannel(dmChannel.id)}
+                    onClick={() => toggleSelectedChannel(channel.id)}
                   >
-                    <ListItemAvatar>
-                      <Avatar
-                        src={
-                          dmChannel.recipients.length === 1
-                            ? dmChannel.recipients[0].avatar
-                              ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
-                              : "app-logos/discord.png"
-                            : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
-                        }
-                      />
-                    </ListItemAvatar>
                     <ListItemText
                       primaryTypographyProps={{
                         sx: {
@@ -303,27 +290,82 @@ function ChannelGrid({
                         },
                       }}
                     >
-                      {dmChannel.recipients
-                        .map(({ username }) => username)
-                        .join(", ")}
+                      # {channel.name}
                     </ListItemText>
                     <ListItemIcon>
                       <Checkbox
                         edge="end"
-                        checked={selectedDmChannels[dmChannel.id] ?? false}
+                        checked={selectedChannels[channel.id] ?? false}
                         tabIndex={-1}
-                        disableRipple
                       />
                     </ListItemIcon>
                   </ListItemButton>
                 </ListItem>
               ))}
             </List>
-          ) : (
-            <LinearProgress />
-          )}
-        </div>
-      )}
+          </>
+        ) : (
+          viewedGuildId && <LinearProgress />
+        )}
+      </div>
+      <div
+        style={{
+          backgroundColor: "#222",
+          height: selectedTab === 1 ? "100%" : 0,
+          width: selectedTab === 1 ? "100%" : 0,
+        }}
+      >
+        {dmChannels ? (
+          <List
+            style={{
+              overflowY: "scroll",
+              maxHeight: 400,
+            }}
+            dense
+          >
+            {Object.values(dmChannels).map((dmChannel) => (
+              <ListItem key={dmChannel.id} disablePadding>
+                <ListItemButton
+                  onClick={() => toggleSelectedDmChannel(dmChannel.id)}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      src={
+                        dmChannel.recipients.length === 1
+                          ? dmChannel.recipients[0].avatar
+                            ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
+                            : "app-logos/discord.png"
+                          : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
+                      }
+                    />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primaryTypographyProps={{
+                      sx: {
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      },
+                    }}
+                  >
+                    {dmChannel.recipients
+                      .map(({ username }) => username)
+                      .join(", ")}
+                  </ListItemText>
+                  <ListItemIcon>
+                    <Checkbox
+                      edge="end"
+                      checked={selectedDmChannels[dmChannel.id] ?? false}
+                      tabIndex={-1}
+                    />
+                  </ListItemIcon>
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <LinearProgress />
+        )}
+      </div>
     </Card>
   );
 }
