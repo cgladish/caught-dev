@@ -1,6 +1,7 @@
-import db from "../db";
+import TableName from "../db/tableName";
+import getDb from "../db";
 
-type PreservationRule = {
+export type PreservationRule = {
   id: string;
   appName: AppName;
   name: string;
@@ -20,7 +21,8 @@ export const createPreservationRule = async ({
 }: Omit<PreservationRule, "id" | "selectedJson" | "createdAt" | "updatedAt"> & {
   selected: object;
 }) => {
-  await db<PreservationRule>("PreservationRule").insert({
+  const db = await getDb();
+  await db<PreservationRule>(TableName.PreservationRule).insert({
     appName,
     name,
     selectedJson: JSON.stringify(selected),
@@ -43,7 +45,8 @@ export const updatePreservationRule = async (
     selected: object;
   }
 ) => {
-  await db<PreservationRule>("PreservationRule")
+  const db = await getDb();
+  await db<PreservationRule>(TableName.PreservationRule)
     .where({ id })
     .update({
       name,
@@ -53,8 +56,14 @@ export const updatePreservationRule = async (
     });
 };
 
+export const deletePreservationRule = async (id: string) => {
+  const db = await getDb();
+  await db<PreservationRule>(TableName.PreservationRule).where({ id }).delete();
+};
+
 export const fetchPreservationRules = async (appName: AppName) => {
-  return await db<PreservationRule>("PreservationRule")
+  const db = await getDb();
+  return await db<PreservationRule>(TableName.PreservationRule)
     .where({ appName })
     .first();
 };

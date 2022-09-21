@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`preservationRules createPreservationRule creates a preservation rule 1`] = `
+{
+  "appName": "discord",
+  "endDatetime": "Wed Dec 31 1969 16:00:00 GMT-0800 (Pacific Standard Time)",
+  "name": "Rule",
+  "selectedJson": "{"key":"value"}",
+  "startDatetime": "Wed Dec 31 1969 16:00:00 GMT-0800 (Pacific Standard Time)",
+}
+`;
