@@ -38,7 +38,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest --forceExit",
     "eject": "react-scripts eject",
     "dev": "tsc && cross-env BROWSER=none concurrently -k \"yarn start\" \"yarn electron\"",
     "electron": "electron ./dist/electron/main.js"

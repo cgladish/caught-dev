@@ -65,5 +65,5 @@ export const fetchPreservationRules = async (appName: AppName) => {
   const db = await getDb();
   return await db<PreservationRule>(TableName.PreservationRule)
     .where({ appName })
-    .first();
+    .select();
 };
