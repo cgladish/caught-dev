@@ -5,6 +5,18 @@ exports[`preservationRules createPreservationRule creates a preservation rule 1`
   "appName": "discord",
   "endDatetime": "Tue Sep 20 2022 21:00:00 GMT-0700 (Pacific Daylight Time)",
   "name": "Rule",
+  "selected": {
+    "key": "value",
+  },
+  "startDatetime": "Tue Sep 20 2022 19:00:00 GMT-0700 (Pacific Daylight Time)",
+}
+`;
+
+exports[`preservationRules createPreservationRule creates a preservation rule 2`] = `
+{
+  "appName": "discord",
+  "endDatetime": "Tue Sep 20 2022 21:00:00 GMT-0700 (Pacific Daylight Time)",
+  "name": "Rule",
   "selectedJson": "{"key":"value"}",
   "startDatetime": "Tue Sep 20 2022 19:00:00 GMT-0700 (Pacific Daylight Time)",
 }
@@ -15,7 +27,9 @@ exports[`preservationRules fetchPreservationRules fetches preservation rules 1`]
   "appName": "discord",
   "endDatetime": "Tue Sep 20 2022 21:00:00 GMT-0700 (Pacific Daylight Time)",
   "name": "Rule",
-  "selectedJson": "{"key":"value"}",
+  "selected": {
+    "key": "value",
+  },
   "startDatetime": "Tue Sep 20 2022 19:00:00 GMT-0700 (Pacific Daylight Time)",
 }
 `;
@@ -25,27 +39,41 @@ exports[`preservationRules fetchPreservationRules fetches preservation rules 2`]
   "appName": "discord",
   "endDatetime": "Tue Sep 20 2022 22:00:00 GMT-0700 (Pacific Daylight Time)",
   "name": "Rule2",
-  "selectedJson": "{"key2":"value2"}",
+  "selected": {
+    "key2": "value2",
+  },
   "startDatetime": "Tue Sep 20 2022 20:00:00 GMT-0700 (Pacific Daylight Time)",
 }
 `;
 
 exports[`preservationRules updatePreservationRule updates a preservation rule 1`] = `
 {
-  "appName": "discord",
+  "appName": "twitter",
   "endDatetime": "Tue Sep 20 2022 22:00:00 GMT-0700 (Pacific Daylight Time)",
   "name": "Rule3",
-  "selectedJson": "{"key3":"value3"}",
+  "selected": {
+    "key3": "value3",
+  },
   "startDatetime": "Tue Sep 20 2022 20:00:00 GMT-0700 (Pacific Daylight Time)",
 }
 `;
 
 exports[`preservationRules updatePreservationRule updates a preservation rule 2`] = `
 {
+  "appName": "discord",
+  "endDatetime": "Tue Sep 20 2022 21:00:00 GMT-0700 (Pacific Daylight Time)",
+  "name": "Rule",
+  "selectedJson": "{"key":"value"}",
+  "startDatetime": "Tue Sep 20 2022 19:00:00 GMT-0700 (Pacific Daylight Time)",
+}
+`;
+
+exports[`preservationRules updatePreservationRule updates a preservation rule 3`] = `
+{
   "appName": "twitter",
   "endDatetime": "Tue Sep 20 2022 22:00:00 GMT-0700 (Pacific Daylight Time)",
-  "name": "Rule2",
-  "selectedJson": "{"key2":"value2"}",
+  "name": "Rule3",
+  "selectedJson": "{"key3":"value3"}",
   "startDatetime": "Tue Sep 20 2022 20:00:00 GMT-0700 (Pacific Daylight Time)",
 }
 `;

@@ -1,4 +1,4 @@
-import { keyBy } from "lodash";
+import keyBy from "lodash/keyBy";
 import { combineReducers } from "redux";
 import { Action, ActionType } from "./actions";
 import { initialState, State } from "./state";

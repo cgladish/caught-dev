@@ -12,10 +12,6 @@ export const getUserInfo = createSelector(
   (state) => state.userInfo
 );
 
-export const getDiscordFetchStatus = createSelector(
-  [getFetchStatus],
-  (state) => state.discord
-);
 export const getDiscordUserInfo = createSelector(
   [getUserInfo],
   (state) => state.discord

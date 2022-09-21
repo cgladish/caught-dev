@@ -1,8 +1,8 @@
 import TableName from "../db/tableName";
 import getDb from "../db";
 
-export type PreservationRule = {
-  id: string;
+export type PreservationRuleEntity = {
+  id: number;
   appName: AppName;
   name: string;
   selectedJson: string;
@@ -11,6 +11,14 @@ export type PreservationRule = {
   createdAt: Date;
   updatedAt: Date;
 };
+export type PreservationRule = Omit<PreservationRuleEntity, "selectedJson"> & {
+  selected: object;
+};
+
+const entityToType = ({ selectedJson, ...rest }: PreservationRuleEntity) => ({
+  selected: JSON.parse(selectedJson),
+  ...rest,
+});
 
 export const createPreservationRule = async ({
   appName,
@@ -18,35 +26,39 @@ export const createPreservationRule = async ({
   selected,
   startDatetime,
   endDatetime,
-}: Omit<PreservationRule, "id" | "selectedJson" | "createdAt" | "updatedAt"> & {
-  selected: object;
-}) => {
+}: Omit<
+  PreservationRule,
+  "id" | "createdAt" | "updatedAt"
+>): Promise<PreservationRule> => {
   const db = await getDb();
-  await db<PreservationRule>(TableName.PreservationRule).insert({
+  const [id] = await db<PreservationRuleEntity>(
+    TableName.PreservationRule
+  ).insert({
     appName,
     name,
     selectedJson: JSON.stringify(selected),
     startDatetime,
     endDatetime,
   });
+  const preservationRule = await db<PreservationRuleEntity>(
+    TableName.PreservationRule
+  )
+    .where({ id })
+    .first();
+  return entityToType(preservationRule!);
 };
 
 export const updatePreservationRule = async (
-  id: string,
+  id: number,
   {
     name,
     selected,
     startDatetime,
     endDatetime,
-  }: Omit<
-    PreservationRule,
-    "id" | "appName" | "selectedJson" | "createdAt" | "updatedAt"
-  > & {
-    selected: object;
-  }
+  }: Omit<PreservationRule, "id" | "appName" | "createdAt" | "updatedAt">
 ) => {
   const db = await getDb();
-  await db<PreservationRule>(TableName.PreservationRule)
+  await db<PreservationRuleEntity>(TableName.PreservationRule)
     .where({ id })
     .update({
       name,
@@ -54,16 +66,30 @@ export const updatePreservationRule = async (
       startDatetime,
       endDatetime,
     });
+  const preservationRule = await db<PreservationRuleEntity>(
+    TableName.PreservationRule
+  )
+    .where({ id })
+    .first();
+  return entityToType(preservationRule!);
 };
 
-export const deletePreservationRule = async (id: string) => {
+export const deletePreservationRule = async (id: number) => {
   const db = await getDb();
-  await db<PreservationRule>(TableName.PreservationRule).where({ id }).delete();
+  await db<PreservationRuleEntity>(TableName.PreservationRule)
+    .where({ id })
+    .delete();
 };
 
-export const fetchPreservationRules = async (appName: AppName) => {
+export const fetchPreservationRules = async (
+  appName: AppName
+): Promise<PreservationRule[]> => {
   const db = await getDb();
-  return await db<PreservationRule>(TableName.PreservationRule)
+  const preservationRules = await db<PreservationRuleEntity>(
+    TableName.PreservationRule
+  )
     .where({ appName })
+    .orderBy("updatedAt", "desc")
     .select();
+  return preservationRules.map(entityToType);
 };

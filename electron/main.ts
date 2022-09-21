@@ -9,6 +9,12 @@ import {
   fetchGuilds,
   fetchUserInfo,
 } from "../api/discord";
+import {
+  createPreservationRule,
+  deletePreservationRule,
+  fetchPreservationRules,
+  updatePreservationRule,
+} from "../api/preservationRules";
 
 const startApiListener = (moduleName: string, func: Function) => {
   ipcMain.handle(`@@${moduleName}/${func.name}`, async (event, ...args) => {
@@ -33,6 +39,10 @@ startApiListener("appLogin", deleteAuthentication);
 startApiListener("discord", fetchGuilds);
 startApiListener("discord", fetchChannels);
 startApiListener("discord", fetchDmChannels);
+startApiListener("preservationRules", createPreservationRule);
+startApiListener("preservationRules", updatePreservationRule);
+startApiListener("preservationRules", deletePreservationRule);
+startApiListener("preservationRules", fetchPreservationRules);
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({

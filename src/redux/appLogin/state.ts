@@ -8,18 +8,14 @@ export type UserInfo = {
   discriminator: string;
 };
 export type State = {
-  fetchStatus: Record<AppName, ResourceStatus>;
-  logoutStatus: Record<AppName, ResourceStatus>;
+  fetchStatus: ResourceStatus;
+  logoutStatus: ResourceStatus;
   userInfo: Record<AppName, UserInfo | null>;
 };
 
 export const initialState: State = {
-  fetchStatus: {
-    discord: "initial",
-  },
-  logoutStatus: {
-    discord: "initial",
-  },
+  fetchStatus: "initial",
+  logoutStatus: "initial",
   userInfo: {
     discord: null,
   },

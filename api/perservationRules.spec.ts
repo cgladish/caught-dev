@@ -18,13 +18,16 @@ describe("preservationRules", () => {
 
   describe("createPreservationRule", () => {
     it("creates a preservation rule", async () => {
-      await createPreservationRule({
+      const createdPreservationRule = await createPreservationRule({
         appName: "discord",
         name: "Rule",
         selected: { key: "value" },
         startDatetime: new Date("2022-09-21T02:00:00.000Z"),
         endDatetime: new Date("2022-09-21T04:00:00.000Z"),
       });
+      expect(
+        omit(createdPreservationRule, "id", "createdAt", "updatedAt")
+      ).toMatchSnapshot();
 
       const preservationRules = await db<PreservationRule>(
         TableName.PreservationRule
@@ -45,23 +48,23 @@ describe("preservationRules", () => {
         startDatetime: new Date("2022-09-21T02:00:00.000Z"),
         endDatetime: new Date("2022-09-21T04:00:00.000Z"),
       });
-      await createPreservationRule({
+      const { id } = await createPreservationRule({
         appName: "twitter" as any,
         name: "Rule2",
         selected: { key2: "value2" },
         startDatetime: new Date("2022-09-21T03:00:00.000Z"),
         endDatetime: new Date("2022-09-21T05:00:00.000Z"),
       });
-      const preservationRule = await db<PreservationRule>(
-        TableName.PreservationRule
-      ).first();
 
-      await updatePreservationRule(preservationRule!.id, {
+      const updatedPreservationRule = await updatePreservationRule(id, {
         name: "Rule3",
         selected: { key3: "value3" },
         startDatetime: new Date("2022-09-21T03:00:00.000Z"),
         endDatetime: new Date("2022-09-21T05:00:00.000Z"),
       });
+      expect(
+        omit(updatedPreservationRule, "id", "createdAt", "updatedAt")
+      ).toMatchSnapshot();
 
       const preservationRules = await db<PreservationRule>(
         TableName.PreservationRule

@@ -3,6 +3,7 @@ import TableName from "../db/tableName";
 import getDb from "../db";
 
 export type ServiceAuth = {
+  id: number;
   appName: AppName;
   encryptedToken: string;
 };

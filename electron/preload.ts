@@ -6,13 +6,21 @@ import {
   fetchChannels,
   fetchDmChannels,
 } from "../api/discord";
+import {
+  createPreservationRule,
+  deletePreservationRule,
+  fetchPreservationRules,
+  updatePreservationRule,
+} from "../api/preservationRules";
 
 const makeInvoker =
   <TFuncType extends (...args: any[]) => Promise<any>>(
     moduleName: string,
     funcName: string
   ) =>
-  async (...args: Parameters<TFuncType>) => {
+  async (
+    ...args: Parameters<TFuncType>
+  ): Promise<Awaited<ReturnType<TFuncType>>> => {
     const result: {
       data: Awaited<ReturnType<TFuncType>>;
       error: string | null;
@@ -44,6 +52,24 @@ export const api = {
     fetchDmChannels: makeInvoker<typeof fetchDmChannels>(
       "discord",
       "fetchDmChannels"
+    ),
+  },
+  preservationRules: {
+    createPreservationRule: makeInvoker<typeof createPreservationRule>(
+      "preservationRules",
+      "createPreservationRule"
+    ),
+    updatePreservationRule: makeInvoker<typeof updatePreservationRule>(
+      "preservationRules",
+      "updatePreservationRule"
+    ),
+    deletePreservationRule: makeInvoker<typeof deletePreservationRule>(
+      "preservationRules",
+      "deletePreservationRule"
+    ),
+    fetchPreservationRules: makeInvoker<typeof fetchPreservationRules>(
+      "preservationRules",
+      "fetchPreservationRules"
     ),
   },
 };

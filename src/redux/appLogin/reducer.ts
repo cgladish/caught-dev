@@ -8,19 +8,13 @@ export const fetchStatus = (
 ): State["fetchStatus"] => {
   switch (action.type) {
     case ActionType.fetchStart: {
-      const newState = { ...state };
-      newState[action.payload.appName] = "pending";
-      return newState;
+      return "pending";
     }
     case ActionType.fetchSuccess: {
-      const newState = { ...state };
-      newState[action.payload.appName] = "success";
-      return newState;
+      return "success";
     }
     case ActionType.fetchFailure: {
-      const newState = { ...state };
-      newState[action.payload.appName] = "errored";
-      return newState;
+      return "errored";
     }
     default:
       return state;
@@ -33,19 +27,13 @@ export const logoutStatus = (
 ): State["logoutStatus"] => {
   switch (action.type) {
     case ActionType.logoutStart: {
-      const newState = { ...state };
-      newState[action.payload.appName] = "pending";
-      return newState;
+      return "pending";
     }
     case ActionType.logoutSuccess: {
-      const newState = { ...state };
-      newState[action.payload.appName] = "success";
-      return newState;
+      return "success";
     }
     case ActionType.logoutFailure: {
-      const newState = { ...state };
-      newState[action.payload.appName] = "errored";
-      return newState;
+      return "errored";
     }
     default:
       return state;
