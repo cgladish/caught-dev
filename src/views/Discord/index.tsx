@@ -183,6 +183,7 @@ export default function Discord() {
             onClick={() => {
               setSelectedGuilds({});
               setSelectedChannels({});
+              setSelectedDmChannels({});
               setRuleName("");
               setStartDate(null);
               setStartTime(null);
