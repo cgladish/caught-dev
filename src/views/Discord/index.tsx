@@ -73,6 +73,8 @@ export default function Discord() {
   const [autoPreserveNewChannels, setAutoPreserveNewChannels] = useState<{
     [guildId: number]: boolean;
   }>({});
+  const [autoPreserveNewDmChannels, setAutoPreserveNewDmChannels] =
+    useState<boolean>(false);
 
   const areDatesValid = useMemo(() => {
     if (!startDate || !endDate) {
@@ -137,6 +139,8 @@ export default function Discord() {
           setAutoPreserveNewGuilds={setAutoPreserveNewGuilds}
           autoPreserveNewChannels={autoPreserveNewChannels}
           setAutoPreserveNewChannels={setAutoPreserveNewChannels}
+          autoPreserveNewDmChannels={autoPreserveNewDmChannels}
+          setAutoPreserveNewDmChannels={setAutoPreserveNewDmChannels}
         />
         <TextField
           label="New Rule Name"

@@ -21,7 +21,6 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import type {} from "@mui/x-date-pickers/themeAugmentation";
 import { FormControlLabel, Switch, Typography, useTheme } from "@mui/material";
-import { channel } from "diagnostics_channel";
 
 function ChannelGrid({
   selectedGuilds,
@@ -34,6 +33,8 @@ function ChannelGrid({
   setAutoPreserveNewGuilds,
   autoPreserveNewChannels,
   setAutoPreserveNewChannels,
+  autoPreserveNewDmChannels,
+  setAutoPreserveNewDmChannels,
 }: {
   selectedGuilds: { [guildId: string]: boolean };
   setSelectedGuilds: (newSelectedGuilds: {
@@ -53,6 +54,8 @@ function ChannelGrid({
   setAutoPreserveNewChannels: (newAutoPreserveNewChannels: {
     [guildId: string]: boolean;
   }) => void;
+  autoPreserveNewDmChannels: boolean;
+  setAutoPreserveNewDmChannels: (newAutoPreserveNewDmChannels: boolean) => void;
 }) {
   const dispatch = useDispatch<Dispatch>();
   const {
@@ -173,6 +176,28 @@ function ChannelGrid({
       newSelectedGuilds[guildId] = newSelected;
       setSelectedGuilds(newSelectedGuilds);
     }
+  };
+
+  const allDmChannelsSelected = useMemo(
+    () =>
+      !!dmChannels &&
+      Object.keys(dmChannels).every(
+        (dmChannelId) => selectedDmChannels[dmChannelId]
+      ),
+    [dmChannels, selectedDmChannels]
+  );
+
+  const toggleSelectAllDms = () => {
+    if (!dmChannels) {
+      return;
+    }
+    const newSelected = !allDmChannelsSelected;
+    const newSelectedDmChannels: { [dmChannelId: string]: boolean } = {};
+    Object.keys(dmChannels).forEach((dmChannelId) => {
+      newSelectedDmChannels[dmChannelId] = newSelected;
+    });
+    setSelectedDmChannels(newSelectedDmChannels);
+    setAutoPreserveNewDmChannels(newSelected);
   };
 
   const toggleSelectedDmChannel = (dmChannelId: string) => {
@@ -457,52 +482,111 @@ function ChannelGrid({
         }}
       >
         {dmChannels ? (
-          <List
-            style={{
-              overflowY: "scroll",
-              maxHeight: 400,
-            }}
-            dense
-          >
-            {Object.values(dmChannels).map((dmChannel) => (
-              <ListItem key={dmChannel.id} disablePadding>
-                <ListItemButton
-                  onClick={() => toggleSelectedDmChannel(dmChannel.id)}
+          <>
+            {showDms && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: primary.dark,
+                  height: 50,
+                  paddingLeft: 10,
+                }}
+              >
+                <Typography
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    marginLeft: "10px",
+                    fontSize: "0.875rem",
+                  }}
                 >
-                  <ListItemAvatar>
-                    <Avatar
-                      src={
-                        dmChannel.recipients.length === 1
-                          ? dmChannel.recipients[0].avatar
-                            ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
-                            : "app-logos/discord.png"
-                          : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
-                      }
-                    />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{
-                      sx: {
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      },
-                    }}
-                  >
-                    {dmChannel.recipients
-                      .map(({ username }) => username)
-                      .join(", ")}
-                  </ListItemText>
-                  <ListItemIcon>
-                    <Checkbox
+                  All Conversations
+                </Typography>
+                <FormControlLabel
+                  sx={{
+                    marginLeft: "auto",
+                  }}
+                  control={
+                    <Switch
                       edge="end"
-                      checked={selectedDmChannels[dmChannel.id] ?? false}
-                      tabIndex={-1}
+                      onClick={() =>
+                        setAutoPreserveNewDmChannels(!autoPreserveNewDmChannels)
+                      }
+                      checked={autoPreserveNewDmChannels}
                     />
-                  </ListItemIcon>
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+                  }
+                  label={
+                    <Typography style={{ fontSize: "0.875rem" }}>
+                      Auto preserve new conversations
+                    </Typography>
+                  }
+                />
+                <Checkbox
+                  style={{
+                    marginLeft: 20,
+                    marginRight: 40,
+                  }}
+                  onClick={() => toggleSelectAllDms()}
+                  edge="end"
+                  checked={allDmChannelsSelected}
+                  indeterminate={
+                    !allDmChannelsSelected &&
+                    Object.values(selectedDmChannels).some(
+                      (selected) => selected
+                    )
+                  }
+                  tabIndex={-1}
+                />
+              </div>
+            )}
+            <List
+              style={{
+                overflowY: "scroll",
+                maxHeight: 350,
+              }}
+              dense
+            >
+              {Object.values(dmChannels).map((dmChannel) => (
+                <ListItem key={dmChannel.id} disablePadding>
+                  <ListItemButton
+                    onClick={() => toggleSelectedDmChannel(dmChannel.id)}
+                  >
+                    <ListItemAvatar>
+                      <Avatar
+                        src={
+                          dmChannel.recipients.length === 1
+                            ? dmChannel.recipients[0].avatar
+                              ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
+                              : "app-logos/discord.png"
+                            : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
+                        }
+                      />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primaryTypographyProps={{
+                        sx: {
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        },
+                      }}
+                    >
+                      {dmChannel.recipients
+                        .map(({ username }) => username)
+                        .join(", ")}
+                    </ListItemText>
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="end"
+                        checked={selectedDmChannels[dmChannel.id] ?? false}
+                        tabIndex={-1}
+                      />
+                    </ListItemIcon>
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </>
         ) : (
           <LinearProgress />
         )}
