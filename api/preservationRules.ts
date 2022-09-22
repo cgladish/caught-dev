@@ -6,17 +6,35 @@ export type PreservationRuleEntity = {
   appName: AppName;
   name: string;
   selectedJson: string;
+  startDatetime: string | null;
+  endDatetime: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+export type PreservationRule = {
+  id: number;
+  appName: AppName;
+  name: string;
+  selected: object;
   startDatetime: Date | null;
   endDatetime: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
-export type PreservationRule = Omit<PreservationRuleEntity, "selectedJson"> & {
-  selected: object;
-};
 
-const entityToType = ({ selectedJson, ...rest }: PreservationRuleEntity) => ({
+const entityToType = ({
+  selectedJson,
+  startDatetime,
+  endDatetime,
+  createdAt,
+  updatedAt,
+  ...rest
+}: PreservationRuleEntity): PreservationRule => ({
   selected: JSON.parse(selectedJson),
+  startDatetime: startDatetime ? new Date(startDatetime) : null,
+  endDatetime: endDatetime ? new Date(endDatetime) : null,
+  createdAt: new Date(createdAt + " UTC"),
+  updatedAt: new Date(updatedAt + " UTC"),
   ...rest,
 });
 
@@ -37,8 +55,8 @@ export const createPreservationRule = async ({
     appName,
     name,
     selectedJson: JSON.stringify(selected),
-    startDatetime,
-    endDatetime,
+    startDatetime: startDatetime?.toISOString() ?? null,
+    endDatetime: endDatetime?.toISOString() ?? null,
   });
   const preservationRule = await db<PreservationRuleEntity>(
     TableName.PreservationRule
@@ -63,8 +81,8 @@ export const updatePreservationRule = async (
     .update({
       name,
       selectedJson: JSON.stringify(selected),
-      startDatetime,
-      endDatetime,
+      startDatetime: startDatetime?.toISOString() ?? null,
+      endDatetime: endDatetime?.toISOString() ?? null,
     });
   const preservationRule = await db<PreservationRuleEntity>(
     TableName.PreservationRule

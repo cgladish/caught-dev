@@ -12,8 +12,8 @@ export async function up(knex: Knex): Promise<void> {
     table.string("appName").notNullable();
     table.string("name").notNullable().unique();
     table.string("selectedJson").notNullable();
-    table.datetime("startDatetime", { useTz: false });
-    table.datetime("endDatetime", { useTz: false });
+    table.datetime("startDatetime");
+    table.datetime("endDatetime");
     table.timestamps(false, true, true);
   });
 }

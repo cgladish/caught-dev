@@ -11,7 +11,6 @@ import {
   ArrowForward,
   Refresh,
   Save,
-  CancelOutlined,
   Clear,
 } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
@@ -89,6 +88,31 @@ export default function CreateOrEdit() {
 
   const submitForm = () => {
     if (!isSaveDisabled) {
+      console.log({
+        appName: "discord",
+        preservationRule: {
+          appName: "discord",
+          name: ruleName,
+          startDatetime: combineDateAndTime(startDate!, startTime),
+          endDatetime: combineDateAndTime(endDate!, endTime),
+          selected: {
+            guildIds: Object.keys(selectedGuilds).filter(
+              (guildId) => selectedGuilds[guildId]
+            ),
+            channelIds: Object.keys(selectedChannels).filter(
+              (channelId) => selectedChannels[channelId]
+            ),
+            dmChannelIds: Object.keys(selectedDmChannels).filter(
+              (dmChannelId) => selectedDmChannels[dmChannelId]
+            ),
+            autoPreserveNewGuilds,
+            autoPreserveNewChannelsGuildIds: Object.keys(
+              autoPreserveNewChannels
+            ).filter((guildId) => autoPreserveNewChannels[guildId]),
+            autoPreserveNewDmChannels,
+          },
+        },
+      });
       dispatch({
         type: ActionType.createStart,
         payload: {
