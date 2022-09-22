@@ -156,9 +156,7 @@ function ChannelGrid({
 
     if (guilds) {
       const newAutoPreserveNewChannels: { [guildId: string]: boolean } = {};
-      Object.keys(guilds).forEach((guildId) => {
-        newAutoPreserveNewChannels[guildId] = newSelected;
-      });
+      newAutoPreserveNewChannels[guildId] = newSelected;
       setAutoPreserveNewChannels(newAutoPreserveNewChannels);
     }
   };
