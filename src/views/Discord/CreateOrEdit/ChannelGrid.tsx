@@ -1,9 +1,9 @@
 import { useEffect, useState, memo, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionType as DiscordActionType } from "../../redux/discord/actions";
-import { Dispatch } from "../../redux";
-import { getDiscordUserInfo } from "../../redux/appLogin/selectors";
-import { getDmChannels, getGuilds } from "../../redux/discord/selectors";
+import { ActionType as DiscordActionType } from "../../../redux/discord/actions";
+import { Dispatch } from "../../../redux";
+import { getDiscordUserInfo } from "../../../redux/appLogin/selectors";
+import { getDmChannels, getGuilds } from "../../../redux/discord/selectors";
 import Card from "@mui/material/Card";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
