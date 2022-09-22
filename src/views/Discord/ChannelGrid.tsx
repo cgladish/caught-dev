@@ -21,6 +21,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import type {} from "@mui/x-date-pickers/themeAugmentation";
 import { FormControlLabel, Switch, Typography, useTheme } from "@mui/material";
+import { channel } from "diagnostics_channel";
 
 function ChannelGrid({
   selectedGuilds,
@@ -29,6 +30,10 @@ function ChannelGrid({
   setSelectedChannels,
   selectedDmChannels,
   setSelectedDmChannels,
+  autoPreserveNewGuilds,
+  setAutoPreserveNewGuilds,
+  autoPreserveNewChannels,
+  setAutoPreserveNewChannels,
 }: {
   selectedGuilds: { [guildId: string]: boolean };
   setSelectedGuilds: (newSelectedGuilds: {
@@ -41,6 +46,12 @@ function ChannelGrid({
   selectedDmChannels: { [dmChannelId: string]: boolean };
   setSelectedDmChannels: (newSelectedDmChannels: {
     [dmChannelId: string]: boolean;
+  }) => void;
+  autoPreserveNewGuilds: boolean;
+  setAutoPreserveNewGuilds: (newAutoPreserveNewGuilds: boolean) => void;
+  autoPreserveNewChannels: { [guildId: string]: boolean };
+  setAutoPreserveNewChannels: (newAutoPreserveNewChannels: {
+    [guildId: string]: boolean;
   }) => void;
 }) {
   const dispatch = useDispatch<Dispatch>();
@@ -104,8 +115,10 @@ function ChannelGrid({
     const newSelected = !allGuildsSelected;
     const newSelectedGuilds: { [guildId: string]: boolean } = {};
     const newSelectedChannels: { [channelId: string]: boolean } = {};
+    const newAutoPreserveNewChannels: { [guildId: string]: boolean } = {};
     Object.entries(guilds).forEach(([guildId, guild]) => {
       newSelectedGuilds[guildId] = newSelected;
+      newAutoPreserveNewChannels[guildId] = newSelected;
       if (guild.channels) {
         Object.keys(guild.channels).forEach((channelId) => {
           newSelectedChannels[channelId] = newSelected;
@@ -114,6 +127,8 @@ function ChannelGrid({
     });
     setSelectedGuilds(newSelectedGuilds);
     setSelectedChannels(newSelectedChannels);
+    setAutoPreserveNewGuilds(newSelected);
+    setAutoPreserveNewChannels(newAutoPreserveNewChannels);
   };
 
   const toggleSelectedGuild = (guildId: string) => {
@@ -129,6 +144,14 @@ function ChannelGrid({
         newSelectedChannels[channelId] = newSelected;
       });
       setSelectedChannels(newSelectedChannels);
+    }
+
+    if (guilds) {
+      const newAutoPreserveNewChannels: { [guildId: string]: boolean } = {};
+      Object.keys(guilds).forEach((guildId) => {
+        newAutoPreserveNewChannels[guildId] = newSelected;
+      });
+      setAutoPreserveNewChannels(newAutoPreserveNewChannels);
     }
   };
 
@@ -208,7 +231,15 @@ function ChannelGrid({
                   sx={{
                     marginLeft: "auto",
                   }}
-                  control={<Switch edge="end" />}
+                  control={
+                    <Switch
+                      edge="end"
+                      onClick={() =>
+                        setAutoPreserveNewGuilds(!autoPreserveNewGuilds)
+                      }
+                      checked={autoPreserveNewGuilds}
+                    />
+                  }
                   label={
                     <Typography style={{ fontSize: "0.875rem" }}>
                       Auto preserve new servers
@@ -342,7 +373,20 @@ function ChannelGrid({
                   sx={{
                     marginLeft: "auto",
                   }}
-                  control={<Switch edge="end" />}
+                  control={
+                    <Switch
+                      edge="end"
+                      onClick={() => {
+                        const newAutoPreserveNewChannels = {
+                          ...autoPreserveNewChannels,
+                        };
+                        newAutoPreserveNewChannels[viewedGuild.id] =
+                          !newAutoPreserveNewChannels[viewedGuild.id];
+                        setAutoPreserveNewChannels(newAutoPreserveNewChannels);
+                      }}
+                      checked={autoPreserveNewChannels[viewedGuild.id]}
+                    />
+                  }
                   label={
                     <Typography style={{ fontSize: "0.875rem" }}>
                       Auto preserve new channels
