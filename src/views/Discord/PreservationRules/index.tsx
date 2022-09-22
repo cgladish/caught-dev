@@ -84,7 +84,7 @@ export default function PreservationRules() {
                     <Typography style={{ fontSize: ".875rem" }}>
                       {preservationRule.createdAt === preservationRule.updatedAt
                         ? "Created"
-                        : "Updated"}{" "}
+                        : "Edited"}{" "}
                       {timeAgo.format(preservationRule.updatedAt)}
                     </Typography>
                   </ListItemButton>
