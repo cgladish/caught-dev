@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ChannelGrid, { GRID_WIDTH } from "./ChannelGrid";
-import { Dispatch } from "../../../redux";
+import { Dispatch, ResourceStatus } from "../../../redux";
 import { getDiscordUserInfo } from "../../../redux/appLogin/selectors";
 import Login from "../Login";
 import { ActionType } from "../../../redux/preservationRules/actions";
@@ -17,6 +17,7 @@ import {
 import { LoadingButton } from "@mui/lab";
 import { TextField, Typography, Tooltip, Button } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import { useNavigate } from "react-router-dom";
 
 const combineDateAndTime = (date: Date, time: Date | null) => {
   if (!time) {
@@ -76,6 +77,15 @@ export default function CreateOrEdit() {
         !autoPreserveNewDmChannels),
     [saveStatus, areDatesValid, !!ruleName, selectedGuilds, selectedChannels]
   );
+
+  const navigate = useNavigate();
+  const saveStatusRef = useRef<ResourceStatus>(saveStatus);
+  useEffect(() => {
+    if (saveStatusRef.current !== saveStatus && saveStatus === "success") {
+      navigate("..");
+    }
+    saveStatusRef.current = saveStatus;
+  }, [saveStatus]);
 
   const submitForm = () => {
     if (!isSaveDisabled) {
