@@ -6,5 +6,5 @@ import { reducer as preservationRulesReducer } from "./preservationRules/reducer
 export const rootReducer = combineReducers({
   appLogin: appLoginReducer,
   discord: discordReducer,
-  preservationRulesReducer: preservationRulesReducer,
+  preservationRules: preservationRulesReducer,
 });

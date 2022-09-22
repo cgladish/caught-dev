@@ -1,4 +1,5 @@
 import Button from "@mui/material/Button";
+import LoadingButton from "@mui/lab/LoadingButton";
 import Typography from "@mui/material/Typography";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +18,7 @@ import Refresh from "@mui/icons-material/Refresh";
 import { Tooltip } from "@mui/material";
 import Header from "./Header";
 import { ActionType } from "../../redux/preservationRules/actions";
+import { getSaveStatus } from "../../redux/preservationRules/selectors";
 
 const combineDateAndTime = (date: Date, time: Date | null) => {
   if (!time) {
@@ -29,6 +31,7 @@ export default function Discord() {
   const dispatch = useDispatch<Dispatch>();
 
   const userInfo = useSelector(getDiscordUserInfo);
+  const saveStatus = useSelector(getSaveStatus);
 
   const [fetchUserInfoInterval, setFetchUserInterval] = useState<ReturnType<
     typeof setInterval
@@ -85,13 +88,19 @@ export default function Discord() {
     return startDatetime < endDatetime;
   }, [startDate, startTime, endDate, endTime]);
 
+  const isSaving = saveStatus === "pending";
   const isSaveDisabled = useMemo(
     () =>
+      isSaving ||
       !areDatesValid ||
       !ruleName ||
       (!Object.values(selectedGuilds).some((selected) => selected) &&
-        !Object.values(selectedChannels).some((selected) => selected)),
-    [areDatesValid, !!ruleName, selectedGuilds, selectedChannels]
+        !Object.values(selectedChannels).some((selected) => selected) &&
+        !Object.values(selectedDmChannels).some((selected) => selected) &&
+        !autoPreserveNewGuilds &&
+        !Object.values(autoPreserveNewChannels).some((selected) => selected) &&
+        !autoPreserveNewDmChannels),
+    [saveStatus, areDatesValid, !!ruleName, selectedGuilds, selectedChannels]
   );
 
   const submitForm = () => {
@@ -106,7 +115,18 @@ export default function Discord() {
             startDatetime: combineDateAndTime(startDate!, startTime),
             endDatetime: combineDateAndTime(endDate!, endTime),
             selected: {
-              guildIds: Object.keys(selectedGuilds),
+              guilds: Object.keys(selectedGuilds).filter(
+                (guildId) => selectedGuilds[guildId]
+              ),
+              channels: Object.keys(selectedChannels).filter(
+                (channelId) => selectedChannels[channelId]
+              ),
+              dmChannels: Object.keys(selectedDmChannels).filter(
+                (dmChannelId) => selectedDmChannels[dmChannelId]
+              ),
+              autoPreserveNewGuilds,
+              autoPreserveNewChannels,
+              autoPreserveNewDmChannels,
             },
           },
         },
@@ -232,19 +252,21 @@ export default function Discord() {
               setEndTime(null);
             }}
             size="large"
+            disabled={isSaving}
           >
             Reset
           </Button>
-          <Button
+          <LoadingButton
             variant="contained"
             startIcon={<Save />}
             style={{ marginLeft: 10 }}
             disabled={isSaveDisabled}
+            loading={isSaving}
             size="large"
             onClick={() => submitForm()}
           >
             Save
-          </Button>
+          </LoadingButton>
         </div>
       </div>
     </div>

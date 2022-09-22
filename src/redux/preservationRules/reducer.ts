@@ -22,7 +22,7 @@ export const fetchStatus = (
   }
 };
 
-export const createStatus = (
+export const saveStatus = (
   state = initialState.saveStatus,
   action: Action
 ): State["saveStatus"] => {
@@ -77,6 +77,6 @@ export const preservationRules = (
 
 export const reducer = combineReducers({
   fetchStatus,
-  createStatus,
+  saveStatus,
   preservationRules,
 });
