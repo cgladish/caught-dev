@@ -27,13 +27,19 @@ export const saveStatus = (
   action: Action
 ): State["saveStatus"] => {
   switch (action.type) {
-    case ActionType.createStart: {
+    case ActionType.createStart:
+    case ActionType.updateStart:
+    case ActionType.deleteStart: {
       return "pending";
     }
-    case ActionType.createSuccess: {
+    case ActionType.createSuccess:
+    case ActionType.updateSuccess:
+    case ActionType.deleteSuccess: {
       return "success";
     }
-    case ActionType.createFailure: {
+    case ActionType.createFailure:
+    case ActionType.updateFailure:
+    case ActionType.deleteFailure: {
       return "errored";
     }
     default:
@@ -60,7 +66,8 @@ export const preservationRules = (
       );
       return newPreservationRules;
     }
-    case ActionType.createSuccess: {
+    case ActionType.createSuccess:
+    case ActionType.updateSuccess: {
       const newPreservationRules = { ...state };
       newPreservationRules[action.payload.appName] = {
         ...newPreservationRules[action.payload.appName],
@@ -68,6 +75,16 @@ export const preservationRules = (
       newPreservationRules[action.payload.appName]![
         action.payload.preservationRule.id
       ] = action.payload.preservationRule;
+      return newPreservationRules;
+    }
+    case ActionType.deleteSuccess: {
+      const newPreservationRules = { ...state };
+      newPreservationRules[action.payload.appName] = {
+        ...newPreservationRules[action.payload.appName],
+      };
+      delete newPreservationRules[action.payload.appName]![
+        action.payload.preservationRuleId
+      ];
       return newPreservationRules;
     }
     default:

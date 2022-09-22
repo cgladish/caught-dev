@@ -1,26 +1,30 @@
-import { Add } from "@mui/icons-material";
+import { Add, Delete, Edit, Visibility } from "@mui/icons-material";
 import {
   Button,
   Card,
+  IconButton,
   LinearProgress,
   List,
   ListItem,
-  ListItemButton,
   Typography,
 } from "@mui/material";
-import { format } from "date-fns";
 import { sortBy } from "lodash";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Dispatch } from "../../../redux";
 import { ActionType } from "../../../redux/preservationRules/actions";
-import { getDiscordPreservationRules } from "../../../redux/preservationRules/selectors";
+import {
+  getDiscordPreservationRules,
+  getSaveStatus,
+} from "../../../redux/preservationRules/selectors";
 import { timeAgo } from "../../../utils";
 
 export default function PreservationRules() {
   const navigate = useNavigate();
   const dispatch = useDispatch<Dispatch>();
+
+  const saveStatus = useSelector(getSaveStatus);
 
   const preservationRules = useSelector(getDiscordPreservationRules);
   useEffect(() => {
@@ -39,7 +43,7 @@ export default function PreservationRules() {
     [preservationRules]
   );
 
-  console.log(sortedPreservationRules);
+  const isSaving = saveStatus === "pending";
 
   return (
     <div
@@ -77,17 +81,38 @@ export default function PreservationRules() {
             <List dense>
               {sortedPreservationRules.map((preservationRule) => (
                 <ListItem key={preservationRule.id}>
-                  <ListItemButton>
-                    <Typography style={{ width: 400 }}>
-                      {preservationRule.name}
-                    </Typography>
-                    <Typography style={{ fontSize: ".875rem" }}>
-                      {preservationRule.createdAt === preservationRule.updatedAt
-                        ? "Created"
-                        : "Edited"}{" "}
-                      {timeAgo.format(preservationRule.updatedAt)}
-                    </Typography>
-                  </ListItemButton>
+                  <Typography style={{ width: 400 }}>
+                    {preservationRule.name}
+                  </Typography>
+                  <Typography style={{ fontSize: ".875rem" }}>
+                    {preservationRule.createdAt === preservationRule.updatedAt
+                      ? "Created"
+                      : "Edited"}{" "}
+                    {timeAgo.format(preservationRule.updatedAt)}
+                  </Typography>
+                  <IconButton
+                    style={{ marginLeft: "auto" }}
+                    disabled={isSaving}
+                  >
+                    <Visibility />
+                  </IconButton>
+                  <IconButton disabled={isSaving}>
+                    <Edit />
+                  </IconButton>
+                  <IconButton
+                    onClick={() =>
+                      dispatch({
+                        type: ActionType.deleteStart,
+                        payload: {
+                          appName: "discord",
+                          preservationRuleId: preservationRule.id,
+                        },
+                      })
+                    }
+                    disabled={isSaving}
+                  >
+                    <Delete />
+                  </IconButton>
                 </ListItem>
               ))}
             </List>
