@@ -1,22 +1,22 @@
-import Button from "@mui/material/Button";
-import LoadingButton from "@mui/lab/LoadingButton";
-import Typography from "@mui/material/Typography";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import ChannelGrid from "./ChannelGrid";
+import ChannelGrid, { GRID_WIDTH } from "./ChannelGrid";
 import { Dispatch } from "../../../redux";
 import { getDiscordUserInfo } from "../../../redux/appLogin/selectors";
 import Login from "../Login";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import TextField from "@mui/material/TextField";
-import ArrowForward from "@mui/icons-material/ArrowForward";
-import InfoOutlined from "@mui/icons-material/InfoOutlined";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import Save from "@mui/icons-material/Save";
-import Refresh from "@mui/icons-material/Refresh";
-import { Tooltip } from "@mui/material";
 import { ActionType } from "../../../redux/preservationRules/actions";
 import { getSaveStatus } from "../../../redux/preservationRules/selectors";
+import {
+  InfoOutlined,
+  ArrowForward,
+  Refresh,
+  Save,
+  CancelOutlined,
+  Clear,
+} from "@mui/icons-material";
+import { LoadingButton } from "@mui/lab";
+import { TextField, Typography, Tooltip, Button } from "@mui/material";
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
 const combineDateAndTime = (date: Date, time: Date | null) => {
   if (!time) {
@@ -115,7 +115,7 @@ export default function CreateOrEdit() {
   }
 
   return (
-    <div style={{ marginLeft: 40, marginTop: 20 }}>
+    <div style={{ marginLeft: 40, marginTop: 20, width: GRID_WIDTH }}>
       <ChannelGrid
         selectedGuilds={selectedGuilds}
         setSelectedGuilds={setSelectedGuilds}
@@ -206,35 +206,51 @@ export default function CreateOrEdit() {
           )}
         />
       </div>
-      <div style={{ marginTop: 40 }}>
+      <div
+        style={{
+          display: "flex",
+          marginTop: 40,
+          width: "100%",
+        }}
+      >
         <Button
-          startIcon={<Refresh />}
-          onClick={() => {
-            setSelectedGuilds({});
-            setSelectedChannels({});
-            setSelectedDmChannels({});
-            setRuleName("");
-            setStartDate(null);
-            setStartTime(null);
-            setEndDate(null);
-            setEndTime(null);
-          }}
+          startIcon={<Clear />}
+          onClick={() => {}}
           size="large"
           disabled={isSaving}
         >
-          Reset
+          Cancel
         </Button>
-        <LoadingButton
-          variant="contained"
-          startIcon={<Save />}
-          style={{ marginLeft: 10 }}
-          disabled={isSaveDisabled}
-          loading={isSaving}
-          size="large"
-          onClick={() => submitForm()}
-        >
-          Save
-        </LoadingButton>
+        <div style={{ marginLeft: "auto" }}>
+          <Button
+            startIcon={<Refresh />}
+            onClick={() => {
+              setSelectedGuilds({});
+              setSelectedChannels({});
+              setSelectedDmChannels({});
+              setRuleName("");
+              setStartDate(null);
+              setStartTime(null);
+              setEndDate(null);
+              setEndTime(null);
+            }}
+            size="large"
+            disabled={isSaving}
+          >
+            Reset
+          </Button>
+          <LoadingButton
+            variant="contained"
+            startIcon={<Save />}
+            style={{ marginLeft: 10 }}
+            disabled={isSaveDisabled}
+            loading={isSaving}
+            size="large"
+            onClick={() => submitForm()}
+          >
+            Save
+          </LoadingButton>
+        </div>
       </div>
     </div>
   );

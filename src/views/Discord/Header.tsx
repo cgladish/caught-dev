@@ -1,5 +1,4 @@
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { Typography, Button } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch } from "../../redux";
 import { ActionType as AppLoginActionType } from "../../redux/appLogin/actions";

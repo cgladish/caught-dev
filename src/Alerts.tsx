@@ -1,7 +1,6 @@
-import { createContext, ReactNode, useState, useRef, useEffect } from "react";
+import { AlertColor, Alert, AlertTitle } from "@mui/material";
+import { createContext, ReactNode, useState } from "react";
 import { v4 } from "uuid";
-import Alert, { AlertColor } from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
 
 type AlertParams = { type: AlertColor; message: string };
 type AlertWithId = AlertParams & { id: string };

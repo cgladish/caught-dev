@@ -1,25 +1,26 @@
 import React from "react";
 import { HashRouter, Link, Route, Routes, useLocation } from "react-router-dom";
-import { createTheme } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import CssBaseline from "@mui/material/CssBaseline";
-import Divider from "@mui/material/Divider";
-import Drawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import HomeIcon from "@mui/icons-material/Home";
-import { ThemeProvider } from "@mui/material";
-import Discord from "./views/Discord";
-import Home from "./views/Home";
-import { ListSubheader } from "@mui/material";
 import { Provider } from "react-redux";
 import { store } from "./redux";
 import Alerts from "./Alerts";
+import { Home } from "@mui/icons-material";
+import {
+  createTheme,
+  ThemeProvider,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Box,
+  CssBaseline,
+  Drawer,
+  List,
+  Divider,
+  ListSubheader,
+} from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import Discord from "./views/Discord";
 
 const theme = createTheme({
   palette: {
@@ -98,7 +99,7 @@ function App() {
                   anchor="left"
                 >
                   <List>
-                    <MenuLink to="/" text="Home" iconElement={<HomeIcon />} />
+                    <MenuLink to="/" text="Home" iconElement={<Home />} />
                   </List>
                   <Divider />
                   <List>
@@ -126,7 +127,7 @@ function App() {
                 >
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/apps/discord" element={<Discord />} />
+                    <Route path="/apps/discord/*" element={<Discord />} />
                   </Routes>
                 </div>
               </Box>

@@ -6,6 +6,8 @@ import { getDiscordUserInfo } from "../../redux/appLogin/selectors";
 import Login from "./Login";
 import Header from "./Header";
 import CreateOrEdit from "./CreateOrEdit";
+import { Routes, Route } from "react-router-dom";
+import PreservationRules from "./PreservationRules";
 
 export default function Discord() {
   const dispatch = useDispatch<Dispatch>();
@@ -48,7 +50,10 @@ export default function Discord() {
       }}
     >
       <Header />
-      <CreateOrEdit />
+      <Routes>
+        <Route path="" element={<PreservationRules />} />
+        <Route path="create" element={<CreateOrEdit />} />
+      </Routes>
     </div>
   );
 }

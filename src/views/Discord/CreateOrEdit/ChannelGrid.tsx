@@ -4,23 +4,28 @@ import { ActionType as DiscordActionType } from "../../../redux/discord/actions"
 import { Dispatch } from "../../../redux";
 import { getDiscordUserInfo } from "../../../redux/appLogin/selectors";
 import { getDmChannels, getGuilds } from "../../../redux/discord/selectors";
-import Card from "@mui/material/Card";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import Checkbox from "@mui/material/Checkbox";
-import LinearProgress from "@mui/material/LinearProgress";
-import NavigateNext from "@mui/icons-material/NavigateNext";
-import NavigateBefore from "@mui/icons-material/NavigateBefore";
-import IconButton from "@mui/material/IconButton";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import type {} from "@mui/x-date-pickers/themeAugmentation";
-import { FormControlLabel, Switch, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
+import { NavigateNext, NavigateBefore } from "@mui/icons-material";
+import {
+  Card,
+  Tabs,
+  Tab,
+  Typography,
+  FormControlLabel,
+  Switch,
+  Checkbox,
+  List,
+  ListItem,
+  IconButton,
+  ListItemButton,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  ListItemIcon,
+  LinearProgress,
+} from "@mui/material";
+
+export const GRID_WIDTH = 800;
 
 function ChannelGrid({
   selectedGuilds,
@@ -214,7 +219,7 @@ function ChannelGrid({
   const showDms = selectedTab === 1;
 
   return (
-    <Card style={{ width: 800, height: 448 }}>
+    <Card style={{ width: GRID_WIDTH, height: 448 }}>
       <Tabs
         value={selectedTab}
         onChange={(event, tabIndex) => setSelectedTab(tabIndex)}
