@@ -1,16 +1,8 @@
 import TableName from "../db/tableName";
 import getDb from "../db";
+import { runInitialBackup } from "./messages";
+import { PreservationRuleEntity } from "../db/entities";
 
-export type PreservationRuleEntity = {
-  id: number;
-  appName: AppName;
-  name: string;
-  selectedJson: string;
-  startDatetime: string | null;
-  endDatetime: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
 export type PreservationRule = {
   id: number;
   appName: AppName;
@@ -58,12 +50,14 @@ export const createPreservationRule = async ({
     startDatetime: startDatetime?.toISOString() ?? null,
     endDatetime: endDatetime?.toISOString() ?? null,
   });
-  const preservationRule = await db<PreservationRuleEntity>(
+  const preservationRuleEntity = await db<PreservationRuleEntity>(
     TableName.PreservationRule
   )
     .where({ id })
     .first();
-  return entityToType(preservationRule!);
+  const preservationRule = entityToType(preservationRuleEntity!);
+  runInitialBackup(preservationRule);
+  return preservationRule;
 };
 
 export const updatePreservationRule = async (

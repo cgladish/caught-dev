@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DiscordSelected } from "../../../../types/discord";
 import ChannelGrid, { GRID_WIDTH } from "./ChannelGrid";
 import { Dispatch, ResourceStatus } from "../../../redux";
 import { getDiscordUserInfo } from "../../../redux/appLogin/selectors";
@@ -90,12 +91,7 @@ export default function CreateOrEdit() {
 
   const submitForm = () => {
     if (!isSaveDisabled && guilds) {
-      const guildsToPreserve: {
-        [guildId: string]: {
-          autoPreserveNewChannels: boolean;
-          channelIds: string[] | null;
-        };
-      } = {};
+      const guildsToPreserve: DiscordSelected["guilds"] = {};
       Object.keys(selectedGuilds)
         .filter((guildId) => selectedGuilds[guildId])
         .forEach((guildId) => {
@@ -109,6 +105,14 @@ export default function CreateOrEdit() {
               : null,
           };
         });
+      const selected: DiscordSelected = {
+        guilds: guildsToPreserve,
+        dmChannelIds: Object.keys(selectedDmChannels).filter(
+          (dmChannelId) => selectedDmChannels[dmChannelId]
+        ),
+        autoPreserveNewGuilds,
+        autoPreserveNewDmChannels,
+      };
       dispatch({
         type: ActionType.createStart,
         payload: {
@@ -118,14 +122,7 @@ export default function CreateOrEdit() {
             name: ruleName,
             startDatetime: combineDateAndTime(startDate!, startTime),
             endDatetime: combineDateAndTime(endDate!, endTime),
-            selected: {
-              guilds: guildsToPreserve,
-              dmChannelIds: Object.keys(selectedDmChannels).filter(
-                (dmChannelId) => selectedDmChannels[dmChannelId]
-              ),
-              autoPreserveNewGuilds,
-              autoPreserveNewDmChannels,
-            },
+            selected,
           },
         },
       });

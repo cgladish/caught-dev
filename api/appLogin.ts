@@ -1,12 +1,7 @@
 import { safeStorage } from "electron";
 import TableName from "../db/tableName";
 import getDb from "../db";
-
-export type ServiceAuth = {
-  id: number;
-  appName: AppName;
-  encryptedToken: string;
-};
+import { ServiceAuthEntity } from "../db/entities";
 
 export const saveAuthentication = async (
   appName: AppName,
@@ -14,11 +9,11 @@ export const saveAuthentication = async (
 ): Promise<void> => {
   const db = await getDb();
   const encryptedToken = safeStorage.encryptString(token).toString("hex");
-  const numUpdated = await db<ServiceAuth>(TableName.ServiceAuth)
+  const numUpdated = await db<ServiceAuthEntity>(TableName.ServiceAuth)
     .where({ appName })
     .update({ encryptedToken });
   if (!numUpdated) {
-    await db<ServiceAuth>(TableName.ServiceAuth).insert({
+    await db<ServiceAuthEntity>(TableName.ServiceAuth).insert({
       appName,
       encryptedToken,
     });
@@ -29,7 +24,7 @@ export const fetchAuthentication = async (
   appName: AppName
 ): Promise<string | null> => {
   const db = await getDb();
-  const result = await db<ServiceAuth>(TableName.ServiceAuth)
+  const result = await db<ServiceAuthEntity>(TableName.ServiceAuth)
     .where({ appName })
     .first();
   return result
@@ -39,5 +34,7 @@ export const fetchAuthentication = async (
 
 export const deleteAuthentication = async (appName: AppName): Promise<void> => {
   const db = await getDb();
-  await db<ServiceAuth>(TableName.ServiceAuth).where({ appName }).delete();
+  await db<ServiceAuthEntity>(TableName.ServiceAuth)
+    .where({ appName })
+    .delete();
 };

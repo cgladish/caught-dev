@@ -88,3 +88,92 @@ export const fetchDmChannels = async (): Promise<FetchedDmChannelInfo[]> => {
   });
   return response.data;
 };
+
+export type FetchedMessageInfo = {
+  id: string;
+  author: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  content: string;
+  timestamp: string;
+  edited_timestamp?: string;
+  attachments: {
+    id: string;
+    filename: string;
+    description?: string;
+    content_type?: string;
+    size: number;
+    url: string;
+    height?: number;
+    width?: number;
+    ephemeral?: boolean;
+  }[];
+  embeds: {
+    title?: string;
+    type?: string;
+    description?: string;
+    url?: string;
+    timestamp?: string;
+    footer?: {
+      text: string;
+      icon_url?: string;
+    };
+    image?: {
+      url: string;
+      height?: number;
+      width?: number;
+    };
+    thumbnail?: {
+      url: string;
+      height?: number;
+      width?: number;
+    };
+    video?: {
+      url: string;
+      height?: number;
+      width?: number;
+    };
+    provider?: {
+      name?: string;
+      url?: string;
+    };
+    author?: {
+      name: string;
+      url?: string;
+      icon_url?: string;
+    };
+    fields?: {
+      name: string;
+      value: string;
+      inline?: boolean;
+    }[];
+  }[];
+  sticker_items: {
+    id: string;
+    name: string;
+    format_type: number;
+  }[];
+};
+export const fetchMessages = async (
+  channelId: string,
+  params: {
+    around?: string;
+    before?: string;
+    after?: string;
+    limit?: number;
+  }
+) => {
+  const token = await fetchAuthentication("discord");
+  if (!token) {
+    throw new Error("Not logged in!");
+  }
+  const response: AxiosResponse<FetchedMessageInfo[]> = await axios({
+    method: "get",
+    url: `https://discord.com/api/v9/channels/${channelId}/messages`,
+    headers: { authorization: token },
+    params,
+  });
+  return response.data;
+};
