@@ -17,6 +17,7 @@ import { LoadingButton } from "@mui/lab";
 import { TextField, Typography, Tooltip, Button } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { useNavigate } from "react-router-dom";
+import { getGuilds } from "../../../redux/discord/selectors";
 
 const combineDateAndTime = (date: Date, time: Date | null) => {
   if (!time) {
@@ -30,6 +31,7 @@ export default function CreateOrEdit() {
 
   const userInfo = useSelector(getDiscordUserInfo);
   const saveStatus = useSelector(getSaveStatus);
+  const guilds = useSelector(getGuilds);
 
   const [ruleName, setRuleName] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -87,32 +89,26 @@ export default function CreateOrEdit() {
   }, [saveStatus]);
 
   const submitForm = () => {
-    if (!isSaveDisabled) {
-      console.log({
-        appName: "discord",
-        preservationRule: {
-          appName: "discord",
-          name: ruleName,
-          startDatetime: combineDateAndTime(startDate!, startTime),
-          endDatetime: combineDateAndTime(endDate!, endTime),
-          selected: {
-            guildIds: Object.keys(selectedGuilds).filter(
-              (guildId) => selectedGuilds[guildId]
-            ),
-            channelIds: Object.keys(selectedChannels).filter(
-              (channelId) => selectedChannels[channelId]
-            ),
-            dmChannelIds: Object.keys(selectedDmChannels).filter(
-              (dmChannelId) => selectedDmChannels[dmChannelId]
-            ),
-            autoPreserveNewGuilds,
-            autoPreserveNewChannelsGuildIds: Object.keys(
-              autoPreserveNewChannels
-            ).filter((guildId) => autoPreserveNewChannels[guildId]),
-            autoPreserveNewDmChannels,
-          },
-        },
-      });
+    if (!isSaveDisabled && guilds) {
+      const guildsToPreserve: {
+        [guildId: string]: {
+          autoPreserveNewChannels: boolean;
+          channelIds: string[] | null;
+        };
+      } = {};
+      Object.keys(selectedGuilds)
+        .filter((guildId) => selectedGuilds[guildId])
+        .forEach((guildId) => {
+          const channels = guilds[guildId].channels;
+          guildsToPreserve[guildId] = {
+            autoPreserveNewChannels: !!autoPreserveNewChannels[guildId],
+            channelIds: channels
+              ? Object.keys(channels).filter(
+                  (channelId) => selectedChannels[channelId]
+                )
+              : null,
+          };
+        });
       dispatch({
         type: ActionType.createStart,
         payload: {
@@ -123,19 +119,11 @@ export default function CreateOrEdit() {
             startDatetime: combineDateAndTime(startDate!, startTime),
             endDatetime: combineDateAndTime(endDate!, endTime),
             selected: {
-              guildIds: Object.keys(selectedGuilds).filter(
-                (guildId) => selectedGuilds[guildId]
-              ),
-              channelIds: Object.keys(selectedChannels).filter(
-                (channelId) => selectedChannels[channelId]
-              ),
+              guilds: guildsToPreserve,
               dmChannelIds: Object.keys(selectedDmChannels).filter(
                 (dmChannelId) => selectedDmChannels[dmChannelId]
               ),
               autoPreserveNewGuilds,
-              autoPreserveNewChannelsGuildIds: Object.keys(
-                autoPreserveNewChannels
-              ).filter((guildId) => autoPreserveNewChannels[guildId]),
               autoPreserveNewDmChannels,
             },
           },
