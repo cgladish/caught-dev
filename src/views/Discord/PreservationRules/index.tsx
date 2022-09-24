@@ -23,18 +23,26 @@ import {
 } from "../../../redux/preservationRules/selectors";
 import { timeAgo } from "../../../utils";
 
-function LinearProgressWithLabel(
-  props: LinearProgressProps & { value: number }
-) {
+function LinearProgressWithLabel({
+  errored,
+  ...props
+}: LinearProgressProps & { value: number; errored: boolean }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
       <Box sx={{ width: "100%", mr: 1 }}>
-        <LinearProgress variant="determinate" {...props} />
+        <LinearProgress
+          variant="determinate"
+          color={errored ? "error" : "primary"}
+          {...props}
+        />
       </Box>
       <Box sx={{ minWidth: 35 }}>
-        <Typography variant="body2" color="text.secondary">{`${Math.round(
-          props.value
-        )}%`}</Typography>
+        <Typography
+          variant="body2"
+          color={errored ? "error" : "text.secondary"}
+        >
+          {errored ? "Error!" : `${Math.round(props.value)}%`}
+        </Typography>
       </Box>
     </Box>
   );
@@ -152,13 +160,23 @@ export default function PreservationRules() {
                         style={{ whiteSpace: "nowrap", marginRight: 10 }}
                         color="text.secondary"
                       >
-                        Preserving:
+                        {!ruleBackupProgress.started &&
+                          "Preparing to preserve..."}
+                        {ruleBackupProgress.started &&
+                          !ruleBackupProgress.errored &&
+                          "Preserving:"}
                       </Typography>
-                      <LinearProgressWithLabel
-                        value={Math.floor(
-                          Math.min(ruleBackupProgress.progressRatio * 100, 100)
-                        )}
-                      />
+                      {ruleBackupProgress.started && (
+                        <LinearProgressWithLabel
+                          value={Math.floor(
+                            Math.min(
+                              ruleBackupProgress.progressRatio * 100,
+                              100
+                            )
+                          )}
+                          errored={ruleBackupProgress.errored}
+                        />
+                      )}
                     </div>
                   ) : (
                     <div />

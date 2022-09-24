@@ -9,10 +9,15 @@ import {
   fetchGuilds,
   fetchUserInfo,
 } from "../api/discord";
-import { getBackupProgress } from "../api/messages";
+import {
+  getBackupProgress,
+  initialBackupQueue,
+  runInitialBackupDiscord,
+} from "../api/messages";
 import {
   createPreservationRule,
   deletePreservationRule,
+  fetchIncompletePreservationRules,
   fetchPreservationRules,
   updatePreservationRule,
 } from "../api/preservationRules";
@@ -46,7 +51,7 @@ startApiListener("preservationRules", deletePreservationRule);
 startApiListener("preservationRules", fetchPreservationRules);
 startApiListener("messages", getBackupProgress);
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -88,4 +93,11 @@ app.whenReady().then(() => {
       }
     }, 1000)
   );
+
+  const incompletePreservationRules = await fetchIncompletePreservationRules();
+  incompletePreservationRules.forEach((preservationRule) => {
+    if (preservationRule.appName === "discord") {
+      initialBackupQueue.push(() => runInitialBackupDiscord(preservationRule));
+    }
+  });
 });

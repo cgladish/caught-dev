@@ -11,6 +11,7 @@ import {
 } from "./discord";
 import { PreservationRule, updatePreservationRule } from "./preservationRules";
 import retry from "async-retry";
+import queue from "queue";
 import { pick } from "lodash";
 
 const RATE_LIMIT_INTERVAL = 150; // 150ms
@@ -85,6 +86,7 @@ export const getLatestChannelMessage = async (
 export type BackupsInProgress = {
   [preservationRuleId: number]: {
     progressRatio: number;
+    started: boolean;
     complete: boolean;
     errored: boolean;
   };
@@ -99,6 +101,12 @@ export const getBackupProgress = async (
   });
   return backupProgress;
 };
+
+export const initialBackupQueue = queue({
+  concurrency: 1,
+  autostart: true,
+});
+
 type DiscordSpecificData = Pick<
   FetchedMessageInfo,
   "attachments" | "embeds" | "sticker_items"
@@ -109,6 +117,7 @@ export const runInitialBackupDiscord = async (
   try {
     backupsInProgress[preservationRule.id] = {
       progressRatio: 0,
+      started: false,
       complete: false,
       errored: false,
     };
@@ -147,14 +156,26 @@ export const runInitialBackupDiscord = async (
         );
       }
     }
+    let messagesFetched = await retry(
+      () => getMessagesCount(preservationRule.id),
+      {
+        retries: 3,
+      }
+    );
 
-    let messagesFetched = await getMessagesCount(preservationRule.id);
+    backupsInProgress[preservationRule.id].started = true;
+    backupsInProgress[preservationRule.id].progressRatio =
+      messagesFetched / totalMessages;
+
     for (let { channelIds } of Object.values(selected.guilds)) {
       for (let channelId of channelIds!) {
+        const latestChannelMessage = await retry(
+          () => getLatestChannelMessage(channelId),
+          { retries: 3 }
+        );
+        let latestMessageExternalId: string | undefined =
+          latestChannelMessage?.externalId;
         let messagesToCreate: Omit<MessageEntity, "id">[] | undefined;
-        let latestMessageExternalId: string | undefined = (
-          await getLatestChannelMessage(channelId)
-        )?.externalId;
         while (!messagesToCreate || messagesToCreate.length) {
           await waitForInterval();
           let messages = await retry(

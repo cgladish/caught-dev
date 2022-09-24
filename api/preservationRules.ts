@@ -1,6 +1,6 @@
 import TableName from "../db/tableName";
 import getDb from "../db";
-import { runInitialBackupDiscord } from "./messages";
+import { initialBackupQueue, runInitialBackupDiscord } from "./messages";
 import { PreservationRuleEntity } from "../db/entities";
 
 export type PreservationRule = {
@@ -65,7 +65,7 @@ export const createPreservationRule = async (
     .first();
   const preservationRule = entityToType(preservationRuleEntity!);
   if (runInitialBackup && preservationRule.appName === "discord") {
-    runInitialBackupDiscord(preservationRule);
+    initialBackupQueue.push(() => runInitialBackupDiscord(preservationRule));
   }
   return preservationRule;
 };
@@ -112,6 +112,19 @@ export const fetchPreservationRules = async (
   )
     .where({ appName })
     .orderBy("updatedAt", "desc")
+    .select();
+  return preservationRules.map(entityToType);
+};
+
+export const fetchIncompletePreservationRules = async (): Promise<
+  PreservationRule[]
+> => {
+  const db = await getDb();
+  const preservationRules = await db<PreservationRuleEntity>(
+    TableName.PreservationRule
+  )
+    .where({ initialBackupComplete: false })
+    .orderBy("updatedAt", "asc")
     .select();
   return preservationRules.map(entityToType);
 };
