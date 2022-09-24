@@ -7,6 +7,10 @@ export const getFetchStatus = createSelector(
   [getState],
   (state) => state.fetchStatus
 );
+export const getLogoutStatus = createSelector(
+  [getState],
+  (state) => state.logoutStatus
+);
 export const getUserInfo = createSelector(
   [getState],
   (state) => state.userInfo

@@ -117,6 +117,8 @@ export const runInitialBackupDiscord = async (
   try {
     backupsInProgress[preservationRule.id] = {
       progressRatio: 0,
+      currentMessages: 0,
+      totalMessages: 
       started: false,
       complete: false,
       errored: false,
