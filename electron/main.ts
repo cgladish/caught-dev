@@ -9,11 +9,7 @@ import {
   fetchGuilds,
   fetchUserInfo,
 } from "../api/discord";
-import {
-  getBackupProgress,
-  initialBackupQueue,
-  runInitialBackupDiscord,
-} from "../api/messages";
+import { addInitialBackupToQueue, getBackupProgress } from "../api/messages";
 import {
   createPreservationRule,
   deletePreservationRule,
@@ -97,7 +93,7 @@ app.whenReady().then(async () => {
   const incompletePreservationRules = await fetchIncompletePreservationRules();
   incompletePreservationRules.forEach((preservationRule) => {
     if (preservationRule.appName === "discord") {
-      initialBackupQueue.push(() => runInitialBackupDiscord(preservationRule));
+      addInitialBackupToQueue(preservationRule);
     }
   });
 });

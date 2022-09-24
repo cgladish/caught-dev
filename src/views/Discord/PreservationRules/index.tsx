@@ -150,7 +150,7 @@ export default function PreservationRules() {
                   </Typography>
                 </CardContent>
                 <CardActions disableSpacing>
-                  {ruleBackupProgress && !ruleBackupProgress?.complete ? (
+                  {ruleBackupProgress && (
                     <div
                       style={{
                         display: "flex",
@@ -162,13 +162,16 @@ export default function PreservationRules() {
                         style={{ whiteSpace: "nowrap", marginRight: 10 }}
                         color="text.secondary"
                       >
-                        {!ruleBackupProgress.started &&
+                        {ruleBackupProgress.status === "queued" && "Queued"}
+                        {ruleBackupProgress.status === "preparing" &&
                           "Preparing to preserve..."}
-                        {ruleBackupProgress.started &&
-                          !ruleBackupProgress.errored &&
+                        {ruleBackupProgress.status === "started" &&
                           "Preserving:"}
+                        {ruleBackupProgress.status === "complete" &&
+                          "Preservation complete"}
                       </Typography>
-                      {ruleBackupProgress.started && (
+                      {(ruleBackupProgress.status === "started" ||
+                        ruleBackupProgress.status === "errored") && (
                         <LinearProgressWithLabel
                           value={Math.floor(
                             Math.min(
@@ -176,18 +179,17 @@ export default function PreservationRules() {
                               100
                             )
                           )}
-                          errored={ruleBackupProgress.errored}
+                          errored={ruleBackupProgress.status === "errored"}
                         />
                       )}
                     </div>
-                  ) : (
-                    <div />
                   )}
                   <IconButton
                     style={{ marginLeft: "auto" }}
                     disabled={
                       isSaving ||
-                      (ruleBackupProgress && !ruleBackupProgress?.complete)
+                      (ruleBackupProgress &&
+                        ruleBackupProgress.status !== "complete")
                     }
                   >
                     <Visibility />
@@ -195,7 +197,8 @@ export default function PreservationRules() {
                   <IconButton
                     disabled={
                       isSaving ||
-                      (ruleBackupProgress && !ruleBackupProgress?.complete)
+                      (ruleBackupProgress &&
+                        ruleBackupProgress.status !== "complete")
                     }
                   >
                     <Edit />

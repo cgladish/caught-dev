@@ -6,12 +6,32 @@ const DISCORD_EPOCH = BigInt(1420070400000);
 export const datetimeToSnowflake = (datetime: Date): bigint =>
   (BigInt(datetime.getTime()) - DISCORD_EPOCH) << BigInt(22);
 
+const RATE_LIMIT_INTERVAL = 150; // 150ms
+export const waitForInterval = (() => {
+  let lastFetchTime = new Date(0);
+  return () => {
+    let timeBeforeNextCall =
+      RATE_LIMIT_INTERVAL - (Date.now() - lastFetchTime.getTime());
+    if (timeBeforeNextCall > 0) {
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          lastFetchTime = new Date();
+          resolve();
+        }, timeBeforeNextCall);
+      });
+    }
+    lastFetchTime = new Date();
+    return Promise.resolve();
+  };
+})();
+
 type FetchedUserInfo = {
   id: string;
   username: string;
   avatar?: string;
   email: string;
   discriminator: string;
+  permissions: number;
 };
 export const fetchUserInfo = async (): Promise<FetchedUserInfo | null> => {
   const token = await fetchAuthentication("discord");
@@ -19,6 +39,7 @@ export const fetchUserInfo = async (): Promise<FetchedUserInfo | null> => {
     return null;
   }
   try {
+    await waitForInterval();
     const response: AxiosResponse<FetchedUserInfo> = await axios({
       method: "get",
       url: "https://discord.com/api/v9/users/@me",
@@ -34,17 +55,21 @@ export const fetchUserInfo = async (): Promise<FetchedUserInfo | null> => {
   }
 };
 
-type FetchedGuildInfo = {
+type FetchedGuildsSingleGuildInfo = {
   id: string;
   name: string;
+  owner: boolean;
   icon?: string;
 };
-export const fetchGuilds = async (): Promise<FetchedGuildInfo[]> => {
+export const fetchGuilds = async (): Promise<
+  FetchedGuildsSingleGuildInfo[]
+> => {
   const token = await fetchAuthentication("discord");
   if (!token) {
     throw new Error("Not logged in!");
   }
-  const response: AxiosResponse<FetchedGuildInfo[]> = await axios({
+  await waitForInterval();
+  const response: AxiosResponse<FetchedGuildsSingleGuildInfo[]> = await axios({
     method: "get",
     url: "https://discord.com/api/v9/users/@me/guilds",
     headers: { authorization: token },
@@ -52,10 +77,33 @@ export const fetchGuilds = async (): Promise<FetchedGuildInfo[]> => {
   return response.data;
 };
 
+// https://discord.com/developers/docs/resources/channel#channel-object-channel-types
+const TEXT_CHANNEL_TYPES = [0, 1, 3, 5, 10, 11, 12, 15];
 type FetchedChannelInfo = {
   id: string;
+  type: number;
   name: string;
   guild_id: string;
+  permission_overwrites: {
+    id: string;
+    type: number;
+    allow: string;
+    deny: string;
+  }[];
+};
+type FetchedGuildInfo = {
+  id: string;
+  owner_id: string;
+  roles: {
+    id: string;
+    permissions: string;
+  }[];
+};
+type FetchedGuildMember = {
+  roles: string[];
+  user: {
+    id: string;
+  };
 };
 export const fetchChannels = async (
   guildId: string
@@ -64,12 +112,29 @@ export const fetchChannels = async (
   if (!token) {
     throw new Error("Not logged in!");
   }
+  await waitForInterval();
+  const guildMemberResponse: AxiosResponse<FetchedGuildMember> = await axios({
+    method: "get",
+    url: `https://discord.com/api/v9/users/@me/${guildId}/member`,
+    headers: { authorization: token },
+  });
+  await waitForInterval();
+  const guildResponse: AxiosResponse<FetchedGuildInfo> = await axios({
+    method: "get",
+    url: `https://discord.com/api/v9/guilds/${guildId}`,
+    headers: { authorization: token },
+  });
+  await waitForInterval();
   const response: AxiosResponse<FetchedChannelInfo[]> = await axios({
     method: "get",
     url: `https://discord.com/api/v9/guilds/${guildId}/channels`,
     headers: { authorization: token },
   });
-  return response.data;
+  return response.data.filter(
+    (channel) =>
+      TEXT_CHANNEL_TYPES.includes(channel.type) &&
+      hasPermissions(guildMemberResponse.data, guildResponse.data, channel)
+  );
 };
 
 type FetchedDmChannelInfo = {
@@ -86,6 +151,7 @@ export const fetchDmChannels = async (): Promise<FetchedDmChannelInfo[]> => {
   if (!token) {
     throw new Error("Not logged in!");
   }
+  await waitForInterval();
   const response: AxiosResponse<FetchedDmChannelInfo[]> = await axios({
     method: "get",
     url: "https://discord.com/api/v9/users/@me/channels",
@@ -174,6 +240,7 @@ export const fetchMessages = async (
   if (!token) {
     throw new Error("Not logged in!");
   }
+  await waitForInterval();
   const response: AxiosResponse<FetchedMessageInfo[]> = await axios({
     method: "get",
     url: `https://discord.com/api/v9/channels/${channelId}/messages`,
@@ -198,6 +265,7 @@ export const fetchMessagesCount = async ({
   if (!token) {
     throw new Error("Not logged in!");
   }
+  await waitForInterval();
   const response: AxiosResponse<{ total_results: number }> = await axios({
     method: "get",
     url: `https://discord.com/api/v9/guilds/${guildId}/messages/search`,
@@ -210,4 +278,96 @@ export const fetchMessagesCount = async ({
     headers: { authorization: token },
   });
   return response.data.total_results;
+};
+
+// This code was tranlated from the Python snippet here:
+// https://discord.com/developers/docs/topics/permissions
+const ALL = -1;
+const ADMINISTRATOR = 1 << 3;
+const computeBasePermissions = (
+  member: FetchedGuildMember,
+  guild: FetchedGuildInfo
+) => {
+  if (guild.owner_id === member.user.id) {
+    return ALL;
+  }
+
+  const roleEveryone = guild.roles.find(({ id }) => id === guild.id); // get @everyone role
+  let permissions = Number(roleEveryone!.permissions);
+
+  for (let role of member.roles) {
+    const rolePermissions = guild.roles.find(({ id }) => id === role);
+    if (rolePermissions) {
+      permissions |= Number(rolePermissions.permissions);
+    }
+  }
+
+  if ((permissions & ADMINISTRATOR) === ADMINISTRATOR) {
+    return ALL;
+  }
+
+  return permissions;
+};
+const computeOverwrites = (
+  basePermissions: number,
+  member: FetchedGuildMember,
+  channel: FetchedChannelInfo
+) => {
+  let permissions = basePermissions;
+  const overwrites = channel.permission_overwrites;
+  const overwriteEveryone = overwrites.find(
+    ({ id }) => id === channel.guild_id
+  ); // Find (@everyone) role overwrite and apply it.
+  if (overwriteEveryone) {
+    permissions &= ~Number(overwriteEveryone.deny);
+    permissions |= Number(overwriteEveryone.allow);
+  }
+
+  // Apply role specific overwrites.
+  let allow = Number(0);
+  let deny = Number(0);
+  for (let roleId of member.roles) {
+    const overwriteRole = overwrites.find(({ id }) => id === roleId);
+    if (overwriteRole) {
+      allow |= Number(overwriteRole.allow);
+      deny |= Number(overwriteRole.deny);
+    }
+  }
+
+  permissions &= ~deny;
+  permissions |= allow;
+
+  // Apply member specific overwrite if it exist.
+  const overwriteMember = overwrites.find(({ id }) => id === member.user.id);
+  if (overwriteMember) {
+    permissions &= ~Number(overwriteMember.deny);
+    permissions |= Number(overwriteMember.allow);
+  }
+
+  return permissions;
+};
+const computePermissions = (
+  member: FetchedGuildMember,
+  guild: FetchedGuildInfo,
+  channel: FetchedChannelInfo
+) => {
+  const basePermissions = computeBasePermissions(member, guild);
+  if (basePermissions === ALL) {
+    return ALL;
+  }
+  return computeOverwrites(basePermissions, member, channel);
+};
+const VIEW_CHANNEL = 1 << 10;
+const READ_MESSAGE_HISTORY = 1 << 16;
+export const hasPermissions = (
+  member: FetchedGuildMember,
+  guild: FetchedGuildInfo,
+  channel: FetchedChannelInfo
+) => {
+  const permissions = computePermissions(member, guild, channel);
+  return (
+    permissions === ALL ||
+    ((permissions & VIEW_CHANNEL) === VIEW_CHANNEL &&
+      (permissions & READ_MESSAGE_HISTORY) === READ_MESSAGE_HISTORY)
+  );
 };
