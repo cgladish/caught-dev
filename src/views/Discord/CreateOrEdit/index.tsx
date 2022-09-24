@@ -235,7 +235,7 @@ export default function CreateOrEdit() {
       >
         <Button
           startIcon={<Clear />}
-          onClick={() => {}}
+          onClick={() => navigate("..")}
           size="large"
           disabled={isSaving}
         >
