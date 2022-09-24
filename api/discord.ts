@@ -3,8 +3,8 @@ import { fetchAuthentication } from "./appLogin";
 
 // https://discord.com/developers/docs/reference#snowflakes
 const DISCORD_EPOCH = BigInt(1420070400000);
-export const datetimeToSnowflake = (datetime: Date) =>
-  ((BigInt(datetime.getTime()) - DISCORD_EPOCH) << BigInt(22)).toString();
+export const datetimeToSnowflake = (datetime: Date): bigint =>
+  (BigInt(datetime.getTime()) - DISCORD_EPOCH) << BigInt(22);
 
 type FetchedUserInfo = {
   id: string;
@@ -181,4 +181,33 @@ export const fetchMessages = async (
     params,
   });
   return response.data;
+};
+
+export const fetchMessagesCount = async ({
+  guildId,
+  channelId,
+  startSnowflake,
+  endSnowflake,
+}: {
+  guildId: string;
+  channelId?: string;
+  startSnowflake: string;
+  endSnowflake: string;
+}) => {
+  const token = await fetchAuthentication("discord");
+  if (!token) {
+    throw new Error("Not logged in!");
+  }
+  const response: AxiosResponse<{ total_results: number }> = await axios({
+    method: "get",
+    url: `https://discord.com/api/v9/guilds/${guildId}/messages/search`,
+    params: {
+      min_id: startSnowflake,
+      max_id: endSnowflake,
+      channel_id: channelId,
+      include_nsfw: true,
+    },
+    headers: { authorization: token },
+  });
+  return response.data.total_results;
 };

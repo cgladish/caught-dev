@@ -9,6 +9,7 @@ import {
   fetchGuilds,
   fetchUserInfo,
 } from "../api/discord";
+import { getBackupProgress } from "../api/messages";
 import {
   createPreservationRule,
   deletePreservationRule,
@@ -43,6 +44,7 @@ startApiListener("preservationRules", createPreservationRule);
 startApiListener("preservationRules", updatePreservationRule);
 startApiListener("preservationRules", deletePreservationRule);
 startApiListener("preservationRules", fetchPreservationRules);
+startApiListener("messages", getBackupProgress);
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({

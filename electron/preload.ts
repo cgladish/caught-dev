@@ -6,6 +6,7 @@ import {
   fetchChannels,
   fetchDmChannels,
 } from "../api/discord";
+import { getBackupProgress } from "../api/messages";
 import {
   createPreservationRule,
   deletePreservationRule,
@@ -70,6 +71,12 @@ export const api = {
     fetchPreservationRules: makeInvoker<typeof fetchPreservationRules>(
       "preservationRules",
       "fetchPreservationRules"
+    ),
+  },
+  messages: {
+    getBackupProgress: makeInvoker<typeof getBackupProgress>(
+      "messages",
+      "getBackupProgress"
     ),
   },
 };

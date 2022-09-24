@@ -1,6 +1,6 @@
 import TableName from "../db/tableName";
 import getDb from "../db";
-import { runInitialBackup } from "./messages";
+import { runInitialBackupDiscord } from "./messages";
 import { PreservationRuleEntity } from "../db/entities";
 
 export type PreservationRule = {
@@ -56,7 +56,9 @@ export const createPreservationRule = async ({
     .where({ id })
     .first();
   const preservationRule = entityToType(preservationRuleEntity!);
-  runInitialBackup(preservationRule);
+  if (preservationRule.appName === "discord") {
+    runInitialBackupDiscord(preservationRule);
+  }
   return preservationRule;
 };
 

@@ -1,28 +1,50 @@
 import { Add, Delete, Edit, Visibility } from "@mui/icons-material";
 import {
+  Box,
   Button,
   Card,
+  CardActions,
+  CardContent,
   IconButton,
   LinearProgress,
-  List,
-  ListItem,
+  LinearProgressProps,
   Typography,
 } from "@mui/material";
 import { sortBy } from "lodash";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Dispatch } from "../../../redux";
 import { ActionType } from "../../../redux/preservationRules/actions";
+import { BackupsInProgress } from "../../../../api/messages";
 import {
   getDiscordPreservationRules,
   getSaveStatus,
 } from "../../../redux/preservationRules/selectors";
 import { timeAgo } from "../../../utils";
 
+function LinearProgressWithLabel(
+  props: LinearProgressProps & { value: number }
+) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+      <Box sx={{ width: "100%", mr: 1 }}>
+        <LinearProgress variant="determinate" {...props} />
+      </Box>
+      <Box sx={{ minWidth: 35 }}>
+        <Typography variant="body2" color="text.secondary">{`${Math.round(
+          props.value
+        )}%`}</Typography>
+      </Box>
+    </Box>
+  );
+}
+
 export default function PreservationRules() {
   const navigate = useNavigate();
   const dispatch = useDispatch<Dispatch>();
+
+  const [backupProgress, setBackupProgress] = useState<BackupsInProgress>({});
 
   const saveStatus = useSelector(getSaveStatus);
 
@@ -42,6 +64,26 @@ export default function PreservationRules() {
       sortBy(Object.values(preservationRules), "updatedAt"),
     [preservationRules]
   );
+
+  const [backupProgressFetchInterval, setBackupProgressFetchInterval] =
+    useState<NodeJS.Timer | null>(null);
+  useEffect(() => {
+    if (backupProgressFetchInterval) {
+      clearInterval(backupProgressFetchInterval);
+    }
+    if (preservationRules) {
+      let interval = setInterval(async () => {
+        const newBackupProgress = await window.api.messages.getBackupProgress(
+          ...Object.keys(preservationRules).map(Number)
+        );
+        setBackupProgress(newBackupProgress);
+      }, 1000);
+      setBackupProgressFetchInterval(interval);
+      return () => clearInterval(interval);
+    } else {
+      setBackupProgressFetchInterval(null);
+    }
+  }, [preservationRules]);
 
   const isSaving = saveStatus === "pending";
 
@@ -70,26 +112,57 @@ export default function PreservationRules() {
           Add New
         </Button>
       </div>
-      <Card style={{ width: 800 }}>
-        {sortedPreservationRules ? (
-          <>
-            {!sortedPreservationRules.length && (
-              <Typography style={{ paddingTop: 15, paddingLeft: 15 }}>
-                You have no preservation rules saved.
-              </Typography>
-            )}
-            <List dense>
-              {sortedPreservationRules.map((preservationRule) => (
-                <ListItem key={preservationRule.id}>
-                  <Typography style={{ width: 400 }}>
-                    {preservationRule.name}
+      {sortedPreservationRules ? (
+        <>
+          {!sortedPreservationRules.length && (
+            <Typography style={{ paddingTop: 15, paddingLeft: 15 }}>
+              You have no preservation rules saved.
+            </Typography>
+          )}
+          {sortedPreservationRules.map((preservationRule) => {
+            const ruleBackupProgress = backupProgress[preservationRule.id];
+            return (
+              <Card
+                key={preservationRule.id}
+                style={{
+                  width: 800,
+                  marginTop: 5,
+                  marginBottom: 10,
+                }}
+              >
+                <CardContent>
+                  <Typography variant="h6">{preservationRule.name}</Typography>
+                  <Typography color="text.secondary">
+                    {(preservationRule.createdAt.getTime() ===
+                    preservationRule.updatedAt.getTime()
+                      ? "Created "
+                      : "Edited ") + timeAgo.format(preservationRule.updatedAt)}
                   </Typography>
-                  <Typography style={{ fontSize: ".875rem" }}>
-                    {preservationRule.createdAt === preservationRule.updatedAt
-                      ? "Created"
-                      : "Edited"}{" "}
-                    {timeAgo.format(preservationRule.updatedAt)}
-                  </Typography>
+                </CardContent>
+                <CardActions disableSpacing>
+                  {ruleBackupProgress && !ruleBackupProgress?.complete ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        paddingLeft: 10,
+                        width: "100%",
+                      }}
+                    >
+                      <Typography
+                        style={{ whiteSpace: "nowrap", marginRight: 10 }}
+                        color="text.secondary"
+                      >
+                        Preserving:
+                      </Typography>
+                      <LinearProgressWithLabel
+                        value={Math.floor(
+                          Math.min(ruleBackupProgress.progressRatio * 100, 100)
+                        )}
+                      />
+                    </div>
+                  ) : (
+                    <div />
+                  )}
                   <IconButton
                     style={{ marginLeft: "auto" }}
                     disabled={isSaving}
@@ -113,14 +186,14 @@ export default function PreservationRules() {
                   >
                     <Delete />
                   </IconButton>
-                </ListItem>
-              ))}
-            </List>
-          </>
-        ) : (
-          <LinearProgress />
-        )}
-      </Card>
+                </CardActions>
+              </Card>
+            );
+          })}
+        </>
+      ) : (
+        <LinearProgress />
+      )}
     </div>
   );
 }
