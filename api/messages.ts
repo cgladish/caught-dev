@@ -73,11 +73,12 @@ export const getMessagesCount = async (
 };
 
 export const getLatestChannelMessage = async (
+  preservationRuleId: number,
   externalChannelId: string
 ): Promise<MessageEntity | undefined> => {
   const db = await getDb();
   const latestMessage = await db<MessageEntity>(TableName.Message)
-    .where({ externalChannelId })
+    .where({ preservationRuleId, externalChannelId })
     .orderBy("sentAt", "desc")
     .first();
   return latestMessage;
@@ -97,7 +98,10 @@ export const getBackupProgress = async (
 ): Promise<BackupsInProgress> => {
   const backupProgress: BackupsInProgress = {};
   preservationRuleIds.forEach((preservationRuleId) => {
-    backupProgress[preservationRuleId] = backupsInProgress[preservationRuleId];
+    const backupInProgress = backupsInProgress[preservationRuleId];
+    if (backupInProgress) {
+      backupProgress[preservationRuleId] = backupInProgress;
+    }
   });
   return backupProgress;
 };
@@ -114,15 +118,14 @@ type DiscordSpecificData = Pick<
 export const runInitialBackupDiscord = async (
   preservationRule: PreservationRule
 ) => {
+  const backupInProgress = {
+    progressRatio: 0,
+    started: false,
+    complete: false,
+    errored: false,
+  };
   try {
-    backupsInProgress[preservationRule.id] = {
-      progressRatio: 0,
-      currentMessages: 0,
-      totalMessages: 
-      started: false,
-      complete: false,
-      errored: false,
-    };
+    backupsInProgress[preservationRule.id] = backupInProgress;
 
     const db = await getDb();
     const selected = preservationRule.selected as DiscordSelected;
@@ -141,7 +144,7 @@ export const runInitialBackupDiscord = async (
           retries: 5,
         });
         channelIds = channels.map(({ id }) => id);
-        selected.guilds[guildId].channelIds = channelIds;
+        selected.guilds[guildId]!.channelIds = channelIds;
       }
 
       for (let channelId of channelIds) {
@@ -165,14 +168,13 @@ export const runInitialBackupDiscord = async (
       }
     );
 
-    backupsInProgress[preservationRule.id].started = true;
-    backupsInProgress[preservationRule.id].progressRatio =
-      messagesFetched / totalMessages;
+    backupInProgress.started = true;
+    backupInProgress.progressRatio = messagesFetched / totalMessages;
 
     for (let { channelIds } of Object.values(selected.guilds)) {
       for (let channelId of channelIds!) {
         const latestChannelMessage = await retry(
-          () => getLatestChannelMessage(channelId),
+          () => getLatestChannelMessage(preservationRule.id, channelId),
           { retries: 3 }
         );
         let latestMessageExternalId: string | undefined =
@@ -190,7 +192,7 @@ export const runInitialBackupDiscord = async (
           );
           if (
             endDatetime &&
-            messages.length &&
+            messages[0] &&
             new Date(messages[0].timestamp) >= endDatetime
           ) {
             const postFilterIndex = messages.findIndex(
@@ -206,7 +208,7 @@ export const runInitialBackupDiscord = async (
               fetchedMessage
             )
           );
-          if (messagesToCreate.length) {
+          if (messagesToCreate[0]) {
             latestMessageExternalId = messagesToCreate[0].externalId;
             await retry(
               () =>
@@ -215,13 +217,12 @@ export const runInitialBackupDiscord = async (
             );
           }
           messagesFetched += messages.length;
-          backupsInProgress[preservationRule.id].progressRatio =
-            messagesFetched / totalMessages;
+          backupInProgress.progressRatio = messagesFetched / totalMessages;
         }
       }
     }
-    backupsInProgress[preservationRule.id].progressRatio = 1;
-    backupsInProgress[preservationRule.id].complete = true;
+    backupInProgress.progressRatio = 1;
+    backupInProgress.complete = true;
 
     await updatePreservationRule(preservationRule.id, {
       ...pick(
@@ -235,6 +236,6 @@ export const runInitialBackupDiscord = async (
     });
   } catch (err) {
     console.error(err);
-    backupsInProgress[preservationRule.id].errored = true;
+    backupInProgress.errored = true;
   }
 };

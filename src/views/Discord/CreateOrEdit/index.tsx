@@ -92,19 +92,20 @@ export default function CreateOrEdit() {
   const submitForm = () => {
     if (!isSaveDisabled && guilds) {
       const guildsToPreserve: DiscordSelected["guilds"] = {};
-      Object.keys(selectedGuilds)
-        .filter((guildId) => selectedGuilds[guildId])
-        .forEach((guildId) => {
-          const channels = guilds[guildId].channels;
+      Object.keys(selectedGuilds).forEach((guildId) => {
+        const channels = guilds[guildId]?.channels;
+        const channelIds =
+          channels &&
+          Object.keys(channels).filter(
+            (channelId) => selectedChannels[channelId]
+          );
+        if (autoPreserveNewChannels[guildId] || channelIds?.length) {
           guildsToPreserve[guildId] = {
             autoPreserveNewChannels: !!autoPreserveNewChannels[guildId],
-            channelIds: channels
-              ? Object.keys(channels).filter(
-                  (channelId) => selectedChannels[channelId]
-                )
-              : null,
+            channelIds: channelIds ?? null,
           };
-        });
+        }
+      });
       const selected: DiscordSelected = {
         guilds: guildsToPreserve,
         dmChannelIds: Object.keys(selectedDmChannels).filter(

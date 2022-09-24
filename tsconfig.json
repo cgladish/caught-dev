@@ -15,7 +15,8 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "outDir": "dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": ["api", "db", "electron", "src"],
   "files": ["./types/global.d.ts"]

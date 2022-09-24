@@ -78,18 +78,24 @@ export const guilds = (
     case ActionType.fetchChannelsStart:
     case ActionType.fetchChannelsFailure: {
       const newState = { ...state };
-      newState[action.payload.guildId] = {
-        ...newState[action.payload.guildId],
-        channels: null,
-      };
+      const existingGuildInfo = newState[action.payload.guildId];
+      if (existingGuildInfo) {
+        newState[action.payload.guildId] = {
+          ...existingGuildInfo,
+          channels: null,
+        };
+      }
       return newState;
     }
     case ActionType.fetchChannelsSuccess: {
       const newState = { ...state };
-      newState[action.payload.guildId] = {
-        ...newState[action.payload.guildId],
-        channels: keyBy(action.payload.channels, "id"),
-      };
+      const existingGuildInfo = newState[action.payload.guildId];
+      if (existingGuildInfo) {
+        newState[action.payload.guildId] = {
+          ...existingGuildInfo,
+          channels: keyBy(action.payload.channels, "id"),
+        };
+      }
       return newState;
     }
     default:

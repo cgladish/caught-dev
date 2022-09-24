@@ -54,16 +54,19 @@ describe("preservationRules", () => {
         sentAt: "2022-09-21T10:00:00.000Z",
       });
       await makeMessage(preservationRuleIdOther, {
-        externalChannelId: "321",
+        externalChannelId: "123",
         sentAt: "2022-09-21T10:00:00.000Z",
       });
 
-      const latestMessage = await getLatestChannelMessage("123");
+      const latestMessage = await getLatestChannelMessage(
+        preservationRuleId,
+        "123"
+      );
       expect(latestMessage).toEqual(correctLatestMessage);
     });
 
     it("gets undefined when no messages for channel", async () => {
-      const latestMessage = await getLatestChannelMessage("123");
+      const latestMessage = await getLatestChannelMessage(1, "123");
       expect(latestMessage).toBeUndefined();
     });
   });

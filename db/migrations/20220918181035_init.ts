@@ -24,7 +24,8 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable()
       .references("id")
       .inTable(TableName.PreservationRule)
-      .onDelete("CASCADE");
+      .onDelete("CASCADE")
+      .index();
     table.string("externalId").notNullable().index();
     table.string("externalChannelId").notNullable().index();
     table.string("authorId").notNullable();

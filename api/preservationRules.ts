@@ -73,20 +73,20 @@ export const createPreservationRule = async (
 export const updatePreservationRule = async (
   id: number,
   {
-    name,
     selected,
     startDatetime,
     endDatetime,
+    ...rest
   }: Omit<PreservationRuleInput, "appName">
 ) => {
   const db = await getDb();
   await db<PreservationRuleEntity>(TableName.PreservationRule)
     .where({ id })
     .update({
-      name,
       selectedJson: JSON.stringify(selected),
       startDatetime: startDatetime?.toISOString() ?? null,
       endDatetime: endDatetime?.toISOString() ?? null,
+      ...rest,
     });
   const preservationRule = await db<PreservationRuleEntity>(
     TableName.PreservationRule

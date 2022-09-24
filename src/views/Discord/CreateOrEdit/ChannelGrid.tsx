@@ -82,7 +82,7 @@ function ChannelGrid({
     Object.entries(selectedGuilds)
       .filter(([guildId, selected]) => selected)
       .forEach(([guildId]) => {
-        const channels = guilds?.[guildId].channels;
+        const channels = guilds?.[guildId]?.channels;
         if (channels) {
           Object.keys(channels).forEach((channelId) => {
             newSelectedChannels[channelId] = true;
@@ -145,7 +145,7 @@ function ChannelGrid({
     newSelectedGuilds[guildId] = newSelected;
     setSelectedGuilds(newSelectedGuilds);
 
-    const channels = guilds?.[guildId].channels;
+    const channels = guilds?.[guildId]?.channels;
     if (channels) {
       const newSelectedChannels = { ...selectedChannels };
       Object.keys(channels).forEach((channelId) => {
@@ -169,8 +169,8 @@ function ChannelGrid({
     newSelectedChannels[channelId] = !selectedChannels[channelId];
     setSelectedChannels(newSelectedChannels);
 
-    const guildId = channels[channelId].guildId;
-    const guildChannels = guilds?.[guildId].channels;
+    const guildId = channels[channelId]?.guildId;
+    const guildChannels = guildId && guilds?.[guildId]?.channels;
     if (guildChannels) {
       const newSelected = Object.keys(guildChannels).every(
         (channelId) => newSelectedChannels[channelId]
@@ -559,7 +559,7 @@ function ChannelGrid({
                       <Avatar
                         src={
                           dmChannel.recipients.length === 1
-                            ? dmChannel.recipients[0].avatar
+                            ? dmChannel.recipients[0]?.avatar
                               ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
                               : "app-logos/discord.png"
                             : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"

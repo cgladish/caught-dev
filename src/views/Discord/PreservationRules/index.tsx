@@ -80,12 +80,14 @@ export default function PreservationRules() {
       clearInterval(backupProgressFetchInterval);
     }
     if (preservationRules) {
-      let interval = setInterval(async () => {
+      const fetchBackupProgress = async () => {
         const newBackupProgress = await window.api.messages.getBackupProgress(
           ...Object.keys(preservationRules).map(Number)
         );
         setBackupProgress(newBackupProgress);
-      }, 1000);
+      };
+      fetchBackupProgress();
+      let interval = setInterval(() => fetchBackupProgress(), 1000);
       setBackupProgressFetchInterval(interval);
       return () => clearInterval(interval);
     } else {
@@ -183,11 +185,19 @@ export default function PreservationRules() {
                   )}
                   <IconButton
                     style={{ marginLeft: "auto" }}
-                    disabled={isSaving}
+                    disabled={
+                      isSaving ||
+                      (ruleBackupProgress && !ruleBackupProgress?.complete)
+                    }
                   >
                     <Visibility />
                   </IconButton>
-                  <IconButton disabled={isSaving}>
+                  <IconButton
+                    disabled={
+                      isSaving ||
+                      (ruleBackupProgress && !ruleBackupProgress?.complete)
+                    }
+                  >
                     <Edit />
                   </IconButton>
                   <IconButton
