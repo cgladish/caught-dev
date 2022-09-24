@@ -14,6 +14,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string("selectedJson").notNullable();
     table.datetime("startDatetime");
     table.datetime("endDatetime");
+    table.boolean("initialBackupComplete").notNullable().defaultTo(false);
     table.timestamps(false, true, true);
   });
   await knex.schema.createTable(TableName.Message, function (table) {

@@ -11,6 +11,7 @@ export type PreservationRuleEntity = {
   selectedJson: string;
   startDatetime: string | null;
   endDatetime: string | null;
+  initialBackupComplete: boolean;
   createdAt: string;
   updatedAt: string;
 };

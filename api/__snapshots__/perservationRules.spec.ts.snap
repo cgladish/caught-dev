@@ -4,6 +4,7 @@ exports[`preservationRules createPreservationRule creates a preservation rule 1`
 {
   "appName": "discord",
   "endDatetime": 2022-09-21T04:00:00.000Z,
+  "initialBackupComplete": 0,
   "name": "Rule",
   "selected": {
     "key": "value",
@@ -16,6 +17,7 @@ exports[`preservationRules createPreservationRule creates a preservation rule 2`
 {
   "appName": "discord",
   "endDatetime": "2022-09-21T04:00:00.000Z",
+  "initialBackupComplete": 0,
   "name": "Rule",
   "selectedJson": "{"key":"value"}",
   "startDatetime": "2022-09-21T02:00:00.000Z",
@@ -26,6 +28,7 @@ exports[`preservationRules fetchPreservationRules fetches preservation rules 1`]
 {
   "appName": "discord",
   "endDatetime": 2022-09-21T04:00:00.000Z,
+  "initialBackupComplete": 0,
   "name": "Rule",
   "selected": {
     "key": "value",
@@ -38,6 +41,7 @@ exports[`preservationRules fetchPreservationRules fetches preservation rules 2`]
 {
   "appName": "discord",
   "endDatetime": 2022-09-21T05:00:00.000Z,
+  "initialBackupComplete": 0,
   "name": "Rule2",
   "selected": {
     "key2": "value2",
@@ -50,6 +54,7 @@ exports[`preservationRules updatePreservationRule updates a preservation rule 1`
 {
   "appName": "twitter",
   "endDatetime": 2022-09-21T05:00:00.000Z,
+  "initialBackupComplete": 0,
   "name": "Rule3",
   "selected": {
     "key3": "value3",
@@ -62,6 +67,7 @@ exports[`preservationRules updatePreservationRule updates a preservation rule 2`
 {
   "appName": "discord",
   "endDatetime": "2022-09-21T04:00:00.000Z",
+  "initialBackupComplete": 0,
   "name": "Rule",
   "selectedJson": "{"key":"value"}",
   "startDatetime": "2022-09-21T02:00:00.000Z",
@@ -72,6 +78,7 @@ exports[`preservationRules updatePreservationRule updates a preservation rule 3`
 {
   "appName": "twitter",
   "endDatetime": "2022-09-21T05:00:00.000Z",
+  "initialBackupComplete": 0,
   "name": "Rule3",
   "selectedJson": "{"key3":"value3"}",
   "startDatetime": "2022-09-21T03:00:00.000Z",

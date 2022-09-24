@@ -9,8 +9,9 @@ import {
   fetchMessages,
   fetchMessagesCount,
 } from "./discord";
-import { PreservationRule } from "./preservationRules";
+import { PreservationRule, updatePreservationRule } from "./preservationRules";
 import retry from "async-retry";
+import { pick } from "lodash";
 
 const RATE_LIMIT_INTERVAL = 150; // 150ms
 const waitForInterval = (() => {
@@ -59,6 +60,28 @@ const fetchedMessageToEntity = (
   }),
 });
 
+export const getMessagesCount = async (
+  preservationRuleId: number
+): Promise<number> => {
+  const db = await getDb();
+  const existingMessagesCount = await db<MessageEntity>(TableName.Message)
+    .where({ preservationRuleId })
+    .count("id")
+    .first();
+  return Number(Object.values(existingMessagesCount!)[0]);
+};
+
+export const getLatestChannelMessage = async (
+  externalChannelId: string
+): Promise<MessageEntity | undefined> => {
+  const db = await getDb();
+  const latestMessage = await db<MessageEntity>(TableName.Message)
+    .where({ externalChannelId })
+    .orderBy("sentAt", "desc")
+    .first();
+  return latestMessage;
+};
+
 export type BackupsInProgress = {
   [preservationRuleId: number]: {
     progressRatio: number;
@@ -67,7 +90,6 @@ export type BackupsInProgress = {
   };
 };
 const backupsInProgress: BackupsInProgress = {};
-
 export const getBackupProgress = async (
   ...preservationRuleIds: number[]
 ): Promise<BackupsInProgress> => {
@@ -77,7 +99,6 @@ export const getBackupProgress = async (
   });
   return backupProgress;
 };
-
 type DiscordSpecificData = Pick<
   FetchedMessageInfo,
   "attachments" | "embeds" | "sticker_items"
@@ -127,18 +148,19 @@ export const runInitialBackupDiscord = async (
       }
     }
 
-    let messagesFetched = 0;
+    let messagesFetched = await getMessagesCount(preservationRule.id);
     for (let { channelIds } of Object.values(selected.guilds)) {
       for (let channelId of channelIds!) {
         let messagesToCreate: Omit<MessageEntity, "id">[] | undefined;
+        let latestMessageExternalId: string | undefined = (
+          await getLatestChannelMessage(channelId)
+        )?.externalId;
         while (!messagesToCreate || messagesToCreate.length) {
           await waitForInterval();
           let messages = await retry(
             () =>
               fetchMessages(channelId, {
-                after:
-                  messagesToCreate?.[0]?.externalId ??
-                  startSnowflake.toString(),
+                after: latestMessageExternalId ?? startSnowflake.toString(),
                 limit: 100,
               }),
             { retries: 5 }
@@ -162,6 +184,7 @@ export const runInitialBackupDiscord = async (
             )
           );
           if (messagesToCreate.length) {
+            latestMessageExternalId = messagesToCreate[0].externalId;
             await retry(
               () =>
                 db<MessageEntity>(TableName.Message).insert(messagesToCreate!),
@@ -176,6 +199,17 @@ export const runInitialBackupDiscord = async (
     }
     backupsInProgress[preservationRule.id].progressRatio = 1;
     backupsInProgress[preservationRule.id].complete = true;
+
+    await updatePreservationRule(preservationRule.id, {
+      ...pick(
+        preservationRule,
+        "name",
+        "selected",
+        "startDatetime",
+        "endDatetime"
+      ),
+      initialBackupComplete: true,
+    });
   } catch (err) {
     console.error(err);
     backupsInProgress[preservationRule.id].errored = true;

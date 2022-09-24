@@ -10,6 +10,7 @@ export type PreservationRule = {
   selected: object;
   startDatetime: Date | null;
   endDatetime: Date | null;
+  initialBackupComplete: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -30,16 +31,23 @@ const entityToType = ({
   ...rest,
 });
 
-export const createPreservationRule = async ({
-  appName,
-  name,
-  selected,
-  startDatetime,
-  endDatetime,
-}: Omit<
+export type PreservationRuleInput = Omit<
   PreservationRule,
-  "id" | "createdAt" | "updatedAt"
->): Promise<PreservationRule> => {
+  "id" | "initialBackupComplete" | "createdAt" | "updatedAt"
+> & {
+  initialBackupComplete?: boolean;
+};
+
+export const createPreservationRule = async (
+  {
+    appName,
+    name,
+    selected,
+    startDatetime,
+    endDatetime,
+  }: PreservationRuleInput,
+  runInitialBackup = true
+): Promise<PreservationRule> => {
   const db = await getDb();
   const [id] = await db<PreservationRuleEntity>(
     TableName.PreservationRule
@@ -56,7 +64,7 @@ export const createPreservationRule = async ({
     .where({ id })
     .first();
   const preservationRule = entityToType(preservationRuleEntity!);
-  if (preservationRule.appName === "discord") {
+  if (runInitialBackup && preservationRule.appName === "discord") {
     runInitialBackupDiscord(preservationRule);
   }
   return preservationRule;
@@ -69,7 +77,7 @@ export const updatePreservationRule = async (
     selected,
     startDatetime,
     endDatetime,
-  }: Omit<PreservationRule, "id" | "appName" | "createdAt" | "updatedAt">
+  }: Omit<PreservationRuleInput, "appName">
 ) => {
   const db = await getDb();
   await db<PreservationRuleEntity>(TableName.PreservationRule)

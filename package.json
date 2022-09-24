@@ -42,7 +42,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "rm db/test.db.sqlite3 && jest --forceExit",
+    "test": "rm db/test.db.sqlite3 && jest --forceExit --runInBand",
     "eject": "react-scripts eject",
     "dev": "tsc && cross-env BROWSER=none concurrently -k \"yarn start\" \"yarn electron\"",
     "electron": "electron ./dist/electron/main.js"
