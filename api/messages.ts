@@ -2,7 +2,12 @@ import getDb from "../db";
 import { MessageEntity } from "../db/entities";
 import TableName from "../db/tableName";
 import { DiscordSelected } from "../types/discord";
-import { fetchChannels, FetchedMessageInfo, fetchMessages } from "./discord";
+import {
+  datetimeToSnowflake,
+  fetchChannels,
+  FetchedMessageInfo,
+  fetchMessages,
+} from "./discord";
 import { PreservationRule } from "./preservationRules";
 import retry from "async-retry";
 
@@ -35,6 +40,11 @@ export const runInitialBackup = async (preservationRule: PreservationRule) => {
     if (preservationRule.appName === "discord") {
       const selected = preservationRule.selected as DiscordSelected;
 
+      const { startDatetime, endDatetime } = preservationRule;
+      const startSnowflake = startDatetime
+        ? datetimeToSnowflake(startDatetime)
+        : "0";
+
       for (let [guildId, { channelIds }] of Object.entries(selected.guilds)) {
         // Populate missing channel IDs
         if (!channelIds) {
@@ -46,15 +56,25 @@ export const runInitialBackup = async (preservationRule: PreservationRule) => {
           let messagesToCreate: Omit<MessageEntity, "id">[] | undefined;
           while (!messagesToCreate || messagesToCreate.length) {
             await waitForInterval();
-            const messages = await retry(
+            let messages = await retry(
               () =>
                 fetchMessages(channelId, {
-                  before:
-                    messagesToCreate?.[messagesToCreate.length - 1]?.externalId,
+                  after: messagesToCreate?.[0]?.externalId ?? startSnowflake,
                   limit: 100,
                 }),
               { retries: 5 }
             );
+            if (
+              endDatetime &&
+              messages.length &&
+              new Date(messages[0].timestamp) >= endDatetime
+            ) {
+              const postFilterIndex = messages.findIndex(
+                ({ timestamp }) => new Date(timestamp) < endDatetime
+              );
+              messages =
+                postFilterIndex === -1 ? [] : messages.slice(postFilterIndex);
+            }
             messagesToCreate = messages.map(
               ({
                 id,

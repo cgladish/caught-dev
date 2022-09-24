@@ -1,6 +1,11 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { fetchAuthentication } from "./appLogin";
 
+// https://discord.com/developers/docs/reference#snowflakes
+const DISCORD_EPOCH = BigInt(1420070400000);
+export const datetimeToSnowflake = (datetime: Date) =>
+  ((BigInt(datetime.getTime()) - DISCORD_EPOCH) << BigInt(22)).toString();
+
 type FetchedUserInfo = {
   id: string;
   username: string;
