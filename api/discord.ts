@@ -115,7 +115,7 @@ export const fetchChannels = async (
   await waitForInterval();
   const guildMemberResponse: AxiosResponse<FetchedGuildMember> = await axios({
     method: "get",
-    url: `https://discord.com/api/v9/users/@me/${guildId}/member`,
+    url: `https://discord.com/api/v9/users/@me/guilds/${guildId}/member`,
     headers: { authorization: token },
   });
   await waitForInterval();
