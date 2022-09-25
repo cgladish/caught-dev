@@ -68,7 +68,11 @@ const MenuLink = (props: {
       <ListItemButton
         component={Link}
         to={props.to}
-        selected={location.pathname === props.to}
+        selected={
+          props.to === "/"
+            ? location.pathname === "/"
+            : location.pathname.startsWith(props.to)
+        }
       >
         <ListItemIcon>{props.iconElement}</ListItemIcon>
         <ListItemText primary={props.text} />

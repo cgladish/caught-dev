@@ -19,9 +19,9 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ActionType as DiscordActionType } from "../../../redux/discord/actions";
 import {
   getDiscordPreservationRules,
@@ -29,11 +29,14 @@ import {
 } from "../../../redux/preservationRules/selectors";
 import { ActionType as PreservationRulesActionType } from "../../../redux/preservationRules/actions";
 import { getDmChannels, getGuilds } from "../../../redux/discord/selectors";
+import { DiscordSelected } from "../../../../types/discord";
 
 export default function PreservationRule() {
   const [viewedGuildId, setViewedGuildId] = useState<string | null>(null);
   const [viewedChannelId, setViewedChannelId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<number>(0);
+
+  const navigate = useNavigate();
 
   const {
     palette: { primary },
@@ -43,6 +46,7 @@ export default function PreservationRule() {
   const preservationRuleId = Number(params.preservationRuleId);
   const preservationRules = useSelector(getDiscordPreservationRules);
   const preservationRule = preservationRules?.[preservationRuleId];
+  const selected = preservationRule?.selected as DiscordSelected | undefined;
 
   const guilds = useSelector(getGuilds);
   const dmChannels = useSelector(getDmChannels);
@@ -64,27 +68,66 @@ export default function PreservationRule() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    dispatch({
+      type: PreservationRulesActionType.fetchStart,
+      payload: { appName: "discord" },
+    });
     dispatch({ type: DiscordActionType.fetchGuildsStart });
-  }, []);
-
-  useEffect(() => {
     dispatch({ type: DiscordActionType.fetchDmChannelsStart });
   }, []);
 
+  const filteredGuilds = useMemo(
+    () =>
+      guilds &&
+      selected &&
+      Object.values(guilds).filter(({ id }) => selected.guilds[id]),
+    [guilds, selected]
+  );
+  const filteredChannels = useMemo(
+    () =>
+      viewedGuildId &&
+      channels &&
+      selected &&
+      Object.values(channels).filter(({ id }) =>
+        selected.guilds[viewedGuildId]?.channelIds?.includes(id)
+      ),
+    [channels, selected]
+  );
+  const filteredDmChannels = useMemo(
+    () =>
+      dmChannels &&
+      selected &&
+      Object.values(dmChannels).filter(({ id }) =>
+        selected.dmChannelIds.includes(id)
+      ),
+    [dmChannels, selected]
+  );
+
   if (!preservationRule) {
-    return null;
+    return <LinearProgress />;
   }
 
-  const showServers = selectedTab === 0 && !viewedGuildId;
-  const showChannels = selectedTab === 0 && viewedGuildId;
-  const showDms = selectedTab === 1;
+  const showServers =
+    !!filteredGuilds?.length && selectedTab === 0 && !viewedGuildId;
+  const showChannels =
+    !!filteredGuilds?.length && selectedTab === 0 && viewedGuildId;
+  const showDms =
+    !!filteredDmChannels?.length &&
+    (filteredGuilds?.length ? selectedTab === 1 : selectedTab === 0);
 
   return (
-    <div style={{ marginLeft: 40, marginTop: 20, width: 1000 }}>
-      <div style={{ display: "flex" }}>
-        <Typography variant="h6" style={{ marginBottom: 10 }}>
-          {preservationRule.name}
-        </Typography>
+    <div style={{ marginLeft: 40, marginTop: 20, width: 850 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: 10,
+        }}
+      >
+        <IconButton onClick={() => navigate("..")}>
+          <NavigateBefore />
+        </IconButton>
+        <Typography variant="h6">{preservationRule.name}</Typography>
         <IconButton style={{ marginLeft: "auto" }}>
           <Edit />
         </IconButton>
@@ -123,8 +166,8 @@ export default function PreservationRule() {
           onChange={(event, tabIndex) => setSelectedTab(tabIndex)}
           style={{ height: 48 }}
         >
-          <Tab label="Servers" />
-          <Tab label="DMs" />
+          {!!filteredGuilds?.length && <Tab label="Servers" />}
+          {!!filteredDmChannels?.length && <Tab label="DMs" />}
         </Tabs>
         <div
           style={{
@@ -133,7 +176,7 @@ export default function PreservationRule() {
             width: showServers ? "100%" : 0,
           }}
         >
-          {guilds ? (
+          {filteredGuilds ? (
             <>
               {showServers && (
                 <div
@@ -164,7 +207,7 @@ export default function PreservationRule() {
                 }}
                 dense
               >
-                {Object.values(guilds).map((guild) => (
+                {filteredGuilds.map((guild) => (
                   <ListItem key={guild.id} disablePadding>
                     <ListItemButton onClick={() => setViewedGuildId(guild.id)}>
                       <ListItemAvatar>
@@ -202,7 +245,7 @@ export default function PreservationRule() {
             width: showChannels ? "100%" : 0,
           }}
         >
-          {channels ? (
+          {filteredChannels && viewedGuild ? (
             <>
               {showChannels && (
                 <div
@@ -246,7 +289,7 @@ export default function PreservationRule() {
                 }}
                 dense
               >
-                {Object.values(channels).map((channel) => (
+                {filteredChannels.map((channel) => (
                   <ListItem key={channel.id} disablePadding>
                     <ListItemButton
                       onClick={() => setViewedChannelId(channel.id)}
@@ -277,7 +320,7 @@ export default function PreservationRule() {
             width: showDms ? "100%" : 0,
           }}
         >
-          {dmChannels ? (
+          {filteredDmChannels ? (
             <>
               {showDms && (
                 <div
@@ -308,7 +351,7 @@ export default function PreservationRule() {
                 }}
                 dense
               >
-                {Object.values(dmChannels).map((dmChannel) => (
+                {filteredDmChannels.map((dmChannel) => (
                   <ListItem key={dmChannel.id} disablePadding>
                     <ListItemButton
                       onClick={() => setViewedChannelId(dmChannel.id)}
