@@ -6,7 +6,7 @@ const DISCORD_EPOCH = BigInt(1420070400000);
 export const datetimeToSnowflake = (datetime: Date): bigint =>
   (BigInt(datetime.getTime()) - DISCORD_EPOCH) << BigInt(22);
 
-const RATE_LIMIT_INTERVAL = 150; // 150ms
+const RATE_LIMIT_INTERVAL = 100; // 100ms
 export const waitForInterval = (() => {
   let lastFetchTime = new Date(0);
   return () => {
@@ -358,16 +358,18 @@ const computePermissions = (
   return computeOverwrites(basePermissions, member, channel);
 };
 const VIEW_CHANNEL = 1 << 10;
-const READ_MESSAGE_HISTORY = 1 << 16;
 export const hasPermissions = (
   member: FetchedGuildMember,
   guild: FetchedGuildInfo,
-  channel: FetchedChannelInfo
+  channel: FetchedChannelInfo,
+  desiredPermissions = [VIEW_CHANNEL]
 ) => {
   const permissions = computePermissions(member, guild, channel);
   return (
     permissions === ALL ||
-    ((permissions & VIEW_CHANNEL) === VIEW_CHANNEL &&
-      (permissions & READ_MESSAGE_HISTORY) === READ_MESSAGE_HISTORY)
+    desiredPermissions.every(
+      (desiredPermission) =>
+        (permissions & desiredPermission) === desiredPermission
+    )
   );
 };

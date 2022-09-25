@@ -3,8 +3,8 @@ import {
   Box,
   Button,
   Card,
-  CardActions,
   CardContent,
+  Divider,
   IconButton,
   LinearProgress,
   LinearProgressProps,
@@ -41,7 +41,7 @@ function LinearProgressWithLabel({
           variant="body2"
           color={errored ? "error" : "text.secondary"}
         >
-          {errored ? "Error!" : `${Math.round(props.value)}%`}
+          {Math.round(props.value)}%
         </Typography>
       </Box>
     </Box>
@@ -141,83 +141,92 @@ export default function PreservationRules() {
                 }}
               >
                 <CardContent>
-                  <Typography variant="h6">{preservationRule.name}</Typography>
+                  <div style={{ display: "flex" }}>
+                    <Typography variant="h6">
+                      {preservationRule.name}
+                    </Typography>
+                    <IconButton
+                      style={{ marginLeft: "auto" }}
+                      disabled={
+                        isSaving ||
+                        (ruleBackupProgress &&
+                          ruleBackupProgress.status !== "complete")
+                      }
+                    >
+                      <Visibility />
+                    </IconButton>
+                    <IconButton
+                      disabled={
+                        isSaving ||
+                        (ruleBackupProgress &&
+                          ruleBackupProgress.status !== "complete")
+                      }
+                    >
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      onClick={() =>
+                        dispatch({
+                          type: ActionType.deleteStart,
+                          payload: {
+                            appName: "discord",
+                            preservationRuleId: preservationRule.id,
+                          },
+                        })
+                      }
+                      disabled={isSaving}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </div>
                   <Typography color="text.secondary">
                     {(preservationRule.createdAt.getTime() ===
                     preservationRule.updatedAt.getTime()
                       ? "Created "
                       : "Edited ") + timeAgo.format(preservationRule.updatedAt)}
                   </Typography>
-                </CardContent>
-                <CardActions disableSpacing>
                   {ruleBackupProgress && (
-                    <div
-                      style={{
-                        display: "flex",
-                        paddingLeft: 10,
-                        width: "100%",
-                      }}
-                    >
-                      <Typography
-                        style={{ whiteSpace: "nowrap", marginRight: 10 }}
-                        color="text.secondary"
+                    <>
+                      <Divider style={{ marginTop: 20 }} />
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          width: "100%",
+                          marginTop: 20,
+                        }}
                       >
-                        {ruleBackupProgress.status === "queued" && "Queued"}
-                        {ruleBackupProgress.status === "preparing" &&
-                          "Preparing to preserve..."}
-                        {ruleBackupProgress.status === "started" &&
-                          "Preserving:"}
-                        {ruleBackupProgress.status === "complete" &&
-                          "Preservation complete"}
-                      </Typography>
-                      {(ruleBackupProgress.status === "started" ||
-                        ruleBackupProgress.status === "errored") && (
-                        <LinearProgressWithLabel
-                          value={Math.floor(
-                            Math.min(
-                              ruleBackupProgress.progressRatio * 100,
-                              100
-                            )
-                          )}
-                          errored={ruleBackupProgress.status === "errored"}
-                        />
-                      )}
-                    </div>
+                        <Typography
+                          style={{ whiteSpace: "nowrap", marginRight: 10 }}
+                          color="text.secondary"
+                        >
+                          {ruleBackupProgress.status === "queued" && "Queued"}
+                          {ruleBackupProgress.status === "preparing" &&
+                            "Preparing to preserve..."}
+                          {ruleBackupProgress.status === "started" &&
+                            `Preserved ${ruleBackupProgress.currentMessages.toLocaleString()} messages of ${ruleBackupProgress.totalMessages.toLocaleString()} total`}
+                          {ruleBackupProgress.status === "complete" &&
+                            "Preservation complete"}
+                        </Typography>
+                        {["pending", "started", "errored"].includes(
+                          ruleBackupProgress.status
+                        ) && (
+                          <LinearProgressWithLabel
+                            value={Math.floor(
+                              Math.min(
+                                (ruleBackupProgress.currentMessages /
+                                  ruleBackupProgress.totalMessages) *
+                                  100,
+                                100
+                              )
+                            )}
+                            errored={ruleBackupProgress.status === "errored"}
+                          />
+                        )}
+                      </div>
+                    </>
                   )}
-                  <IconButton
-                    style={{ marginLeft: "auto" }}
-                    disabled={
-                      isSaving ||
-                      (ruleBackupProgress &&
-                        ruleBackupProgress.status !== "complete")
-                    }
-                  >
-                    <Visibility />
-                  </IconButton>
-                  <IconButton
-                    disabled={
-                      isSaving ||
-                      (ruleBackupProgress &&
-                        ruleBackupProgress.status !== "complete")
-                    }
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    onClick={() =>
-                      dispatch({
-                        type: ActionType.deleteStart,
-                        payload: {
-                          appName: "discord",
-                          preservationRuleId: preservationRule.id,
-                        },
-                      })
-                    }
-                    disabled={isSaving}
-                  >
-                    <Delete />
-                  </IconButton>
-                </CardActions>
+                </CardContent>
               </Card>
             );
           })}

@@ -67,7 +67,8 @@ export const getLatestChannelMessage = async (
 
 export type BackupsInProgress = {
   [preservationRuleId: number]: {
-    progressRatio: number;
+    currentMessages: number;
+    totalMessages: number;
     status: "queued" | "preparing" | "started" | "complete" | "errored";
   };
 };
@@ -92,7 +93,8 @@ export const initialBackupQueue = queue({
 
 export const addInitialBackupToQueue = (preservationRule: PreservationRule) => {
   backupsInProgress[preservationRule.id] = {
-    progressRatio: 0,
+    currentMessages: 0,
+    totalMessages: 0,
     status: "queued",
   };
   initialBackupQueue.push(() => runInitialBackupDiscord(preservationRule));
@@ -118,7 +120,6 @@ export const runInitialBackupDiscord = async (
       : 0;
     const endSnowflake = datetimeToSnowflake(endDatetime ?? new Date());
 
-    let totalMessages = 0;
     for (let [guildId, { channelIds }] of Object.entries(selected.guilds)) {
       if (!channelIds) {
         const channels = await retry(() => fetchChannels(guildId), {
@@ -129,7 +130,7 @@ export const runInitialBackupDiscord = async (
       }
 
       for (let channelId of channelIds) {
-        totalMessages += await retry(
+        backupInProgress.totalMessages += await retry(
           () =>
             fetchMessagesCount({
               guildId,
@@ -141,7 +142,7 @@ export const runInitialBackupDiscord = async (
         );
       }
     }
-    let messagesFetched = await retry(
+    backupInProgress.currentMessages = await retry(
       () => getMessagesCount(preservationRule.id),
       {
         retries: 3,
@@ -149,8 +150,6 @@ export const runInitialBackupDiscord = async (
     );
 
     backupInProgress.status = "started";
-    backupInProgress.progressRatio = messagesFetched / totalMessages;
-
     for (let { channelIds } of Object.values(selected.guilds)) {
       for (let channelId of channelIds!) {
         const latestChannelMessage = await retry(
@@ -195,13 +194,11 @@ export const runInitialBackupDiscord = async (
               { retries: 2 }
             );
           }
-          messagesFetched += messages.length;
-          backupInProgress.progressRatio = messagesFetched / totalMessages;
+          backupInProgress.currentMessages += messages.length;
         }
       }
     }
     backupInProgress.status = "complete";
-    backupInProgress.progressRatio = 1;
 
     await updatePreservationRule(preservationRule.id, {
       ...pick(

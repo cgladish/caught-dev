@@ -861,7 +861,7 @@ describe("discord", () => {
           {
             id: "1023344408466300989",
             type: 0,
-            allow: "66560",
+            allow: "1024",
             deny: "0",
           },
           {
@@ -1095,7 +1095,7 @@ describe("discord", () => {
     });
 
     it("checks permissions correctly for user with some permissions", () => {
-      const shouldHavePermissions = [0, 1, 3, 5, 6, 9];
+      const shouldHavePermissions = [0, 1, 3, 5, 6, 7, 9];
       channels.forEach((channel, index) => {
         expect(
           hasPermissions(
@@ -1108,7 +1108,7 @@ describe("discord", () => {
     });
 
     it("checks permissions correctly for user without roles", () => {
-      const shouldHavePermissions = [0, 1, 3, 6, 9];
+      const shouldHavePermissions = [0, 1, 3, 6, 7, 9];
       channels.forEach((channel, index) => {
         expect(hasPermissions(member, guild, channel)).toEqual(
           shouldHavePermissions.includes(index)
