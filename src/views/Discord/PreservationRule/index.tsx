@@ -34,6 +34,9 @@ import { DiscordSelected } from "../../../../types/discord";
 export default function PreservationRule() {
   const [viewedGuildId, setViewedGuildId] = useState<string | null>(null);
   const [viewedChannelId, setViewedChannelId] = useState<string | null>(null);
+  const [viewedDmChannelId, setViewedDmChannelId] = useState<string | null>(
+    null
+  );
   const [selectedTab, setSelectedTab] = useState<number>(0);
 
   const navigate = useNavigate();
@@ -53,6 +56,12 @@ export default function PreservationRule() {
 
   const viewedGuild = viewedGuildId ? guilds?.[viewedGuildId] : null;
   const channels = viewedGuild?.channels;
+  const viewedChannel = viewedChannelId
+    ? viewedGuild?.channels?.[viewedChannelId]
+    : null;
+  const viewedDmChannel = viewedDmChannelId
+    ? dmChannels?.[viewedDmChannelId]
+    : null;
 
   useEffect(() => {
     if (viewedGuildId && !channels) {
@@ -103,17 +112,23 @@ export default function PreservationRule() {
     [dmChannels, selected]
   );
 
+  const channelMessages: string[] | undefined = [];
+  const dmChannelMessages: string[] | undefined = [];
+
   if (!preservationRule) {
     return <LinearProgress />;
   }
 
-  const showServers =
-    !!filteredGuilds?.length && selectedTab === 0 && !viewedGuildId;
-  const showChannels =
-    !!filteredGuilds?.length && selectedTab === 0 && viewedGuildId;
-  const showDms =
+  const showServersTab = !!filteredGuilds?.length && selectedTab === 0;
+  const showServers = showServersTab && !viewedGuildId;
+  const showChannels = showServersTab && !!viewedGuildId && !viewedChannelId;
+  const showChannelMessages = showServersTab && !!viewedChannelId;
+
+  const showDmsTab =
     !!filteredDmChannels?.length &&
     (filteredGuilds?.length ? selectedTab === 1 : selectedTab === 0);
+  const showDms = showDmsTab && !viewedDmChannelId;
+  const showDmChannelMessages = showDmsTab && !!viewedDmChannelId;
 
   return (
     <div style={{ marginLeft: 40, marginTop: 20, width: 850 }}>
@@ -354,6 +369,87 @@ export default function PreservationRule() {
                 {filteredDmChannels.map((dmChannel) => (
                   <ListItem key={dmChannel.id} disablePadding>
                     <ListItemButton
+                      onClick={() => setViewedDmChannelId(dmChannel.id)}
+                    >
+                      <ListItemAvatar>
+                        <Avatar
+                          src={
+                            dmChannel.recipients.length === 1
+                              ? dmChannel.recipients[0]?.avatar
+                                ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
+                                : "app-logos/discord.png"
+                              : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
+                          }
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primaryTypographyProps={{
+                          sx: {
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          },
+                        }}
+                      >
+                        {dmChannel.recipients
+                          .map(({ username }) => username)
+                          .join(", ")}
+                      </ListItemText>
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </>
+          ) : (
+            <LinearProgress />
+          )}
+        </div>
+        <div
+          style={{
+            backgroundColor: "#222",
+            height: showChannelMessages ? "100%" : 0,
+            width: showChannelMessages ? "100%" : 0,
+          }}
+        >
+          {channelMessages && viewedChannel ? (
+            <>
+              {showChannelMessages && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    backgroundColor: primary.dark,
+                    height: 50,
+                  }}
+                >
+                  <IconButton
+                    style={{ marginLeft: 5 }}
+                    onClick={() => setViewedChannelId(null)}
+                  >
+                    <NavigateBefore />
+                  </IconButton>
+                  <Typography
+                    sx={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      marginLeft: "10px",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    # {viewedChannel.name}
+                  </Typography>
+                </div>
+              )}
+              <List
+                style={{
+                  overflowY: "scroll",
+                  maxHeight: 550,
+                }}
+                dense
+              >
+                {/*
+                {filteredDmChannels.map((dmChannel) => (
+                  <ListItem key={dmChannel.id} disablePadding>
+                    <ListItemButton
                       onClick={() => setViewedChannelId(dmChannel.id)}
                     >
                       <ListItemAvatar>
@@ -382,6 +478,91 @@ export default function PreservationRule() {
                     </ListItemButton>
                   </ListItem>
                 ))}
+                        */}
+              </List>
+            </>
+          ) : (
+            <LinearProgress />
+          )}
+        </div>
+        <div
+          style={{
+            backgroundColor: "#222",
+            height: showDmChannelMessages ? "100%" : 0,
+            width: showDmChannelMessages ? "100%" : 0,
+          }}
+        >
+          {dmChannelMessages && viewedDmChannel ? (
+            <>
+              {showDmChannelMessages && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    backgroundColor: primary.dark,
+                    height: 50,
+                  }}
+                >
+                  <IconButton
+                    style={{ marginLeft: 5 }}
+                    onClick={() => setViewedDmChannelId(null)}
+                  >
+                    <NavigateBefore />
+                  </IconButton>
+                  <Typography
+                    sx={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      marginLeft: "10px",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    {viewedDmChannel.recipients
+                      .map(({ username }) => username)
+                      .join(", ")}
+                  </Typography>
+                </div>
+              )}
+              <List
+                style={{
+                  overflowY: "scroll",
+                  maxHeight: 550,
+                }}
+                dense
+              >
+                {/*
+                {filteredDmChannels.map((dmChannel) => (
+                  <ListItem key={dmChannel.id} disablePadding>
+                    <ListItemButton
+                      onClick={() => setViewedChannelId(dmChannel.id)}
+                    >
+                      <ListItemAvatar>
+                        <Avatar
+                          src={
+                            dmChannel.recipients.length === 1
+                              ? dmChannel.recipients[0]?.avatar
+                                ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
+                                : "app-logos/discord.png"
+                              : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
+                          }
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primaryTypographyProps={{
+                          sx: {
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          },
+                        }}
+                      >
+                        {dmChannel.recipients
+                          .map(({ username }) => username)
+                          .join(", ")}
+                      </ListItemText>
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+                        */}
               </List>
             </>
           ) : (
