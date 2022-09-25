@@ -136,6 +136,9 @@ export default function CreateOrEdit() {
 
   return (
     <div style={{ marginLeft: 40, marginTop: 20, width: GRID_WIDTH }}>
+      <Typography variant="h6" style={{ marginBottom: 10 }}>
+        Create a Preservation Rule
+      </Typography>
       <ChannelGrid
         selectedGuilds={selectedGuilds}
         setSelectedGuilds={setSelectedGuilds}

@@ -8,6 +8,7 @@ import Header from "./Header";
 import CreateOrEdit from "./CreateOrEdit";
 import { Routes, Route } from "react-router-dom";
 import PreservationRules from "./PreservationRules";
+import PreservationRule from "./PreservationRule";
 
 export default function Discord() {
   const dispatch = useDispatch<Dispatch>();
@@ -52,7 +53,15 @@ export default function Discord() {
       <Header />
       <Routes>
         <Route path="" element={<PreservationRules />} />
-        <Route path="create" element={<CreateOrEdit />} />
+        <Route
+          path="/rules/:preservationRuleId"
+          element={<PreservationRule />}
+        />
+        <Route path="/rules/create" element={<CreateOrEdit />} />
+        <Route
+          path="/rules/:preservationRuleId/edit"
+          element={<CreateOrEdit />}
+        />
       </Routes>
     </div>
   );

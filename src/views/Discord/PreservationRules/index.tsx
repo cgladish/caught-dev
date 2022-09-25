@@ -116,7 +116,7 @@ export default function PreservationRules() {
         <Button
           variant="contained"
           style={{ marginLeft: 20 }}
-          onClick={() => navigate("create")}
+          onClick={() => navigate("rules/create")}
         >
           <Add />
           Add New
@@ -152,6 +152,7 @@ export default function PreservationRules() {
                         (ruleBackupProgress &&
                           ruleBackupProgress.status !== "complete")
                       }
+                      onClick={() => navigate(`rules/${preservationRule.id}`)}
                     >
                       <Visibility />
                     </IconButton>

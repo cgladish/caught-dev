@@ -2,7 +2,6 @@ import { useEffect, useState, memo, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType as DiscordActionType } from "../../../redux/discord/actions";
 import { Dispatch } from "../../../redux";
-import { getDiscordUserInfo } from "../../../redux/appLogin/selectors";
 import { getDmChannels, getGuilds } from "../../../redux/discord/selectors";
 import { useTheme } from "@mui/material";
 import { NavigateNext, NavigateBefore } from "@mui/icons-material";
@@ -67,7 +66,6 @@ function ChannelGrid({
     palette: { primary },
   } = useTheme();
 
-  const userInfo = useSelector(getDiscordUserInfo);
   const guilds = useSelector(getGuilds);
   const dmChannels = useSelector(getDmChannels);
 
@@ -94,11 +92,11 @@ function ChannelGrid({
 
   useEffect(() => {
     dispatch({ type: DiscordActionType.fetchGuildsStart });
-  }, [userInfo?.id]);
+  }, []);
 
   useEffect(() => {
     dispatch({ type: DiscordActionType.fetchDmChannelsStart });
-  }, [userInfo?.id]);
+  }, []);
 
   useEffect(() => {
     if (viewedGuildId && !channels) {
