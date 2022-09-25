@@ -71,9 +71,23 @@ const regularBackupQueue = queue({
   concurrency: 1,
   autostart: true,
 });
-export const isRegularBackupInProgress = () => !!regularBackupQueue.length;
+export let isRegularBackupInProgress = false;
+regularBackupQueue.on("start", () => {
+  isRegularBackupInProgress = true;
+});
+regularBackupQueue.on("end", () => {
+  isRegularBackupInProgress = false;
+});
 export const addRegularBackupToQueue = (preservationRule: PreservationRule) => {
   regularBackupQueue.push(() => runRegularBackupDiscord(preservationRule));
+};
+export const waitForRegularBackupsToFinish = async () => {
+  while (true) {
+    if (!isRegularBackupInProgress) {
+      break;
+    }
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
+  }
 };
 
 export const runRegularBackupDiscord = async (
@@ -198,6 +212,7 @@ export const runRegularBackupDiscord = async (
         "endDatetime"
       ),
     });
+    console.log("donezo");
   } catch (err) {
     console.error(err);
   }
@@ -293,6 +308,7 @@ export const runInitialBackupDiscord = async (
 
     backupInProgress.status = "started";
     for (let channelId of allChannelIds) {
+      await waitForRegularBackupsToFinish();
       const latestChannelMessage = await retry(
         () => getLatestChannelMessage(preservationRule.id, channelId),
         { retries: 3 }

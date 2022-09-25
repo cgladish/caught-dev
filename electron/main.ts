@@ -104,10 +104,11 @@ app.whenReady().then(async () => {
     }
   });
 
-  cron.schedule("*/60 * * * * *", async () => {
-    if (isRegularBackupInProgress()) {
+  cron.schedule("*/1 * * * *", async () => {
+    if (isRegularBackupInProgress) {
       return;
     }
+    console.log("running regular backup");
     const completePreservationRules = await fetchCompletePreservationRules();
     completePreservationRules.forEach((preservationRule) => {
       if (preservationRule.appName === "discord") {
