@@ -71,6 +71,7 @@ const regularBackupQueue = queue({
   concurrency: 1,
   autostart: true,
 });
+export const isRegularBackupInProgress = () => !!regularBackupQueue.length;
 export const addRegularBackupToQueue = (preservationRule: PreservationRule) => {
   regularBackupQueue.push(() => runRegularBackupDiscord(preservationRule));
 };

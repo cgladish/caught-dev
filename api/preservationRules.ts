@@ -116,6 +116,19 @@ export const fetchPreservationRules = async (
   return preservationRules.map(entityToType);
 };
 
+export const fetchCompletePreservationRules = async (): Promise<
+  PreservationRule[]
+> => {
+  const db = await getDb();
+  const preservationRules = await db<PreservationRuleEntity>(
+    TableName.PreservationRule
+  )
+    .where({ initialBackupComplete: true })
+    .orderBy("updatedAt", "asc")
+    .select();
+  return preservationRules.map(entityToType);
+};
+
 export const fetchIncompletePreservationRules = async (): Promise<
   PreservationRule[]
 > => {

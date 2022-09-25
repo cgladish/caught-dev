@@ -2,6 +2,7 @@ import { app, BrowserWindow, session, ipcMain } from "electron";
 import isDev from "electron-is-dev";
 import debounce from "lodash/debounce";
 import path from "path";
+import cron from "node-cron";
 import { saveAuthentication, deleteAuthentication } from "../api/appLogin";
 import {
   fetchChannels,
@@ -9,10 +10,16 @@ import {
   fetchGuilds,
   fetchUserInfo,
 } from "../api/discord";
-import { addInitialBackupToQueue, getBackupProgress } from "../api/messages";
+import {
+  addInitialBackupToQueue,
+  addRegularBackupToQueue,
+  getBackupProgress,
+  isRegularBackupInProgress,
+} from "../api/messages";
 import {
   createPreservationRule,
   deletePreservationRule,
+  fetchCompletePreservationRules,
   fetchIncompletePreservationRules,
   fetchPreservationRules,
   updatePreservationRule,
@@ -95,5 +102,17 @@ app.whenReady().then(async () => {
     if (preservationRule.appName === "discord") {
       addInitialBackupToQueue(preservationRule);
     }
+  });
+
+  cron.schedule("*/60 * * * * *", async () => {
+    if (isRegularBackupInProgress()) {
+      return;
+    }
+    const completePreservationRules = await fetchCompletePreservationRules();
+    completePreservationRules.forEach((preservationRule) => {
+      if (preservationRule.appName === "discord") {
+        addRegularBackupToQueue(preservationRule);
+      }
+    });
   });
 });
