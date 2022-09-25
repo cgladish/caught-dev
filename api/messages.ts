@@ -212,7 +212,6 @@ export const runRegularBackupDiscord = async (
         "endDatetime"
       ),
     });
-    console.log("donezo");
   } catch (err) {
     console.error(err);
   }

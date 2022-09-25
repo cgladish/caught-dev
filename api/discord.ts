@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { MemoryCache } from "memory-cache-node";
 import { fetchAuthentication } from "./appLogin";
 
 // https://discord.com/developers/docs/reference#snowflakes
@@ -77,6 +78,36 @@ export const fetchGuilds = async (): Promise<
   return response.data;
 };
 
+const fetchGuildMemberCache = new MemoryCache<string, FetchedGuildMember>(
+  1,
+  1000
+);
+export const fetchGuildMember = async (
+  guildId: string
+): Promise<FetchedGuildMember> => {
+  const cachedGuildMember = fetchGuildMemberCache.retrieveItemValue(guildId);
+  if (cachedGuildMember) {
+    return cachedGuildMember;
+  }
+
+  const token = await fetchAuthentication("discord");
+  if (!token) {
+    throw new Error("Not logged in!");
+  }
+  await waitForInterval();
+  const guildMemberResponse: AxiosResponse<FetchedGuildMember> = await axios({
+    method: "get",
+    url: `https://discord.com/api/v9/users/@me/guilds/${guildId}/member`,
+    headers: { authorization: token },
+  });
+  fetchGuildMemberCache.storeExpiringItem(
+    guildId,
+    guildMemberResponse.data,
+    60
+  );
+  return guildMemberResponse.data;
+};
+
 // https://discord.com/developers/docs/resources/channel#channel-object-channel-types
 const TEXT_CHANNEL_TYPES = [0, 1, 3, 5, 10, 11, 12, 15];
 type FetchedChannelInfo = {
@@ -113,12 +144,6 @@ export const fetchChannels = async (
     throw new Error("Not logged in!");
   }
   await waitForInterval();
-  const guildMemberResponse: AxiosResponse<FetchedGuildMember> = await axios({
-    method: "get",
-    url: `https://discord.com/api/v9/users/@me/guilds/${guildId}/member`,
-    headers: { authorization: token },
-  });
-  await waitForInterval();
   const guildResponse: AxiosResponse<FetchedGuildInfo> = await axios({
     method: "get",
     url: `https://discord.com/api/v9/guilds/${guildId}`,
@@ -130,10 +155,11 @@ export const fetchChannels = async (
     url: `https://discord.com/api/v9/guilds/${guildId}/channels`,
     headers: { authorization: token },
   });
+  const guildMember = await fetchGuildMember(guildId);
   return response.data.filter(
     (channel) =>
       TEXT_CHANNEL_TYPES.includes(channel.type) &&
-      hasPermissions(guildMemberResponse.data, guildResponse.data, channel)
+      hasPermissions(guildMember, guildResponse.data, channel)
   );
 };
 
