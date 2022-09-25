@@ -5,7 +5,9 @@ import { DiscordSelected } from "../types/discord";
 import {
   datetimeToSnowflake,
   fetchChannels,
+  fetchDmChannels,
   FetchedMessageInfo,
+  fetchGuilds,
   fetchMessages,
   fetchMessagesCount,
 } from "./discord";
@@ -65,6 +67,141 @@ export const getLatestChannelMessage = async (
   return latestMessage;
 };
 
+const regularBackupQueue = queue({
+  concurrency: 1,
+  autostart: true,
+});
+export const addRegularBackupToQueue = (preservationRule: PreservationRule) => {
+  regularBackupQueue.push(() => runRegularBackupDiscord(preservationRule));
+};
+
+export const runRegularBackupDiscord = async (
+  preservationRule: PreservationRule
+) => {
+  try {
+    const db = await getDb();
+    const selected = preservationRule.selected as DiscordSelected;
+
+    const { startDatetime, endDatetime } = preservationRule;
+    const startSnowflake = startDatetime
+      ? datetimeToSnowflake(startDatetime)
+      : 0;
+    const endSnowflake = datetimeToSnowflake(endDatetime ?? new Date());
+
+    const preservationRuleCreatedSnowflake = datetimeToSnowflake(
+      preservationRule.createdAt
+    );
+    for (let [
+      guildId,
+      { channelIds, autoPreserveNewChannels },
+    ] of Object.entries(selected.guilds)) {
+      if (autoPreserveNewChannels && channelIds) {
+        const channels = await retry(() => fetchChannels(guildId), {
+          retries: 5,
+        });
+        const newChannels = channels.filter(
+          ({ id }) =>
+            !channelIds!.includes(id) &&
+            BigInt(id) > preservationRuleCreatedSnowflake
+        );
+        channelIds.push(...newChannels.map(({ id }) => id));
+      }
+    }
+    if (selected.autoPreserveNewGuilds) {
+      const guilds = await retry(() => fetchGuilds(), {
+        retries: 5,
+      });
+      const newGuilds = guilds.filter(
+        ({ id }) =>
+          !selected.dmChannelIds.includes(id) &&
+          BigInt(id) > preservationRuleCreatedSnowflake
+      );
+      for (let newGuild of newGuilds) {
+        const channels = await retry(() => fetchChannels(newGuild.id), {
+          retries: 5,
+        });
+        selected.guilds[newGuild.id] = {
+          autoPreserveNewChannels: true,
+          channelIds: channels.map(({ id }) => id),
+        };
+      }
+    }
+    if (selected.autoPreserveNewDmChannels) {
+      const dmChannels = await retry(() => fetchDmChannels(), {
+        retries: 5,
+      });
+      const newChannels = dmChannels.filter(
+        ({ id }) =>
+          !selected.dmChannelIds.includes(id) &&
+          BigInt(id) > preservationRuleCreatedSnowflake
+      );
+      selected.dmChannelIds.push(...newChannels.map(({ id }) => id));
+    }
+
+    const allChannelIds = [
+      ...Object.values(selected.guilds).flatMap(
+        ({ channelIds }) => channelIds!
+      ),
+      ...selected.dmChannelIds,
+    ];
+
+    for (let channelId of allChannelIds) {
+      const latestChannelMessage = await retry(
+        () => getLatestChannelMessage(preservationRule.id, channelId),
+        { retries: 3 }
+      );
+
+      let latestMessageExternalId: string | undefined =
+        latestChannelMessage?.externalId;
+      let messagesToCreate: Omit<MessageEntity, "id">[] | undefined;
+      while (!messagesToCreate || messagesToCreate.length) {
+        let messages = await retry(
+          () =>
+            fetchMessages(channelId, {
+              after: latestMessageExternalId ?? startSnowflake.toString(),
+              limit: 100,
+            }),
+          { retries: 5 }
+        );
+        if (
+          endDatetime &&
+          messages[0] &&
+          BigInt(messages[0].id) >= endSnowflake
+        ) {
+          const postFilterIndex = messages.findIndex(
+            ({ id }) => BigInt(id) < endSnowflake
+          );
+          messages =
+            postFilterIndex === -1 ? [] : messages.slice(postFilterIndex);
+        }
+        messagesToCreate = messages.map((fetchedMessage) =>
+          fetchedMessageToEntity(preservationRule.id, channelId, fetchedMessage)
+        );
+        if (messagesToCreate[0]) {
+          latestMessageExternalId = messagesToCreate[0].externalId;
+          await retry(
+            () =>
+              db<MessageEntity>(TableName.Message).insert(messagesToCreate!),
+            { retries: 2 }
+          );
+        }
+      }
+    }
+
+    await updatePreservationRule(preservationRule.id, {
+      ...pick(
+        preservationRule,
+        "name",
+        "selected",
+        "startDatetime",
+        "endDatetime"
+      ),
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 export type BackupsInProgress = {
   [preservationRuleId: number]: {
     currentMessages: number;
@@ -86,11 +223,10 @@ export const getBackupProgress = async (
   return backupProgress;
 };
 
-export const initialBackupQueue = queue({
+const initialBackupQueue = queue({
   concurrency: 1,
   autostart: true,
 });
-
 export const addInitialBackupToQueue = (preservationRule: PreservationRule) => {
   backupsInProgress[preservationRule.id] = {
     currentMessages: 0,
@@ -175,10 +311,10 @@ export const runInitialBackupDiscord = async (
         if (
           endDatetime &&
           messages[0] &&
-          new Date(messages[0].timestamp) >= endDatetime
+          BigInt(messages[0].id) >= endSnowflake
         ) {
           const postFilterIndex = messages.findIndex(
-            ({ timestamp }) => new Date(timestamp) < endDatetime
+            ({ id }) => BigInt(id) < endSnowflake
           );
           messages =
             postFilterIndex === -1 ? [] : messages.slice(postFilterIndex);
