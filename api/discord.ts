@@ -251,13 +251,11 @@ export const fetchMessages = async (
 };
 
 export const fetchMessagesCount = async ({
-  guildId,
   channelId,
   startSnowflake,
   endSnowflake,
 }: {
-  guildId: string;
-  channelId?: string;
+  channelId: string;
   startSnowflake: string;
   endSnowflake: string;
 }) => {
@@ -268,11 +266,10 @@ export const fetchMessagesCount = async ({
   await waitForInterval();
   const response: AxiosResponse<{ total_results: number }> = await axios({
     method: "get",
-    url: `https://discord.com/api/v9/guilds/${guildId}/messages/search`,
+    url: `https://discord.com/api/v9/channels/${channelId}/messages/search`,
     params: {
       min_id: startSnowflake,
       max_id: endSnowflake,
-      channel_id: channelId,
       include_nsfw: true,
     },
     headers: { authorization: token },

@@ -128,19 +128,24 @@ export const runInitialBackupDiscord = async (
         channelIds = channels.map(({ id }) => id);
         selected.guilds[guildId]!.channelIds = channelIds;
       }
+    }
+    const allChannelIds = [
+      ...Object.values(selected.guilds).flatMap(
+        ({ channelIds }) => channelIds!
+      ),
+      ...selected.dmChannelIds,
+    ];
 
-      for (let channelId of channelIds) {
-        backupInProgress.totalMessages += await retry(
-          () =>
-            fetchMessagesCount({
-              guildId,
-              startSnowflake: startSnowflake.toString(),
-              endSnowflake: endSnowflake.toString(),
-              channelId,
-            }),
-          { retries: 5 }
-        );
-      }
+    for (let channelId of allChannelIds) {
+      backupInProgress.totalMessages += await retry(
+        () =>
+          fetchMessagesCount({
+            channelId,
+            startSnowflake: startSnowflake.toString(),
+            endSnowflake: endSnowflake.toString(),
+          }),
+        { retries: 5 }
+      );
     }
     backupInProgress.currentMessages = await retry(
       () => getMessagesCount(preservationRule.id),
@@ -150,52 +155,46 @@ export const runInitialBackupDiscord = async (
     );
 
     backupInProgress.status = "started";
-    for (let { channelIds } of Object.values(selected.guilds)) {
-      for (let channelId of channelIds!) {
-        const latestChannelMessage = await retry(
-          () => getLatestChannelMessage(preservationRule.id, channelId),
-          { retries: 3 }
+    for (let channelId of allChannelIds) {
+      const latestChannelMessage = await retry(
+        () => getLatestChannelMessage(preservationRule.id, channelId),
+        { retries: 3 }
+      );
+      let latestMessageExternalId: string | undefined =
+        latestChannelMessage?.externalId;
+      let messagesToCreate: Omit<MessageEntity, "id">[] | undefined;
+      while (!messagesToCreate || messagesToCreate.length) {
+        let messages = await retry(
+          () =>
+            fetchMessages(channelId, {
+              after: latestMessageExternalId ?? startSnowflake.toString(),
+              limit: 100,
+            }),
+          { retries: 5 }
         );
-        let latestMessageExternalId: string | undefined =
-          latestChannelMessage?.externalId;
-        let messagesToCreate: Omit<MessageEntity, "id">[] | undefined;
-        while (!messagesToCreate || messagesToCreate.length) {
-          let messages = await retry(
-            () =>
-              fetchMessages(channelId, {
-                after: latestMessageExternalId ?? startSnowflake.toString(),
-                limit: 100,
-              }),
-            { retries: 5 }
+        if (
+          endDatetime &&
+          messages[0] &&
+          new Date(messages[0].timestamp) >= endDatetime
+        ) {
+          const postFilterIndex = messages.findIndex(
+            ({ timestamp }) => new Date(timestamp) < endDatetime
           );
-          if (
-            endDatetime &&
-            messages[0] &&
-            new Date(messages[0].timestamp) >= endDatetime
-          ) {
-            const postFilterIndex = messages.findIndex(
-              ({ timestamp }) => new Date(timestamp) < endDatetime
-            );
-            messages =
-              postFilterIndex === -1 ? [] : messages.slice(postFilterIndex);
-          }
-          messagesToCreate = messages.map((fetchedMessage) =>
-            fetchedMessageToEntity(
-              preservationRule.id,
-              channelId,
-              fetchedMessage
-            )
-          );
-          if (messagesToCreate[0]) {
-            latestMessageExternalId = messagesToCreate[0].externalId;
-            await retry(
-              () =>
-                db<MessageEntity>(TableName.Message).insert(messagesToCreate!),
-              { retries: 2 }
-            );
-          }
-          backupInProgress.currentMessages += messages.length;
+          messages =
+            postFilterIndex === -1 ? [] : messages.slice(postFilterIndex);
         }
+        messagesToCreate = messages.map((fetchedMessage) =>
+          fetchedMessageToEntity(preservationRule.id, channelId, fetchedMessage)
+        );
+        if (messagesToCreate[0]) {
+          latestMessageExternalId = messagesToCreate[0].externalId;
+          await retry(
+            () =>
+              db<MessageEntity>(TableName.Message).insert(messagesToCreate!),
+            { retries: 2 }
+          );
+        }
+        backupInProgress.currentMessages += messages.length;
       }
     }
     backupInProgress.status = "complete";
