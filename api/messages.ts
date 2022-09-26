@@ -126,7 +126,12 @@ export const searchMessages = async (
     isLastPage: messages.length <= MESSAGE_LIMIT,
   };
 };
-export const fetchMoreMessages = async (messageId: number, before: boolean) => {
+export const fetchMoreMessages = async (
+  preservationRuleId: number,
+  externalChannelId: string,
+  messageId: number,
+  before: boolean
+) => {
   const db = await getDb();
   const message = await db<MessageEntity>(TableName.Message)
     .where({
@@ -137,7 +142,8 @@ export const fetchMoreMessages = async (messageId: number, before: boolean) => {
     return null;
   }
   const messages = await db<MessageEntity>(TableName.Message)
-    .where("sentAt", before ? "<" : ">", message.sentAt)
+    .where({ preservationRuleId, externalChannelId })
+    .andWhere("sentAt", before ? "<" : ">", message.sentAt)
     .orderBy("sentAt", before ? "desc" : "asc")
     .limit(MESSAGE_LIMIT);
   return messages;

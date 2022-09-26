@@ -5,6 +5,7 @@ import getDb from "../db";
 import { MessageEntity } from "../db/entities";
 import TableName from "../db/tableName";
 import {
+  fetchMoreMessages,
   getLatestChannelMessage,
   getMessagesCount,
   MESSAGE_LIMIT,
@@ -80,7 +81,7 @@ describe("preservationRules", () => {
     });
   });
 
-  describe.only("searchMessages", () => {
+  describe("searchMessages", () => {
     const channelId = "123";
     const channelIdOther = "321";
     const author1 = "123";
@@ -314,6 +315,84 @@ describe("preservationRules", () => {
       expect(searchResult.data.length).toEqual(1);
       expect(searchResult.data).toEqual([messageAuthor1Content2]);
       expect(searchResult.isLastPage).toBeTruthy();
+    });
+  });
+
+  describe("fetchMoreMessages", () => {
+    const channelId = "123";
+    const channelIdOther = "321";
+
+    let preservationRuleId: number;
+    let preservationRuleIdOther: number;
+    let messages: MessageEntity[];
+
+    beforeEach(async () => {
+      preservationRuleId = (await makePreservationRule()).id;
+      preservationRuleIdOther = (await makePreservationRule()).id;
+
+      messages = [];
+      const startDate = new Date("2022-09-21T00:00:00.000Z");
+      for (let i = 0; i < 100; ++i) {
+        const sentAt = addMinutes(startDate, i * 10).toISOString();
+        messages.push(
+          await makeMessage(preservationRuleId, {
+            externalChannelId: channelId,
+            sentAt,
+          })
+        );
+        await makeMessage(preservationRuleIdOther, {
+          externalChannelId: channelId,
+          sentAt,
+        });
+        await makeMessage(preservationRuleId, {
+          externalChannelId: channelIdOther,
+          sentAt,
+        });
+      }
+    });
+
+    it("fetches more messages before provided message ID", async () => {
+      let searchResult = await fetchMoreMessages(
+        preservationRuleId,
+        channelId,
+        messages[50]!.id,
+        true
+      );
+
+      expect(searchResult).toEqual(
+        sortBy(messages.slice(30, 50), "sentAt").reverse()
+      );
+
+      searchResult = await fetchMoreMessages(
+        preservationRuleId,
+        channelId,
+        messages[10]!.id,
+        true
+      );
+
+      expect(searchResult).toEqual(
+        sortBy(messages.slice(0, 10), "sentAt").reverse()
+      );
+    });
+
+    it("fetches more messages after provided message ID", async () => {
+      let searchResult = await fetchMoreMessages(
+        preservationRuleId,
+        channelId,
+        messages[50]!.id,
+        false
+      );
+
+      expect(searchResult).toEqual(messages.slice(51, 71));
+
+      searchResult = await fetchMoreMessages(
+        preservationRuleId,
+        channelId,
+        messages[90]!.id,
+        false
+      );
+
+      expect(searchResult).toEqual(messages.slice(91, 100));
     });
   });
 });
