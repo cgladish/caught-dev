@@ -67,6 +67,82 @@ export const getLatestChannelMessage = async (
   return latestMessage;
 };
 
+export const MESSAGE_LIMIT = 20;
+export const searchMessages = async (
+  preservationRuleId: number,
+  externalChannelId: string,
+  filter?: {
+    content?: string;
+    authorId?: string;
+    startDatetime?: Date;
+    endDatetime?: Date;
+  },
+  before?: number
+): Promise<{
+  data: MessageEntity[];
+  totalCount: number;
+  isLastPage: boolean;
+}> => {
+  const db = await getDb();
+  const createQuery = () => {
+    let query = db<MessageEntity>(TableName.MessageSearch).where({
+      preservationRuleId,
+      externalChannelId,
+    });
+    if (filter?.content) {
+      query = query.andWhereRaw(
+        `content MATCH '"${filter.content
+          .replaceAll('"', '""')
+          .replaceAll("'", "''")}"'`
+      );
+    }
+    if (filter?.authorId) {
+      query = query.andWhere("authorId", filter.authorId);
+    }
+    if (filter?.startDatetime) {
+      query = query.andWhere(
+        "sentAt",
+        ">=",
+        filter.startDatetime.toISOString()
+      );
+    }
+    if (filter?.endDatetime) {
+      query = query.andWhere("sentAt", "<=", filter.endDatetime.toISOString());
+    }
+    if (before) {
+      query = query.andWhere("id", "<", before);
+    }
+    return query;
+  };
+
+  const totalCountResult = await createQuery().count("rowid").first();
+  const messages = await createQuery()
+    .orderBy("sentAt", "desc")
+    .limit(MESSAGE_LIMIT + 1);
+
+  return {
+    data: messages.slice(0, MESSAGE_LIMIT),
+    totalCount: Number(Object.values(totalCountResult!)[0]),
+    isLastPage: messages.length <= MESSAGE_LIMIT,
+  };
+};
+export const fetchMoreMessages = async (messageId: number, before: boolean) => {
+  const db = await getDb();
+  const message = await db<MessageEntity>(TableName.Message)
+    .where({
+      id: messageId,
+    })
+    .first();
+  if (!message) {
+    return null;
+  }
+  const messages = await db<MessageEntity>(TableName.Message)
+    .where("sentAt", before ? "<" : ">", message.sentAt)
+    .orderBy("sentAt", before ? "desc" : "asc")
+    .limit(MESSAGE_LIMIT);
+  return messages;
+};
+
 const regularBackupQueue = queue({
   concurrency: 1,
   autostart: true,

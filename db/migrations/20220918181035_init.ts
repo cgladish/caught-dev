@@ -20,7 +20,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable(TableName.Message, function (table) {
     table.increments("id");
     table
-      .string("preservationRuleId")
+      .integer("preservationRuleId")
       .notNullable()
       .references("id")
       .inTable(TableName.PreservationRule)
@@ -28,15 +28,46 @@ export async function up(knex: Knex): Promise<void> {
       .index();
     table.string("externalId").notNullable().index();
     table.string("externalChannelId").notNullable().index();
-    table.string("authorId").notNullable();
+    table.string("authorId").notNullable().index();
     table.string("authorName").notNullable();
     table.string("authorAvatar");
-    table.string("content").notNullable();
+    table.string("content").notNullable().index();
     table.string("sentAt").notNullable().index();
     table.string("appSpecificDataJson");
 
     table.unique(["preservationRuleId", "externalId"]);
   });
+  await knex.raw(`
+CREATE VIRTUAL TABLE ${TableName.MessageSearch} USING fts5(
+  id UNINDEXED,
+  preservationRuleId UNINDEXED,
+  externalId UNINDEXED,
+  externalChannelId UNINDEXED,
+  authorId UNINDEXED,
+  authorName UNINDEXED,
+  authorAvatar UNINDEXED,
+  content,
+  sentAt UNINDEXED,
+  appSpecificDataJson UNINDEXED,
+  content=${TableName.Message},
+  content_rowid=id
+);
+`);
+  await knex.raw(`
+CREATE TRIGGER message_ai AFTER INSERT ON ${TableName.Message} BEGIN
+  INSERT INTO ${TableName.MessageSearch}(rowid, content) VALUES (new.id, new.content);
+END;
+`);
+  await knex.raw(`
+CREATE TRIGGER message_ad AFTER DELETE ON ${TableName.Message} BEGIN
+  INSERT INTO ${TableName.MessageSearch}(${TableName.MessageSearch}, rowid, content) VALUES('delete', old.id, old.content);
+END;
+`);
+  await knex.raw(`
+CREATE TRIGGER message_au AFTER UPDATE ON ${TableName.Message} BEGIN
+  INSERT INTO ${TableName.MessageSearch}(${TableName.MessageSearch}, rowid, content) VALUES('delete', old.id, old.content);
+  INSERT INTO ${TableName.MessageSearch}(rowid, content) VALUES (new.id, new.content);
+END;`);
 }
 
 export async function down(knex: Knex): Promise<void> {
