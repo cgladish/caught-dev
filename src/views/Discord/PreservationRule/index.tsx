@@ -108,9 +108,6 @@ export default function PreservationRule() {
     [dmChannels, selected]
   );
 
-  const channelMessages: string[] | undefined = [];
-  const dmChannelMessages: string[] | undefined = [];
-
   if (!preservationRule) {
     return <LinearProgress />;
   }
@@ -399,22 +396,28 @@ export default function PreservationRule() {
             <LinearProgress />
           )}
         </div>
-        <Messages
-          visible={showChannelMessages}
-          loading={!(channelMessages && viewedChannel)}
-          title={`# ${viewedChannel?.name}`}
-          onBack={() => setViewedChannelId(null)}
-        />
-        <Messages
-          visible={showDmChannelMessages}
-          loading={!(dmChannelMessages && viewedDmChannel)}
-          title={
-            viewedDmChannel?.recipients
-              .map(({ username }) => username)
-              .join(", ") ?? ""
-          }
-          onBack={() => setViewedDmChannelId(null)}
-        />
+        {viewedChannel && (
+          <Messages
+            visible={showChannelMessages}
+            title={`# ${viewedChannel.name}`}
+            onBack={() => setViewedChannelId(null)}
+            preservationRuleId={preservationRule.id}
+            channelId={viewedChannel.id}
+          />
+        )}
+        {viewedDmChannel && (
+          <Messages
+            visible={showDmChannelMessages}
+            title={
+              viewedDmChannel?.recipients
+                .map(({ username }) => username)
+                .join(", ") ?? ""
+            }
+            onBack={() => setViewedDmChannelId(null)}
+            preservationRuleId={preservationRule.id}
+            channelId={viewedDmChannel.id}
+          />
+        )}
       </Card>
     </div>
   );

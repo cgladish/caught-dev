@@ -5,21 +5,29 @@ import {
   List,
   LinearProgress,
   useTheme,
+  Avatar,
+  ListItem,
+  ListItemAvatar,
+  ListItemButton,
+  ListItemText,
 } from "@mui/material";
-import { useEffect, useState } from "react";
-import { Message } from "../../../../api/messages";
-import { ResourceStatus } from "../../../redux";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Dispatch } from "../../../redux";
+import { ActionType } from "../../../redux/messages/actions";
+import {
+  getMessages,
+  getSearchResults,
+} from "../../../redux/messages/selectors";
 
 export default function Messages({
   visible,
-  loading,
   title,
   onBack,
   preservationRuleId,
   channelId,
 }: {
   visible: boolean;
-  loading: boolean;
   title: string;
   onBack: () => void;
   preservationRuleId: number;
@@ -29,19 +37,21 @@ export default function Messages({
     palette: { primary },
   } = useTheme();
 
-  const [messages, setMessages] = useState<Message[] | null>();
-  const [fetchStatus, setFetchStatus] = useState<ResourceStatus>("initial");
+  const dispatch = useDispatch<Dispatch>();
+
+  const allMessages = useSelector(getMessages);
+  const allSearchResults = useSelector(getSearchResults);
+
+  const messages = allMessages[preservationRuleId]?.[channelId];
+  const searchResults = allSearchResults[preservationRuleId]?.[channelId];
 
   useEffect(() => {
-    (async () => {
-      setFetchStatus("pending");
-      const searchedMessages = await window.api.messages.searchMessages(
-        preservationRuleId,
-        channelId
-      );
-      setMessages(messages);
-      setFetchStatus("success");
-    })();
+    if (!messages) {
+      dispatch({
+        type: ActionType.fetchStart,
+        payload: { preservationRuleId, channelId },
+      });
+    }
   }, []);
 
   return (
@@ -52,7 +62,7 @@ export default function Messages({
         width: visible ? "100%" : 0,
       }}
     >
-      {!loading ? (
+      {messages ? (
         <>
           {visible && (
             <div
@@ -85,39 +95,29 @@ export default function Messages({
             }}
             dense
           >
-            {/*
-                {filteredDmChannels.map((dmChannel) => (
-                  <ListItem key={dmChannel.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => setViewedChannelId(dmChannel.id)}
-                    >
-                      <ListItemAvatar>
-                        <Avatar
-                          src={
-                            dmChannel.recipients.length === 1
-                              ? dmChannel.recipients[0]?.avatar
-                                ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
-                                : "app-logos/discord.png"
-                              : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
-                          }
-                        />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primaryTypographyProps={{
-                          sx: {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      >
-                        {dmChannel.recipients
-                          .map(({ username }) => username)
-                          .join(", ")}
-                      </ListItemText>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-                        */}
+            {messages.map((message) => (
+              <ListItem key={message.id} disablePadding>
+                <ListItemAvatar>
+                  <Avatar
+                    src={
+                      message.authorAvatar
+                        ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
+                        : "app-logos/discord.png"
+                    }
+                  />
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{
+                    sx: {
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
+                >
+                  {message.content}
+                </ListItemText>
+              </ListItem>
+            ))}
           </List>
         </>
       ) : (

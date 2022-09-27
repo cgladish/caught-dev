@@ -5,6 +5,7 @@ import { v4 } from "uuid";
 import { ResourceStatus, RootState } from "./redux";
 import * as AppLoginSelectors from "./redux/appLogin/selectors";
 import * as DiscordSelectors from "./redux/discord/selectors";
+import * as MessagesSelectors from "./redux/messages/selectors";
 import * as PreservationRulesSelectors from "./redux/preservationRules/selectors";
 
 type AlertParams = { type: AlertColor; message: string };
@@ -79,6 +80,16 @@ export default function Alerts({
     showAlert,
     DiscordSelectors.getDmChannelsFetchStatus,
     "Failed to fetch discord DMs"
+  );
+  useShowAlertForStatus(
+    showAlert,
+    MessagesSelectors.getFetchStatus,
+    "Failed to fetch messages"
+  );
+  useShowAlertForStatus(
+    showAlert,
+    MessagesSelectors.getSearchStatus,
+    "Failed to fetch search results"
   );
   useShowAlertForStatus(
     showAlert,
