@@ -8,13 +8,26 @@ import {
   fetchDmChannels,
   FetchedMessageInfo,
   fetchGuilds,
-  fetchMessages,
-  fetchMessagesCount,
+  fetchMessages as fetchDiscordMessages,
+  fetchMessagesCount as fetchDiscordMessagesCount,
 } from "./discord";
 import { PreservationRule, updatePreservationRule } from "./preservationRules";
 import retry from "async-retry";
 import queue from "queue";
 import { pick } from "lodash";
+
+export type Message = {
+  id: number;
+  preservationRuleId: number;
+  externalId: string;
+  externalChannelId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string;
+  content: string;
+  sentAt: Date;
+  appSpecificData?: object;
+};
 
 const fetchedMessageToEntity = (
   preservationRuleId: number,
@@ -44,6 +57,16 @@ const fetchedMessageToEntity = (
   }),
 });
 
+const entityToType = ({
+  sentAt,
+  appSpecificDataJson,
+  ...rest
+}: MessageEntity): Message => ({
+  sentAt: new Date(sentAt),
+  appSpecificData: appSpecificDataJson && JSON.parse(appSpecificDataJson),
+  ...rest,
+});
+
 export const getMessagesCount = async (
   preservationRuleId: number
 ): Promise<number> => {
@@ -58,13 +81,13 @@ export const getMessagesCount = async (
 export const getLatestChannelMessage = async (
   preservationRuleId: number,
   externalChannelId: string
-): Promise<MessageEntity | undefined> => {
+): Promise<Message | undefined> => {
   const db = await getDb();
   const latestMessage = await db<MessageEntity>(TableName.Message)
     .where({ preservationRuleId, externalChannelId })
     .orderBy("sentAt", "desc")
     .first();
-  return latestMessage;
+  return latestMessage && entityToType(latestMessage);
 };
 
 export const MESSAGE_LIMIT = 20;
@@ -79,7 +102,7 @@ export const searchMessages = async (
   },
   before?: number
 ): Promise<{
-  data: MessageEntity[];
+  data: Message[];
   totalCount: number;
   isLastPage: boolean;
 }> => {
@@ -121,32 +144,47 @@ export const searchMessages = async (
     .limit(MESSAGE_LIMIT + 1);
 
   return {
-    data: messages.slice(0, MESSAGE_LIMIT),
+    data: messages.slice(0, MESSAGE_LIMIT).map(entityToType),
     totalCount: Number(Object.values(totalCountResult!)[0]),
     isLastPage: messages.length <= MESSAGE_LIMIT,
   };
 };
-export const fetchMoreMessages = async (
+export const fetchMessages = async (
   preservationRuleId: number,
   externalChannelId: string,
-  messageId: number,
-  before: boolean
-) => {
-  const db = await getDb();
-  const message = await db<MessageEntity>(TableName.Message)
-    .where({
-      id: messageId,
-    })
-    .first();
-  if (!message) {
-    return null;
+  cursor?: {
+    before?: number;
+    after?: number;
   }
-  const messages = await db<MessageEntity>(TableName.Message)
-    .where({ preservationRuleId, externalChannelId })
-    .andWhere("sentAt", before ? "<" : ">", message.sentAt)
-    .orderBy("sentAt", before ? "desc" : "asc")
-    .limit(MESSAGE_LIMIT);
-  return messages;
+): Promise<Message[]> => {
+  const db = await getDb();
+  let query = db<MessageEntity>(TableName.Message).where({
+    preservationRuleId,
+    externalChannelId,
+  });
+  if (cursor?.before) {
+    const message = await db<MessageEntity>(TableName.Message)
+      .where({ id: cursor.before })
+      .first();
+    if (!message) {
+      return [];
+    }
+    query = query
+      .where("sentAt", "<", message.sentAt)
+      .orderBy("sentAt", "desc");
+  } else if (cursor?.after) {
+    const message = await db<MessageEntity>(TableName.Message)
+      .where({ id: cursor.after })
+      .first();
+    if (!message) {
+      return [];
+    }
+    query = query.where("sentAt", ">", message.sentAt).orderBy("sentAt", "asc");
+  } else {
+    query = query.orderBy("sentAt", "desc");
+  }
+  const messages = await query.limit(MESSAGE_LIMIT);
+  return messages.map(entityToType);
 };
 
 const regularBackupQueue = queue({
@@ -254,7 +292,7 @@ export const runRegularBackupDiscord = async (
       while (!messagesToCreate || messagesToCreate.length) {
         let messages = await retry(
           () =>
-            fetchMessages(channelId, {
+            fetchDiscordMessages(channelId, {
               after: latestMessageExternalId ?? startSnowflake.toString(),
               limit: 100,
             }),
@@ -372,7 +410,7 @@ export const runInitialBackupDiscord = async (
     for (let channelId of allChannelIds) {
       backupInProgress.totalMessages += await retry(
         () =>
-          fetchMessagesCount({
+          fetchDiscordMessagesCount({
             channelId,
             startSnowflake: startSnowflake.toString(),
             endSnowflake: endSnowflake.toString(),
@@ -400,7 +438,7 @@ export const runInitialBackupDiscord = async (
       while (!messagesToCreate || messagesToCreate.length) {
         let messages = await retry(
           () =>
-            fetchMessages(channelId, {
+            fetchDiscordMessages(channelId, {
               after: latestMessageExternalId ?? startSnowflake.toString(),
               limit: 100,
             }),

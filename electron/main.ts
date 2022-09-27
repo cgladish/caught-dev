@@ -15,6 +15,8 @@ import {
   addRegularBackupToQueue,
   getBackupProgress,
   isRegularBackupInProgress,
+  searchMessages,
+  fetchMessages,
 } from "../api/messages";
 import {
   createPreservationRule,
@@ -53,6 +55,8 @@ startApiListener("preservationRules", updatePreservationRule);
 startApiListener("preservationRules", deletePreservationRule);
 startApiListener("preservationRules", fetchPreservationRules);
 startApiListener("messages", getBackupProgress);
+startApiListener("messages", searchMessages);
+startApiListener("messages", fetchMessages);
 
 app.whenReady().then(async () => {
   const win = new BrowserWindow({

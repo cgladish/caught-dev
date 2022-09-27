@@ -6,21 +6,43 @@ import {
   LinearProgress,
   useTheme,
 } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Message } from "../../../../api/messages";
+import { ResourceStatus } from "../../../redux";
 
 export default function Messages({
   visible,
   loading,
   title,
   onBack,
+  preservationRuleId,
+  channelId,
 }: {
   visible: boolean;
   loading: boolean;
   title: string;
   onBack: () => void;
+  preservationRuleId: number;
+  channelId: string;
 }) {
   const {
     palette: { primary },
   } = useTheme();
+
+  const [messages, setMessages] = useState<Message[] | null>();
+  const [fetchStatus, setFetchStatus] = useState<ResourceStatus>("initial");
+
+  useEffect(() => {
+    (async () => {
+      setFetchStatus("pending");
+      const searchedMessages = await window.api.messages.searchMessages(
+        preservationRuleId,
+        channelId
+      );
+      setMessages(messages);
+      setFetchStatus("success");
+    })();
+  }, []);
 
   return (
     <div
