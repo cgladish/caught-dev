@@ -94,7 +94,7 @@ export const MESSAGE_LIMIT = 20;
 export const searchMessages = async (
   preservationRuleId: number,
   externalChannelId: string,
-  filter?: {
+  filter: {
     content?: string;
     authorId?: string;
     startDatetime?: Date;

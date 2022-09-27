@@ -39,7 +39,7 @@ export type SearchStartAction = {
   payload: {
     preservationRuleId: number;
     channelId: string;
-    filter?: {
+    filter: {
       content?: string;
       authorId?: string;
       startDatetime?: Date;

@@ -160,20 +160,6 @@ describe("preservationRules", () => {
       }
     });
 
-    it("can search with no filters", async () => {
-      const searchResult = await searchMessages(preservationRuleId, channelId);
-
-      expect(searchResult.data.length).toEqual(20);
-      expect(searchResult.data).toEqual(
-        sortBy(
-          otherMessages.slice(otherMessages.length - MESSAGE_LIMIT),
-          "sentAt"
-        ).reverse()
-      );
-      expect(searchResult.totalCount).toEqual(104);
-      expect(searchResult.isLastPage).toBeFalsy();
-    });
-
     it("can search when filtering by author", async () => {
       const searchResult = await searchMessages(preservationRuleId, channelId, {
         authorId: author1,
