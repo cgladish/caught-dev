@@ -528,6 +528,7 @@ export default function Messages({
               overflowY: "scroll",
               maxHeight: 550,
               height: "100%",
+              width: "100%",
               padding: 0,
             }}
             onScroll={(event) => loadMoreMessages(event)}
