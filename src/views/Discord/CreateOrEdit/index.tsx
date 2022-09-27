@@ -19,13 +19,7 @@ import { TextField, Typography, Tooltip, Button } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { useNavigate } from "react-router-dom";
 import { getGuilds } from "../../../redux/discord/selectors";
-
-const combineDateAndTime = (date: Date, time: Date | null) => {
-  if (!time) {
-    return date;
-  }
-  return new Date(date.toLocaleDateString() + " " + time.toLocaleTimeString());
-};
+import { combineDateAndTime } from "../../../utils";
 
 export default function CreateOrEdit() {
   const dispatch = useDispatch<Dispatch>();

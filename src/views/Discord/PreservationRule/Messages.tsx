@@ -1,4 +1,4 @@
-import { KeyboardArrowDown, NavigateBefore, Search } from "@mui/icons-material";
+import { Cancel, Clear, NavigateBefore, Search } from "@mui/icons-material";
 import {
   IconButton,
   Typography,
@@ -7,8 +7,6 @@ import {
   useTheme,
   Avatar,
   ListItem,
-  ListItemAvatar,
-  ListItemText,
   TextField,
   Button,
   InputAdornment,
@@ -27,6 +25,7 @@ import {
   getSearchStatus,
 } from "../../../redux/messages/selectors";
 import { SearchResult } from "../../../redux/messages/state";
+import { combineDateAndTime } from "../../../utils";
 
 export default function Messages({
   visible,
@@ -59,6 +58,7 @@ export default function Messages({
   const searchResultsEndRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
+  const startDateRef = useRef<HTMLDivElement>(null);
 
   const allMessages = useSelector(getMessages);
   const allSearchResults = useSelector(getSearchResults);
@@ -78,7 +78,8 @@ export default function Messages({
     const onClick = (event: MouseEvent) => {
       if (
         !searchRef.current?.contains(event.target as any) &&
-        !filterMenuRef.current?.contains(event.target as any)
+        !filterMenuRef.current?.contains(event.target as any) &&
+        !startDateRef.current?.contains(event.target as any)
       ) {
         setShowFilterMenu(false);
       }
@@ -115,7 +116,15 @@ export default function Messages({
       payload: {
         preservationRuleId,
         channelId,
-        filter: { content: searchContent || undefined },
+        filter: {
+          content: searchContent || undefined,
+          startDatetime: searchStartDate
+            ? combineDateAndTime(searchStartDate, searchStartTime)
+            : undefined,
+          endDatetime: searchEndDate
+            ? combineDateAndTime(searchEndDate, searchEndTime)
+            : undefined,
+        },
       },
     });
     setShowFilterMenu(false);
@@ -159,16 +168,24 @@ export default function Messages({
           >
             <TextField
               ref={searchRef}
-              type="search"
               placeholder="Search..."
               value={searchContent}
-              onChange={(event) => setSearchContent(event.target.value)}
+              onChange={(event) => {
+                setSearchContent(event.target.value);
+                setShowFilterMenu(true);
+              }}
               onFocus={() => setShowFilterMenu(true)}
+              style={{ width: 250 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
+                ),
+                endAdornment: searchContent && (
+                  <IconButton onClick={() => setSearchContent("")} size="small">
+                    <Clear />
+                  </IconButton>
                 ),
               }}
               size="small"
@@ -183,33 +200,80 @@ export default function Messages({
                 <Paper
                   style={{ padding: "10px 10px", backgroundColor: "#222" }}
                 >
-                  <Typography>From</Typography>
-                  <div style={{ display: "flex" }}>
-                    <DatePicker
-                      label="Start Date"
-                      value={searchStartDate}
-                      onChange={(newValue) => setSearchStartDate(newValue)}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          style={{ width: 160 }}
-                          size="small"
-                        />
-                      )}
-                    />
-                    <TimePicker
-                      label="Start Time"
-                      value={searchStartTime}
-                      onChange={(newValue) => setSearchStartTime(newValue)}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          style={{ width: 150, marginLeft: 5 }}
-                          size="small"
-                        />
-                      )}
-                    />
-                  </div>
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      onSearch();
+                    }}
+                  >
+                    <Typography>From</Typography>
+                    <div style={{ display: "flex", marginTop: 5 }}>
+                      <DatePicker
+                        label="Start Date"
+                        value={searchStartDate}
+                        onChange={(newValue) => setSearchStartDate(newValue)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            style={{ width: 160 }}
+                            size="small"
+                          />
+                        )}
+                        disableOpenPicker
+                      />
+                      <TimePicker
+                        label="Start Time"
+                        value={searchStartTime}
+                        onChange={(newValue) => setSearchStartTime(newValue)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            style={{ width: 150, marginLeft: 5 }}
+                            size="small"
+                          />
+                        )}
+                        disableOpenPicker
+                      />
+                    </div>
+                    <Typography style={{ marginTop: 10 }}>To</Typography>
+                    <div style={{ display: "flex", marginTop: 5 }}>
+                      <DatePicker
+                        label="End Date"
+                        value={searchEndDate}
+                        onChange={(newValue) => setSearchEndDate(newValue)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            style={{ width: 160 }}
+                            size="small"
+                          />
+                        )}
+                        disableOpenPicker
+                      />
+                      <TimePicker
+                        label="End Time"
+                        value={searchEndTime}
+                        onChange={(newValue) => setSearchEndTime(newValue)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            style={{ width: 150, marginLeft: 5 }}
+                            size="small"
+                          />
+                        )}
+                        disableOpenPicker
+                      />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "end" }}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        style={{ marginTop: 20 }}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </form>
                 </Paper>
               </Popper>
             )}
@@ -251,7 +315,7 @@ export default function Messages({
               backgroundColor: "#111",
               maxWidth: 350,
               minWidth: 350,
-              height: "100%",
+              minHeight: "100%",
             }}
           >
             {searchResults ? (
