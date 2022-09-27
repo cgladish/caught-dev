@@ -3,6 +3,7 @@ import isDev from "electron-is-dev";
 import debounce from "lodash/debounce";
 import path from "path";
 import cron from "node-cron";
+import { shell } from "electron";
 import { saveAuthentication, deleteAuthentication } from "../api/appLogin";
 import {
   fetchChannels,
@@ -45,6 +46,9 @@ const startApiListener = (moduleName: string, func: Function) => {
   });
 };
 
+startApiListener("urls", function openExternal(url: string) {
+  shell.openExternal(url);
+});
 startApiListener("appLogin", fetchUserInfo);
 startApiListener("appLogin", deleteAuthentication);
 startApiListener("discord", fetchGuilds);

@@ -19,7 +19,11 @@ import {
 } from "../api/preservationRules";
 
 const makeInvoker =
-  <TFuncType extends (...args: any[]) => Promise<any>>(
+  <
+    TFuncType extends
+      | ((...args: any[]) => Promise<any>)
+      | ((...args: any[]) => any)
+  >(
     moduleName: string,
     funcName: string
   ) =>
@@ -50,6 +54,9 @@ const makeInvoker =
   };
 
 export const api = {
+  urls: {
+    openExternal: makeInvoker<(url: string) => void>("urls", "openExternal"),
+  },
   appLogin: {
     fetchUserInfo: makeInvoker<typeof fetchUserInfo>(
       "appLogin",

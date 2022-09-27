@@ -29,6 +29,13 @@ export type Message = {
   appSpecificData?: object;
 };
 
+export type DiscordMessage = Omit<Message, "appSpecificData"> & {
+  appSpecificData: Pick<
+    FetchedMessageInfo,
+    "attachments" | "embeds" | "sticker_items"
+  >;
+};
+
 const fetchedMessageToEntity = (
   preservationRuleId: number,
   channelId: string,
@@ -371,10 +378,6 @@ export const addInitialBackupToQueue = (preservationRule: PreservationRule) => {
   initialBackupQueue.push(() => runInitialBackupDiscord(preservationRule));
 };
 
-type DiscordSpecificData = Pick<
-  FetchedMessageInfo,
-  "attachments" | "embeds" | "sticker_items"
->;
 export const runInitialBackupDiscord = async (
   preservationRule: PreservationRule
 ) => {

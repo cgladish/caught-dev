@@ -1,4 +1,4 @@
-import { Cancel, Clear, NavigateBefore, Search } from "@mui/icons-material";
+import { Clear, NavigateBefore, Search } from "@mui/icons-material";
 import {
   IconButton,
   Typography,
@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { Dispatch } from "../../../redux";
 import { ActionType } from "../../../redux/messages/actions";
-import { Message } from "../../../../api/messages";
+import { DiscordMessage } from "../../../../api/messages";
 import {
   getMessages,
   getSearchResults,
@@ -28,36 +28,81 @@ import {
 import { combineDateAndTime } from "../../../utils";
 import "./Messages.css";
 
-const MessageItem = ({ message }: { message: Message }) => (
-  <ListItem
-    className="message-content"
-    key={message.id}
-    style={{ padding: "10px 5px" }}
-    disablePadding
-  >
-    <div style={{ display: "flex" }}>
-      <Avatar
-        src={
-          message.authorAvatar
-            ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
-            : "app-logos/discord.png"
-        }
-      />
-      <div style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Typography>{message.authorName}</Typography>
-          <Typography
-            color="text.secondary"
-            style={{ fontSize: ".75rem", marginLeft: 20 }}
-          >
-            {format(message.sentAt, "P")} at {format(message.sentAt, "p")}
+const MessageItem = ({ message }: { message: DiscordMessage }) => {
+  const [viewingFullImage, setViewingFullImage] = useState<boolean>();
+  return (
+    <ListItem
+      className="message-content"
+      key={message.id}
+      style={{ padding: "10px 5px" }}
+      disablePadding
+    >
+      <div style={{ display: "flex" }}>
+        <Avatar
+          src={
+            message.authorAvatar
+              ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
+              : "app-logos/discord.png"
+          }
+        />
+        <div
+          style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Typography style={{ fontWeight: "500" }}>
+              {message.authorName}
+            </Typography>
+            <Typography
+              color="text.secondary"
+              style={{ fontSize: ".75rem", marginLeft: 20 }}
+            >
+              {format(message.sentAt, "P")} at {format(message.sentAt, "p")}
+            </Typography>
+          </div>
+          <Typography style={{ marginTop: "2px" }}>
+            {message.content}
           </Typography>
+          {message.appSpecificData.attachments
+            .filter(({ content_type }) => content_type?.includes("image"))
+            .map(({ filename, url }) => (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Typography
+                  className="message-view-original"
+                  color="text.secondary"
+                  style={{
+                    fontSize: "0.75rem",
+                    cursor: "pointer",
+                    width: "fit-content",
+                  }}
+                  onClick={() => window.api.urls.openExternal(url)}
+                >
+                  View Original
+                </Typography>
+                <img
+                  src={url}
+                  alt={filename}
+                  style={{
+                    borderRadius: 4,
+                    maxHeight: 300,
+                    maxWidth: 300,
+                    height: "auto",
+                    width: "auto",
+                  }}
+                  onClick={() => setViewingFullImage(true)}
+                />
+              </div>
+            ))}
         </div>
-        <Typography style={{ marginTop: "2px" }}>{message.content}</Typography>
       </div>
-    </div>
-  </ListItem>
-);
+    </ListItem>
+  );
+};
 
 export default function Messages({
   visible,
@@ -95,7 +140,10 @@ export default function Messages({
   const allSearchResults = useSelector(getSearchResults);
   const searchStatus = useSelector(getSearchStatus);
 
-  const messages = allMessages[preservationRuleId]?.[channelId];
+  const messages = allMessages[preservationRuleId]?.[channelId] as
+    | DiscordMessage[]
+    | null
+    | undefined;
   const searchResults = allSearchResults[preservationRuleId]?.[channelId];
 
   useEffect(() => {
@@ -125,7 +173,7 @@ export default function Messages({
     }
   }, [searchStatus]);
 
-  const prevMessagesRef = useRef<Message[]>();
+  const prevMessagesRef = useRef<DiscordMessage[]>();
   useEffect(() => {
     if (!prevMessagesRef.current && messages) {
       messagesEndRef.current?.scrollIntoView({ block: "nearest" });
