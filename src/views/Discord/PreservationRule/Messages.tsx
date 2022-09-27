@@ -139,31 +139,63 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
               />
             </Modal>
           )}
-          {nonImageAttachments?.map(({ filename, url }, index) => (
-            <div
-              key={index}
-              style={{
-                background: "#111",
-                height: 40,
-                display: "flex",
-                alignItems: "center",
-                margin: "5px 0 5px 0",
-                borderRadius: 4,
-                border: "1px solid #666",
-                cursor: "pointer",
-                padding: "0 10px",
-                width: "calc(100% - 50px)",
-                justifyContent: "space-between",
-              }}
-              onClick={() => window.api.urls.openExternal(url)}
-            >
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <Attachment />
-                {filename}
+          {nonImageAttachments?.map(
+            ({ filename, url, content_type }, index) => (
+              <div
+                key={index}
+                style={{
+                  background: "#111",
+                  height: 55,
+                  display: "flex",
+                  alignItems: "center",
+                  margin: "5px 0 5px 0",
+                  borderRadius: 4,
+                  border: "1px solid #666",
+                  cursor: "pointer",
+                  padding: "0 10px",
+                  width: "400px",
+                  maxWidth: "400px",
+                }}
+                onClick={() => window.api.urls.openExternal(url)}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Attachment />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      marginLeft: 5,
+                    }}
+                  >
+                    <Typography
+                      style={{
+                        width: "300px",
+                        justifyContent: "space-between",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {filename}
+                    </Typography>
+                    <Typography
+                      color="text.secondary"
+                      style={{ fontSize: ".875rem" }}
+                    >
+                      {content_type}
+                    </Typography>
+                  </div>
+                </div>
+                <Download />
               </div>
-              <Download />
-            </div>
-          ))}
+            )
+          )}
           {message.appSpecificData?.embeds.map((embed) => "EMBED")}
         </div>
       </div>
