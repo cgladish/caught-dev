@@ -198,7 +198,7 @@ export default function Messages({
                 ref={filterMenuRef}
               >
                 <Paper
-                  style={{ padding: "10px 10px", backgroundColor: "#222" }}
+                  style={{ padding: "10px 10px", backgroundColor: "#111" }}
                 >
                   <form
                     onSubmit={(event) => {
@@ -312,7 +312,7 @@ export default function Messages({
         {showSearchResults && (
           <div
             style={{
-              backgroundColor: "#111",
+              backgroundColor: "#333",
               maxWidth: 350,
               minWidth: 350,
               minHeight: "100%",

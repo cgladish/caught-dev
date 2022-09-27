@@ -12,7 +12,6 @@ import {
   Tab,
   Tabs,
   Typography,
-  useTheme,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -36,10 +35,6 @@ export default function PreservationRule() {
   const [selectedTab, setSelectedTab] = useState<number>(0);
 
   const navigate = useNavigate();
-
-  const {
-    palette: { primary },
-  } = useTheme();
 
   const params = useParams();
   const preservationRuleId = Number(params.preservationRuleId);
@@ -299,6 +294,7 @@ export default function PreservationRule() {
                   <ListItem key={channel.id} disablePadding>
                     <ListItemButton
                       onClick={() => setViewedChannelId(channel.id)}
+                      style={{ height: 50 }}
                     >
                       <ListItemText
                         primaryTypographyProps={{

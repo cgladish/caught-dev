@@ -2,6 +2,36 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { MemoryCache } from "memory-cache-node";
 import { fetchAuthentication } from "./appLogin";
 
+const memCache = new MemoryCache<string, object>(5, 1000);
+const addToCache = <TData extends object>({
+  entityName,
+  id,
+  data,
+  ttl,
+}: {
+  entityName: string;
+  id?: string | number;
+  data: TData;
+  ttl?: number;
+}) => {
+  if (ttl) {
+    memCache.storeExpiringItem(entityName + (id ? `-${id}` : ""), data, ttl);
+  } else {
+    memCache.storePermanentItem(entityName + (id ? `-${id}` : ""), data);
+  }
+};
+const retrieveFromCache = <TData extends object>({
+  entityName,
+  id,
+}: {
+  entityName: string;
+  id?: string | number;
+}): TData | undefined => {
+  return memCache.retrieveItemValue(entityName + (id ? `-${id}` : "")) as
+    | TData
+    | undefined;
+};
+
 // https://discord.com/developers/docs/reference#snowflakes
 const DISCORD_EPOCH = BigInt(1420070400000);
 export const datetimeToSnowflake = (datetime: Date): bigint =>
@@ -39,12 +69,25 @@ export const fetchUserInfo = async (): Promise<FetchedUserInfo | null> => {
   if (!token) {
     return null;
   }
+  const user = retrieveFromCache<FetchedUserInfo>({
+    entityName: "fetchUserInfo",
+    id: token,
+  });
+  if (user) {
+    return user;
+  }
   try {
     await waitForInterval();
     const response: AxiosResponse<FetchedUserInfo> = await axios({
       method: "get",
       url: "https://discord.com/api/v9/users/@me",
       headers: { authorization: token },
+    });
+    addToCache({
+      entityName: "fetchUserInfo",
+      id: token,
+      data: response.data,
+      ttl: 60,
     });
     return response.data;
   } catch (err) {
@@ -69,30 +112,42 @@ export const fetchGuilds = async (): Promise<
   if (!token) {
     throw new Error("Not logged in!");
   }
+  const guilds = retrieveFromCache<FetchedGuildsSingleGuildInfo[]>({
+    entityName: "fetchGuilds",
+    id: token,
+  });
+  if (guilds) {
+    return guilds;
+  }
   await waitForInterval();
   const response: AxiosResponse<FetchedGuildsSingleGuildInfo[]> = await axios({
     method: "get",
     url: "https://discord.com/api/v9/users/@me/guilds",
     headers: { authorization: token },
   });
+  addToCache({
+    entityName: "fetchGuilds",
+    id: token,
+    data: response.data,
+    ttl: 60,
+  });
   return response.data;
 };
 
-const fetchGuildMemberCache = new MemoryCache<string, FetchedGuildMember>(
-  1,
-  1000
-);
 export const fetchGuildMember = async (
   guildId: string
 ): Promise<FetchedGuildMember> => {
-  const cachedGuildMember = fetchGuildMemberCache.retrieveItemValue(guildId);
-  if (cachedGuildMember) {
-    return cachedGuildMember;
-  }
-
   const token = await fetchAuthentication("discord");
   if (!token) {
     throw new Error("Not logged in!");
+  }
+
+  const cachedGuildMember = retrieveFromCache<FetchedGuildMember>({
+    entityName: "fetchGuildMember",
+    id: `${token}-${guildId}`,
+  });
+  if (cachedGuildMember) {
+    return cachedGuildMember;
   }
   await waitForInterval();
   const guildMemberResponse: AxiosResponse<FetchedGuildMember> = await axios({
@@ -100,11 +155,12 @@ export const fetchGuildMember = async (
     url: `https://discord.com/api/v9/users/@me/guilds/${guildId}/member`,
     headers: { authorization: token },
   });
-  fetchGuildMemberCache.storeExpiringItem(
-    guildId,
-    guildMemberResponse.data,
-    60
-  );
+  addToCache({
+    entityName: "fetchGuildMember",
+    id: `${token}-${guildId}`,
+    data: guildMemberResponse.data,
+    ttl: 120,
+  });
   return guildMemberResponse.data;
 };
 
@@ -143,12 +199,22 @@ export const fetchChannels = async (
   if (!token) {
     throw new Error("Not logged in!");
   }
+
+  const channels = retrieveFromCache<FetchedChannelInfo[]>({
+    entityName: "fetchChannels",
+    id: `${token}-${guildId}`,
+  });
+  if (channels) {
+    return channels;
+  }
+
   await waitForInterval();
   const guildResponse: AxiosResponse<FetchedGuildInfo> = await axios({
     method: "get",
     url: `https://discord.com/api/v9/guilds/${guildId}`,
     headers: { authorization: token },
   });
+
   await waitForInterval();
   const response: AxiosResponse<FetchedChannelInfo[]> = await axios({
     method: "get",
@@ -156,11 +222,19 @@ export const fetchChannels = async (
     headers: { authorization: token },
   });
   const guildMember = await fetchGuildMember(guildId);
-  return response.data.filter(
+  const filteredChannels = response.data.filter(
     (channel) =>
       TEXT_CHANNEL_TYPES.includes(channel.type) &&
       hasPermissions(guildMember, guildResponse.data, channel)
   );
+  addToCache({
+    entityName: "fetchChannels",
+    id: `${token}-${guildId}`,
+    data: filteredChannels,
+    ttl: 60,
+  });
+
+  return filteredChannels;
 };
 
 type FetchedDmChannelInfo = {
@@ -177,11 +251,24 @@ export const fetchDmChannels = async (): Promise<FetchedDmChannelInfo[]> => {
   if (!token) {
     throw new Error("Not logged in!");
   }
+  const dmChannels = retrieveFromCache<FetchedDmChannelInfo[]>({
+    entityName: "fetchDmChannels",
+    id: token,
+  });
+  if (dmChannels) {
+    return dmChannels;
+  }
   await waitForInterval();
   const response: AxiosResponse<FetchedDmChannelInfo[]> = await axios({
     method: "get",
     url: "https://discord.com/api/v9/users/@me/channels",
     headers: { authorization: token },
+  });
+  addToCache({
+    entityName: "fetchDmChannels",
+    id: token,
+    data: response.data,
+    ttl: 60,
   });
   return response.data;
 };
