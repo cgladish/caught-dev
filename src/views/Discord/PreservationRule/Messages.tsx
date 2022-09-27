@@ -1,4 +1,11 @@
-import { Clear, NavigateBefore, Search } from "@mui/icons-material";
+import {
+  AttachFile,
+  Attachment,
+  Clear,
+  Download,
+  NavigateBefore,
+  Search,
+} from "@mui/icons-material";
 import {
   IconButton,
   Typography,
@@ -48,7 +55,7 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
       style={{ padding: "10px 5px" }}
       disablePadding
     >
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", width: "100%" }}>
         <Avatar
           src={
             message.authorAvatar
@@ -57,7 +64,12 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
           }
         />
         <div
-          style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginLeft: 10,
+            width: "100%",
+          }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
             <Typography style={{ fontWeight: "500" }}>
@@ -73,8 +85,9 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
           <Typography style={{ marginTop: "2px" }}>
             {message.content}
           </Typography>
-          {imageAttachments?.map(({ filename, url }) => (
+          {imageAttachments?.map(({ filename, url }, index) => (
             <div
+              key={index}
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -126,7 +139,31 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
               />
             </Modal>
           )}
-          {nonImageAttachments?.map(({ filename, url }) => "OTHER ATTACHMENTS")}
+          {nonImageAttachments?.map(({ filename, url }, index) => (
+            <div
+              key={index}
+              style={{
+                background: "#111",
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                margin: "5px 0 5px 0",
+                borderRadius: 4,
+                border: "1px solid #666",
+                cursor: "pointer",
+                padding: "0 10px",
+                width: "calc(100% - 50px)",
+                justifyContent: "space-between",
+              }}
+              onClick={() => window.api.urls.openExternal(url)}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Attachment />
+                {filename}
+              </div>
+              <Download />
+            </div>
+          ))}
           {message.appSpecificData?.embeds.map((embed) => "EMBED")}
         </div>
       </div>
