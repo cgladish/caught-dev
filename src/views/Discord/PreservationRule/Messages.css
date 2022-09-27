@@ -1,5 +1,8 @@
+.message-content {
+  background-color: #222;
+}
 .message-content:hover {
-  background-color: #333;
+  background-color: #444;
 }
 .message-view-original:hover {
   color: #eee;

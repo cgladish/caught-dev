@@ -38,7 +38,13 @@ import { combineDateAndTime } from "../../../utils";
 import "./Messages.css";
 import { partition } from "lodash";
 
-const MessageItem = ({ message }: { message: DiscordMessage }) => {
+const MessageItem = ({
+  message,
+  isSearchResult,
+}: {
+  message: DiscordMessage;
+  isSearchResult?: boolean;
+}) => {
   const [viewedImage, setViewedImage] = useState<{
     url: string;
     filename: string;
@@ -53,7 +59,11 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
     <ListItem
       className="message-content"
       key={message.id}
-      style={{ padding: "10px 5px" }}
+      style={{
+        padding: "10px 5px",
+        borderRadius: isSearchResult ? 4 : 0,
+        margin: isSearchResult ? "10px 0" : 0,
+      }}
       disablePadding
     >
       <div style={{ display: "flex", width: "100%" }}>
@@ -112,8 +122,8 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
                 alt={filename}
                 style={{
                   borderRadius: 4,
-                  maxHeight: 300,
-                  maxWidth: 300,
+                  maxHeight: isSearchResult ? 250 : 300,
+                  maxWidth: isSearchResult ? 250 : 300,
                   height: "auto",
                   width: "auto",
                   cursor: "pointer",
@@ -154,8 +164,7 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
                   border: "1px solid #666",
                   cursor: "pointer",
                   padding: "0 10px",
-                  width: "450px",
-                  maxWidth: "450px",
+                  width: isSearchResult ? 250 : 400,
                   justifyContent: "space-between",
                 }}
                 onClick={() => window.api.urls.openExternal(url)}
@@ -176,7 +185,7 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
                   >
                     <Typography
                       style={{
-                        width: "300px",
+                        width: isSearchResult ? 100 : 250,
                         justifyContent: "space-between",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
@@ -258,6 +267,10 @@ export default function Messages({
     | null
     | undefined;
   const searchResults = allSearchResults[preservationRuleId]?.[channelId];
+  const searchResultMessages = searchResults?.data as
+    | DiscordMessage[]
+    | null
+    | undefined;
 
   useEffect(() => {
     if (!messages) {
@@ -535,30 +548,19 @@ export default function Messages({
               minHeight: "100%",
             }}
           >
-            {searchResults ? (
+            {searchResultMessages ? (
               <>
                 <List
                   style={{
                     overflowY: "scroll",
                     maxHeight: 550,
-                    padding: 0,
+                    padding: "0 10px",
                   }}
                   onScroll={(event) => loadMoreSearchResults(event)}
                   dense
                 >
-                  {searchResults.data.map((message) => (
-                    <ListItem key={message.id} disablePadding>
-                      <div>
-                        <Avatar
-                          src={
-                            message.authorAvatar
-                              ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
-                              : "app-logos/discord.png"
-                          }
-                        />
-                        <Typography>{message.content}</Typography>
-                      </div>
-                    </ListItem>
+                  {searchResultMessages.map((message) => (
+                    <MessageItem message={message} isSearchResult />
                   ))}
                 </List>
               </>
