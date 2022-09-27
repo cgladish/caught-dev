@@ -57,7 +57,7 @@ const fetchedMessageToEntity = (
   }),
 });
 
-const entityToType = ({
+export const entityToType = ({
   sentAt,
   appSpecificDataJson,
   ...rest

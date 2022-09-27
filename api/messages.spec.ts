@@ -3,11 +3,12 @@ import { Knex } from "knex";
 import { sortBy } from "lodash";
 import getDb from "../db";
 import { MessageEntity } from "../db/entities";
-import TableName from "../db/tableName";
 import {
-  fetchMoreMessages,
+  entityToType,
+  fetchMessages,
   getLatestChannelMessage,
   getMessagesCount,
+  Message,
   MESSAGE_LIMIT,
   searchMessages,
 } from "./messages";
@@ -47,10 +48,12 @@ describe("preservationRules", () => {
         externalChannelId: "123",
         sentAt: "2022-09-20T10:00:00.000Z",
       });
-      const correctLatestMessage = await makeMessage(preservationRuleId, {
-        externalChannelId: "123",
-        sentAt: "2022-09-21T02:00:00.000Z",
-      });
+      const correctLatestMessage = entityToType(
+        await makeMessage(preservationRuleId, {
+          externalChannelId: "123",
+          sentAt: "2022-09-21T02:00:00.000Z",
+        })
+      );
       await makeMessage(preservationRuleId, {
         externalChannelId: "123",
         sentAt: "2022-09-21T00:00:00.000Z",
@@ -91,50 +94,60 @@ describe("preservationRules", () => {
 
     let preservationRuleId: number;
     let preservationRuleIdOther: number;
-    let messageAuthor1Content1: MessageEntity;
-    let messageAuthor1Content2: MessageEntity;
-    let messageAuthor2Content1: MessageEntity;
-    let messageAuthor2Content2: MessageEntity;
-    let otherMessages: MessageEntity[];
+    let messageAuthor1Content1: Message;
+    let messageAuthor1Content2: Message;
+    let messageAuthor2Content1: Message;
+    let messageAuthor2Content2: Message;
+    let otherMessages: Message[];
 
     beforeEach(async () => {
       preservationRuleId = (await makePreservationRule()).id;
       preservationRuleIdOther = (await makePreservationRule()).id;
 
-      messageAuthor1Content1 = await makeMessage(preservationRuleId, {
-        externalChannelId: channelId,
-        authorId: author1,
-        content: content1,
-        sentAt: "2022-09-21T02:00:00.000Z",
-      });
-      messageAuthor1Content2 = await makeMessage(preservationRuleId, {
-        externalChannelId: channelId,
-        authorId: author1,
-        content: content2,
-        sentAt: "2022-09-21T00:00:00.000Z",
-      });
-      messageAuthor2Content1 = await makeMessage(preservationRuleId, {
-        externalChannelId: channelId,
-        authorId: author2,
-        content: content1,
-        sentAt: "2022-09-21T01:00:00.000Z",
-      });
-      messageAuthor2Content2 = await makeMessage(preservationRuleId, {
-        externalChannelId: channelId,
-        authorId: author2,
-        content: content2,
-        sentAt: "2022-09-21T03:00:00.000Z",
-      });
+      messageAuthor1Content1 = entityToType(
+        await makeMessage(preservationRuleId, {
+          externalChannelId: channelId,
+          authorId: author1,
+          content: content1,
+          sentAt: "2022-09-21T02:00:00.000Z",
+        })
+      );
+      messageAuthor1Content2 = entityToType(
+        await makeMessage(preservationRuleId, {
+          externalChannelId: channelId,
+          authorId: author1,
+          content: content2,
+          sentAt: "2022-09-21T00:00:00.000Z",
+        })
+      );
+      messageAuthor2Content1 = entityToType(
+        await makeMessage(preservationRuleId, {
+          externalChannelId: channelId,
+          authorId: author2,
+          content: content1,
+          sentAt: "2022-09-21T01:00:00.000Z",
+        })
+      );
+      messageAuthor2Content2 = entityToType(
+        await makeMessage(preservationRuleId, {
+          externalChannelId: channelId,
+          authorId: author2,
+          content: content2,
+          sentAt: "2022-09-21T03:00:00.000Z",
+        })
+      );
 
       otherMessages = [];
       const startDate = new Date("2022-09-21T00:00:00.000Z");
       for (let i = 0; i < 100; ++i) {
         const sentAt = addMinutes(startDate, i * 10).toISOString();
         otherMessages.push(
-          await makeMessage(preservationRuleId, {
-            externalChannelId: channelId,
-            sentAt,
-          })
+          entityToType(
+            await makeMessage(preservationRuleId, {
+              externalChannelId: channelId,
+              sentAt,
+            })
+          )
         );
         await makeMessage(preservationRuleIdOther, {
           externalChannelId: channelId,
@@ -318,13 +331,13 @@ describe("preservationRules", () => {
     });
   });
 
-  describe("fetchMoreMessages", () => {
+  describe("fetchMessages", () => {
     const channelId = "123";
     const channelIdOther = "321";
 
     let preservationRuleId: number;
     let preservationRuleIdOther: number;
-    let messages: MessageEntity[];
+    let messages: Message[];
 
     beforeEach(async () => {
       preservationRuleId = (await makePreservationRule()).id;
@@ -335,10 +348,12 @@ describe("preservationRules", () => {
       for (let i = 0; i < 100; ++i) {
         const sentAt = addMinutes(startDate, i * 10).toISOString();
         messages.push(
-          await makeMessage(preservationRuleId, {
-            externalChannelId: channelId,
-            sentAt,
-          })
+          entityToType(
+            await makeMessage(preservationRuleId, {
+              externalChannelId: channelId,
+              sentAt,
+            })
+          )
         );
         await makeMessage(preservationRuleIdOther, {
           externalChannelId: channelId,
@@ -351,46 +366,38 @@ describe("preservationRules", () => {
       }
     });
 
-    it("fetches more messages before provided message ID", async () => {
-      let searchResult = await fetchMoreMessages(
-        preservationRuleId,
-        channelId,
-        messages[50]!.id,
-        true
-      );
+    it("fetches messages", async () => {
+      let searchResult = await fetchMessages(preservationRuleId, channelId);
 
       expect(searchResult).toEqual(
-        sortBy(messages.slice(30, 50), "sentAt").reverse()
-      );
-
-      searchResult = await fetchMoreMessages(
-        preservationRuleId,
-        channelId,
-        messages[10]!.id,
-        true
-      );
-
-      expect(searchResult).toEqual(
-        sortBy(messages.slice(0, 10), "sentAt").reverse()
+        messages.slice(messages.length - MESSAGE_LIMIT).reverse()
       );
     });
 
+    it("fetches more messages before provided message ID", async () => {
+      let searchResult = await fetchMessages(preservationRuleId, channelId, {
+        before: messages[50]!.id,
+      });
+
+      expect(searchResult).toEqual(messages.slice(30, 50).reverse());
+
+      searchResult = await fetchMessages(preservationRuleId, channelId, {
+        before: messages[10]!.id,
+      });
+
+      expect(searchResult).toEqual(messages.slice(0, 10).reverse());
+    });
+
     it("fetches more messages after provided message ID", async () => {
-      let searchResult = await fetchMoreMessages(
-        preservationRuleId,
-        channelId,
-        messages[50]!.id,
-        false
-      );
+      let searchResult = await fetchMessages(preservationRuleId, channelId, {
+        after: messages[50]!.id,
+      });
 
       expect(searchResult).toEqual(messages.slice(51, 71));
 
-      searchResult = await fetchMoreMessages(
-        preservationRuleId,
-        channelId,
-        messages[90]!.id,
-        false
-      );
+      searchResult = await fetchMessages(preservationRuleId, channelId, {
+        after: messages[90]!.id,
+      });
 
       expect(searchResult).toEqual(messages.slice(91, 100));
     });
