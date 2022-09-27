@@ -14,6 +14,7 @@ import {
   Paper,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
+import { format } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { Dispatch } from "../../../redux";
@@ -24,8 +25,39 @@ import {
   getSearchResults,
   getSearchStatus,
 } from "../../../redux/messages/selectors";
-import { SearchResult } from "../../../redux/messages/state";
 import { combineDateAndTime } from "../../../utils";
+import "./Messages.css";
+
+const MessageItem = ({ message }: { message: Message }) => (
+  <ListItem
+    className="message-content"
+    key={message.id}
+    style={{ padding: "10px 5px" }}
+    disablePadding
+  >
+    <div style={{ display: "flex" }}>
+      <Avatar
+        src={
+          message.authorAvatar
+            ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
+            : "app-logos/discord.png"
+        }
+      />
+      <div style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Typography>{message.authorName}</Typography>
+          <Typography
+            color="text.secondary"
+            style={{ fontSize: ".75rem", marginLeft: 20 }}
+          >
+            {format(message.sentAt, "P")} at {format(message.sentAt, "p")}
+          </Typography>
+        </div>
+        <Typography style={{ marginTop: "2px" }}>{message.content}</Typography>
+      </div>
+    </div>
+  </ListItem>
+);
 
 export default function Messages({
   visible,
@@ -117,10 +149,6 @@ export default function Messages({
   const loadMoreSearchResults: React.UIEventHandler<HTMLUListElement> = (
     event
   ) => {
-    console.log(
-      (event.target as HTMLElement).scrollTop,
-      (event.target as HTMLElement).scrollHeight
-    );
     if (
       searchResults &&
       !searchResults.isLastPage &&
@@ -329,18 +357,7 @@ export default function Messages({
             dense
           >
             {messages.map((message) => (
-              <ListItem key={message.id} disablePadding>
-                <div>
-                  <Avatar
-                    src={
-                      message.authorAvatar
-                        ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
-                        : "app-logos/discord.png"
-                    }
-                  />
-                  <Typography>{message.content}</Typography>
-                </div>
-              </ListItem>
+              <MessageItem message={message} />
             ))}
             <div ref={messagesEndRef} />
           </List>
