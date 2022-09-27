@@ -6,6 +6,7 @@ import {
   NavigateBefore,
   Search,
 } from "@mui/icons-material";
+import filesize from "filesize";
 import {
   IconButton,
   Typography,
@@ -140,7 +141,7 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
             </Modal>
           )}
           {nonImageAttachments?.map(
-            ({ filename, url, content_type }, index) => (
+            ({ filename, url, content_type, size }, index) => (
               <div
                 key={index}
                 style={{
@@ -153,8 +154,9 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
                   border: "1px solid #666",
                   cursor: "pointer",
                   padding: "0 10px",
-                  width: "400px",
-                  maxWidth: "400px",
+                  width: "450px",
+                  maxWidth: "450px",
+                  justifyContent: "space-between",
                 }}
                 onClick={() => window.api.urls.openExternal(url)}
               >
@@ -162,7 +164,6 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    width: "100%",
                   }}
                 >
                   <Attachment />
@@ -192,7 +193,20 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
                     </Typography>
                   </div>
                 </div>
-                <Download />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    color="text.secondary"
+                    style={{ fontSize: ".875rem", whiteSpace: "nowrap" }}
+                  >
+                    {filesize(size)}
+                  </Typography>
+                  <Download />
+                </div>
               </div>
             )
           )}
