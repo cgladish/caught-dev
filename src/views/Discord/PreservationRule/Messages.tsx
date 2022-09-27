@@ -2,6 +2,7 @@ import {
   AttachFile,
   Attachment,
   Clear,
+  Close,
   Download,
   NavigateBefore,
   Search,
@@ -548,6 +549,25 @@ export default function Messages({
               minHeight: "100%",
             }}
           >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "5px 10px",
+                background: "#222",
+                borderBottom: "1px solid #111",
+              }}
+            >
+              <Typography>
+                {searchResults?.totalCount
+                  ? `${searchResults.totalCount} results`
+                  : ""}
+              </Typography>
+              <Close
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowSearchResults(false)}
+              />
+            </div>
             {searchResultMessages ? (
               <>
                 <List
