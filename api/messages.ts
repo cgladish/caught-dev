@@ -139,14 +139,16 @@ export const searchMessages = async (
     if (filter?.endDatetime) {
       query = query.andWhere("sentAt", "<=", filter.endDatetime.toISOString());
     }
-    if (before) {
-      query = query.andWhere("id", "<", before);
-    }
     return query;
   };
 
   const totalCountResult = await createQuery().count("rowid").first();
-  const messages = await createQuery()
+
+  let messagesQuery = createQuery();
+  if (before) {
+    messagesQuery = messagesQuery.andWhere("id", "<", before);
+  }
+  const messages = await messagesQuery
     .orderBy("sentAt", "desc")
     .limit(MESSAGE_LIMIT + 1);
 

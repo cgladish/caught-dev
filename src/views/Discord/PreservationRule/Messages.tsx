@@ -81,6 +81,7 @@ const MessageItem = ({
             flexDirection: "column",
             marginLeft: 10,
             width: "100%",
+            maxWidth: "calc(100% - 60px)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -327,7 +328,7 @@ export default function Messages({
     if (
       searchResults &&
       !searchResults.isLastPage &&
-      (event.target as HTMLElement).scrollTop + 550 ===
+      (event.target as HTMLElement).scrollTop + 525 >=
         (event.target as HTMLElement).scrollHeight
     ) {
       dispatch({
@@ -520,7 +521,7 @@ export default function Messages({
           </form>
         </div>
       )}
-      <div style={{ display: "flex", wordBreak: "break-all" }}>
+      <div style={{ display: "flex", wordWrap: "break-word" }}>
         {messages ? (
           <List
             style={{
@@ -552,8 +553,10 @@ export default function Messages({
             <div
               style={{
                 display: "flex",
+                alignItems: "center",
+                height: 35,
                 justifyContent: "space-between",
-                padding: "5px 10px",
+                padding: "0 10px",
                 background: "#222",
                 borderBottom: "1px solid #111",
               }}
@@ -573,7 +576,7 @@ export default function Messages({
                 <List
                   style={{
                     overflowY: "scroll",
-                    maxHeight: 550,
+                    maxHeight: 515,
                     padding: "0 10px",
                   }}
                   onScroll={(event) => loadMoreSearchResults(event)}
