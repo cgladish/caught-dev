@@ -172,7 +172,7 @@ export default function PreservationRule() {
         <Tabs
           value={selectedTab}
           onChange={(event, tabIndex) => setSelectedTab(tabIndex)}
-          style={{ height: 48 }}
+          style={{ minHeight: 48 }}
         >
           {!!filteredGuilds?.length && <Tab label="Servers" />}
           {!!filteredDmChannels?.length && <Tab label="DMs" />}
