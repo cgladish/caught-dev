@@ -12,6 +12,7 @@ import {
   InputAdornment,
   Popper,
   Paper,
+  Modal,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
@@ -27,9 +28,19 @@ import {
 } from "../../../redux/messages/selectors";
 import { combineDateAndTime } from "../../../utils";
 import "./Messages.css";
+import { partition } from "lodash";
 
 const MessageItem = ({ message }: { message: DiscordMessage }) => {
-  const [viewingFullImage, setViewingFullImage] = useState<boolean>();
+  const [viewedImage, setViewedImage] = useState<{
+    url: string;
+    filename: string;
+  } | null>(null);
+  const [imageAttachments, nonImageAttachments] = message.appSpecificData
+    ?.attachments
+    ? partition(message.appSpecificData.attachments, ({ content_type }) =>
+        content_type?.includes("image")
+      )
+    : [];
   return (
     <ListItem
       className="message-content"
@@ -62,42 +73,60 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
           <Typography style={{ marginTop: "2px" }}>
             {message.content}
           </Typography>
-          {message.appSpecificData.attachments
-            .filter(({ content_type }) => content_type?.includes("image"))
-            .map(({ filename, url }) => (
-              <div
+          {imageAttachments?.map(({ filename, url }) => (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <Typography
+                className="message-view-original"
+                color="text.secondary"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  width: "fit-content",
                 }}
+                onClick={() => window.api.urls.openExternal(url)}
               >
-                <Typography
-                  className="message-view-original"
-                  color="text.secondary"
-                  style={{
-                    fontSize: "0.75rem",
-                    cursor: "pointer",
-                    width: "fit-content",
-                  }}
-                  onClick={() => window.api.urls.openExternal(url)}
-                >
-                  View Original
-                </Typography>
-                <img
-                  src={url}
-                  alt={filename}
-                  style={{
-                    borderRadius: 4,
-                    maxHeight: 300,
-                    maxWidth: 300,
-                    height: "auto",
-                    width: "auto",
-                  }}
-                  onClick={() => setViewingFullImage(true)}
-                />
-              </div>
-            ))}
+                View Original
+              </Typography>
+              <img
+                src={url}
+                alt={filename}
+                style={{
+                  borderRadius: 4,
+                  maxHeight: 300,
+                  maxWidth: 300,
+                  height: "auto",
+                  width: "auto",
+                }}
+                onClick={() => setViewedImage({ url, filename })}
+              />
+            </div>
+          ))}
+          {viewedImage && (
+            <Modal onClose={() => setViewedImage(null)} open>
+              <img
+                src={viewedImage.url}
+                alt={viewedImage.filename}
+                style={{
+                  maxWidth: 800,
+                  maxHeight: 600,
+                  height: "auto",
+                  width: "auto",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              />
+            </Modal>
+          )}
+          {nonImageAttachments?.map(({ filename, url }) => "OTHER ATTACHMENTS")}
+          {message.appSpecificData?.embeds.map((embed) => "EMBED")}
         </div>
       </div>
     </ListItem>

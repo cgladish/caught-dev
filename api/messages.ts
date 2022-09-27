@@ -30,7 +30,7 @@ export type Message = {
 };
 
 export type DiscordMessage = Omit<Message, "appSpecificData"> & {
-  appSpecificData: Pick<
+  appSpecificData?: Pick<
     FetchedMessageInfo,
     "attachments" | "embeds" | "sticker_items"
   >;
