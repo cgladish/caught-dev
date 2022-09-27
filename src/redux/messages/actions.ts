@@ -2,12 +2,12 @@ import { Message } from "../../../api/messages";
 import { SearchResult } from "./state";
 
 export enum ActionType {
-  fetchStart = "@@discord/FETCH_START",
-  fetchSuccess = "@@discord/FETCH_SUCCESS",
-  fetchFailure = "@@discord/FETCH_FAILURE",
-  searchStart = "@@discord/SEARCH_START",
-  searchSuccess = "@@discord/SEARCH_SUCCESS",
-  searchFailure = "@@discord/SEARCH_FAILURE",
+  fetchStart = "@@messages/FETCH_START",
+  fetchSuccess = "@@messages/FETCH_SUCCESS",
+  fetchFailure = "@@messages/FETCH_FAILURE",
+  searchStart = "@@messages/SEARCH_START",
+  searchSuccess = "@@messages/SEARCH_SUCCESS",
+  searchFailure = "@@messages/SEARCH_FAILURE",
 }
 
 export type FetchStartAction = {

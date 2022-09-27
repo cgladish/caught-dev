@@ -55,7 +55,6 @@ export default function Messages({
   const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const searchResultsEndRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const startDateRef = useRef<HTMLDivElement>(null);
@@ -102,13 +101,51 @@ export default function Messages({
     prevMessagesRef.current = messages ?? undefined;
   }, [messages]);
 
-  const prevSearchResultsRef = useRef<SearchResult>();
-  useEffect(() => {
-    if (!prevSearchResultsRef.current && searchResults) {
-      searchResultsEndRef.current?.scrollIntoView({ block: "nearest" });
+  const loadMoreMessages: React.UIEventHandler<HTMLUListElement> = (event) => {
+    if (messages?.[0] && (event.target as HTMLElement).scrollTop < 10) {
+      dispatch({
+        type: ActionType.fetchStart,
+        payload: {
+          preservationRuleId,
+          channelId,
+          cursor: { before: messages[0].id },
+        },
+      });
     }
-    prevSearchResultsRef.current = searchResults ?? undefined;
-  }, [searchResults]);
+  };
+
+  const loadMoreSearchResults: React.UIEventHandler<HTMLUListElement> = (
+    event
+  ) => {
+    console.log(
+      (event.target as HTMLElement).scrollTop,
+      (event.target as HTMLElement).scrollHeight
+    );
+    if (
+      searchResults &&
+      !searchResults.isLastPage &&
+      (event.target as HTMLElement).scrollTop + 550 ===
+        (event.target as HTMLElement).scrollHeight
+    ) {
+      dispatch({
+        type: ActionType.searchStart,
+        payload: {
+          preservationRuleId,
+          channelId,
+          filter: {
+            content: searchContent || undefined,
+            startDatetime: searchStartDate
+              ? combineDateAndTime(searchStartDate, searchStartTime)
+              : undefined,
+            endDatetime: searchEndDate
+              ? combineDateAndTime(searchEndDate, searchEndTime)
+              : undefined,
+          },
+          before: searchResults.data[searchResults.data.length - 1]?.id,
+        },
+      });
+    }
+  };
 
   const onSearch = () => {
     dispatch({
@@ -288,6 +325,7 @@ export default function Messages({
               maxHeight: 550,
               height: "100%",
             }}
+            onScroll={(event) => loadMoreMessages(event)}
             dense
           >
             {messages.map((message) => (
@@ -325,6 +363,8 @@ export default function Messages({
                     overflowY: "scroll",
                     maxHeight: 550,
                   }}
+                  onScroll={(event) => loadMoreSearchResults(event)}
+                  dense
                 >
                   {searchResults.data.map((message) => (
                     <ListItem key={message.id} disablePadding>
@@ -340,7 +380,6 @@ export default function Messages({
                       </div>
                     </ListItem>
                   ))}
-                  <div ref={searchResultsEndRef} />
                 </List>
               </>
             ) : (

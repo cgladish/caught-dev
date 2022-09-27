@@ -110,7 +110,7 @@ export const searchResults = (
           ...action.payload.searchResult.data,
         ],
         "sentAt"
-      );
+      ).reverse();
       newState[action.payload.preservationRuleId]![action.payload.channelId] = {
         data: newMessages,
         totalCount: action.payload.searchResult.totalCount,
