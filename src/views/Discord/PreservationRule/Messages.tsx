@@ -102,6 +102,7 @@ const MessageItem = ({ message }: { message: DiscordMessage }) => {
                   maxWidth: 300,
                   height: "auto",
                   width: "auto",
+                  cursor: "pointer",
                 }}
                 onClick={() => setViewedImage({ url, filename })}
               />
@@ -429,6 +430,7 @@ export default function Messages({
               overflowY: "scroll",
               maxHeight: 550,
               height: "100%",
+              padding: 0,
             }}
             onScroll={(event) => loadMoreMessages(event)}
             dense
@@ -456,6 +458,7 @@ export default function Messages({
                   style={{
                     overflowY: "scroll",
                     maxHeight: 550,
+                    padding: 0,
                   }}
                   onScroll={(event) => loadMoreSearchResults(event)}
                   dense
