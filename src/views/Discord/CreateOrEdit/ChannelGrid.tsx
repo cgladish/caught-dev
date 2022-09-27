@@ -229,7 +229,8 @@ function ChannelGrid({
           style={{
             display: "flex",
             alignItems: "center",
-            backgroundColor: primary.dark,
+            backgroundColor: "#222",
+            borderBottom: "1px solid #111",
             height: 50,
             paddingLeft: 10,
           }}
@@ -239,7 +240,6 @@ function ChannelGrid({
               overflow: "hidden",
               textOverflow: "ellipsis",
               marginLeft: "10px",
-              fontSize: "0.875rem",
             }}
           >
             All Servers
@@ -367,7 +367,7 @@ function ChannelGrid({
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: primary.dark,
+              borderBottom: "1px solid #111",
               height: 50,
             }}
           >
@@ -390,7 +390,6 @@ function ChannelGrid({
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 marginLeft: "10px",
-                fontSize: "0.875rem",
               }}
             >
               {viewedGuild.name}
@@ -491,7 +490,7 @@ function ChannelGrid({
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: primary.dark,
+              borderBottom: "1px solid #111",
               height: 50,
               paddingLeft: 10,
             }}
@@ -501,7 +500,6 @@ function ChannelGrid({
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 marginLeft: "10px",
-                fontSize: "0.875rem",
               }}
             >
               All Conversations

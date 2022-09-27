@@ -191,7 +191,7 @@ export default function PreservationRule() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    backgroundColor: primary.dark,
+                    borderBottom: "1px solid #111",
                     height: 50,
                     paddingLeft: 10,
                   }}
@@ -201,7 +201,6 @@ export default function PreservationRule() {
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       marginLeft: "10px",
-                      fontSize: "0.875rem",
                     }}
                   >
                     All Servers
@@ -260,7 +259,7 @@ export default function PreservationRule() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    backgroundColor: primary.dark,
+                    borderBottom: "1px solid #111",
                     height: 50,
                   }}
                 >
@@ -283,7 +282,6 @@ export default function PreservationRule() {
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       marginLeft: "10px",
-                      fontSize: "0.875rem",
                     }}
                   >
                     {viewedGuild.name}
@@ -335,7 +333,7 @@ export default function PreservationRule() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    backgroundColor: primary.dark,
+                    borderBottom: "1px solid #111",
                     height: 50,
                     paddingLeft: 10,
                   }}
@@ -345,7 +343,6 @@ export default function PreservationRule() {
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       marginLeft: "10px",
-                      fontSize: "0.875rem",
                     }}
                   >
                     All Conversations

@@ -1,4 +1,4 @@
-import { NavigateBefore, Search } from "@mui/icons-material";
+import { KeyboardArrowDown, NavigateBefore, Search } from "@mui/icons-material";
 import {
   IconButton,
   Typography,
@@ -12,9 +12,12 @@ import {
   TextField,
   Button,
   InputAdornment,
+  Popper,
+  Paper,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { Dispatch } from "../../../redux";
 import { ActionType } from "../../../redux/messages/actions";
 import { Message } from "../../../../api/messages";
@@ -46,11 +49,16 @@ export default function Messages({
 
   const [searchContent, setSearchContent] = useState<string>("");
   const [searchStartDate, setSearchStartDate] = useState<Date | null>(null);
+  const [searchStartTime, setSearchStartTime] = useState<Date | null>(null);
   const [searchEndDate, setSearchEndDate] = useState<Date | null>(null);
+  const [searchEndTime, setSearchEndTime] = useState<Date | null>(null);
   const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
+  const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const searchResultsEndRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
 
   const allMessages = useSelector(getMessages);
   const allSearchResults = useSelector(getSearchResults);
@@ -66,6 +74,17 @@ export default function Messages({
         payload: { preservationRuleId, channelId },
       });
     }
+
+    const onClick = (event: MouseEvent) => {
+      if (
+        !searchRef.current?.contains(event.target as any) &&
+        !filterMenuRef.current?.contains(event.target as any)
+      ) {
+        setShowFilterMenu(false);
+      }
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
   }, []);
 
   useEffect(() => {
@@ -99,6 +118,7 @@ export default function Messages({
         filter: { content: searchContent || undefined },
       },
     });
+    setShowFilterMenu(false);
   };
 
   return (
@@ -114,7 +134,7 @@ export default function Messages({
           style={{
             display: "flex",
             alignItems: "center",
-            backgroundColor: primary.dark,
+            borderBottom: "1px solid #111",
             height: 50,
           }}
         >
@@ -126,7 +146,6 @@ export default function Messages({
               overflow: "hidden",
               textOverflow: "ellipsis",
               marginLeft: "10px",
-              fontSize: "0.875rem",
             }}
           >
             {title}
@@ -136,12 +155,15 @@ export default function Messages({
               event.preventDefault();
               onSearch();
             }}
+            style={{ marginLeft: "auto", marginRight: 10 }}
           >
             <TextField
-              label="Search..."
+              ref={searchRef}
               type="search"
+              placeholder="Search..."
               value={searchContent}
               onChange={(event) => setSearchContent(event.target.value)}
+              onFocus={() => setShowFilterMenu(true)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -151,17 +173,50 @@ export default function Messages({
               }}
               size="small"
             />
-            <Button
-              type="submit"
-              variant="contained"
-              style={{ marginLeft: 20 }}
-            >
-              Submit
-            </Button>
+            {showFilterMenu && (
+              <Popper
+                anchorEl={searchRef.current}
+                open={showFilterMenu}
+                placement="bottom-end"
+                ref={filterMenuRef}
+              >
+                <Paper
+                  style={{ padding: "10px 10px", backgroundColor: "#222" }}
+                >
+                  <Typography>From</Typography>
+                  <div style={{ display: "flex" }}>
+                    <DatePicker
+                      label="Start Date"
+                      value={searchStartDate}
+                      onChange={(newValue) => setSearchStartDate(newValue)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          style={{ width: 160 }}
+                          size="small"
+                        />
+                      )}
+                    />
+                    <TimePicker
+                      label="Start Time"
+                      value={searchStartTime}
+                      onChange={(newValue) => setSearchStartTime(newValue)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          style={{ width: 150, marginLeft: 5 }}
+                          size="small"
+                        />
+                      )}
+                    />
+                  </div>
+                </Paper>
+              </Popper>
+            )}
           </form>
         </div>
       )}
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", wordBreak: "break-all" }}>
         {messages ? (
           <List
             style={{
@@ -173,7 +228,7 @@ export default function Messages({
           >
             {messages.map((message) => (
               <ListItem key={message.id} disablePadding>
-                <ListItemAvatar>
+                <div>
                   <Avatar
                     src={
                       message.authorAvatar
@@ -181,17 +236,8 @@ export default function Messages({
                         : "app-logos/discord.png"
                     }
                   />
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{
-                    sx: {
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                >
-                  {message.content}
-                </ListItemText>
+                  <Typography>{message.content}</Typography>
+                </div>
               </ListItem>
             ))}
             <div ref={messagesEndRef} />
@@ -200,7 +246,14 @@ export default function Messages({
           <LinearProgress />
         )}
         {showSearchResults && (
-          <div style={{ backgroundColor: "#111", width: 300, height: "100%" }}>
+          <div
+            style={{
+              backgroundColor: "#111",
+              maxWidth: 350,
+              minWidth: 350,
+              height: "100%",
+            }}
+          >
             {searchResults ? (
               <>
                 <List
@@ -208,11 +261,10 @@ export default function Messages({
                     overflowY: "scroll",
                     maxHeight: 550,
                   }}
-                  dense
                 >
                   {searchResults.data.map((message) => (
                     <ListItem key={message.id} disablePadding>
-                      <ListItemAvatar>
+                      <div>
                         <Avatar
                           src={
                             message.authorAvatar
@@ -220,17 +272,8 @@ export default function Messages({
                               : "app-logos/discord.png"
                           }
                         />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primaryTypographyProps={{
-                          sx: {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      >
-                        {message.content}
-                      </ListItemText>
+                        <Typography>{message.content}</Typography>
+                      </div>
                     </ListItem>
                   ))}
                   <div ref={searchResultsEndRef} />
