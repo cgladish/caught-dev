@@ -26,15 +26,27 @@ const makeInvoker =
   async (
     ...args: Parameters<TFuncType>
   ): Promise<Awaited<ReturnType<TFuncType>>> => {
-    const result: {
+    let result: {
       data: Awaited<ReturnType<TFuncType>>;
       error: string | null;
-    } = await ipcRenderer.invoke(`@@${moduleName}/${funcName}`, ...args);
-
-    if (result.error) {
-      throw new Error(result.error);
+    };
+    // Retry logic since can't use node module in preload
+    for (let i = 0; i < 3; ++i) {
+      if (i) {
+        await new Promise<void>((resolve) =>
+          setTimeout(() => resolve(), 500 * 2 ** i)
+        );
+      }
+      result = await ipcRenderer.invoke(`@@${moduleName}/${funcName}`, ...args);
+      if (!result.error) {
+        break;
+      }
     }
-    return result.data;
+
+    if (result!.error) {
+      throw new Error(result!.error);
+    }
+    return result!.data;
   };
 
 export const api = {
