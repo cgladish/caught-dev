@@ -49,12 +49,19 @@ export default function Messages({
   const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
   const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
 
+  const [messagesElem, setMessagesElem] = useState<HTMLUListElement | null>(
+    null
+  );
+  const [searchResultsElem, setSearchResultsElem] =
+    useState<HTMLUListElement | null>(null);
+
   const messagesStartRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const searchResultsEndRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
-  const startDateRef = useRef<HTMLDivElement>(null);
+
+  const messagesScrollDistanceFromBottom = useRef<number>();
+  const searchResultsScrollDistanceFromTop = useRef<number>();
 
   const allMessages = useSelector(getMessages);
   const allSearchResults = useSelector(getSearchResults);
@@ -81,8 +88,7 @@ export default function Messages({
     const onClick = (event: MouseEvent) => {
       if (
         !searchRef.current?.contains(event.target as any) &&
-        !filterMenuRef.current?.contains(event.target as any) &&
-        !startDateRef.current?.contains(event.target as any)
+        !filterMenuRef.current?.contains(event.target as any)
       ) {
         setShowFilterMenu(false);
       }
@@ -97,13 +103,23 @@ export default function Messages({
     }
   }, [searchStatus]);
 
-  const prevMessagesRef = useRef<DiscordMessage[]>();
   useEffect(() => {
-    if (!prevMessagesRef.current && messages) {
-      messagesEndRef.current?.scrollIntoView({ block: "nearest" });
+    if (messages) {
+      messagesElem?.scrollTo(
+        0,
+        messagesElem.scrollHeight -
+          (messagesScrollDistanceFromBottom.current ?? 0)
+      );
     }
-    prevMessagesRef.current = messages ?? undefined;
   }, [messages]);
+  useEffect(() => {
+    if (searchResults) {
+      searchResultsElem?.scrollTo(
+        0,
+        searchResultsScrollDistanceFromTop.current ?? 0
+      );
+    }
+  }, [searchResults]);
 
   const isMessageStartRefInViewport = useIsInViewport(messagesStartRef);
   useEffect(() => {
@@ -318,12 +334,18 @@ export default function Messages({
       <div style={{ display: "flex", wordWrap: "break-word" }}>
         {messages ? (
           <List
+            ref={(node) => setMessagesElem(node)}
             style={{
               overflowY: "scroll",
               maxHeight: 550,
               height: "100%",
               width: "100%",
               padding: 0,
+            }}
+            onScroll={(event) => {
+              const target = event.target as HTMLUListElement;
+              messagesScrollDistanceFromBottom.current =
+                target.scrollHeight - target.scrollTop;
             }}
             dense
           >
@@ -334,7 +356,6 @@ export default function Messages({
             {messages.map((message) => (
               <MessageItem key={message.id} message={message} />
             ))}
-            <div ref={messagesEndRef} />
           </List>
         ) : (
           <LinearProgress />
@@ -372,10 +393,17 @@ export default function Messages({
             {searchResultMessages ? (
               <>
                 <List
+                  ref={(node) => setSearchResultsElem(node)}
                   style={{
                     overflowY: "scroll",
                     maxHeight: 515,
                     padding: "0 10px",
+                  }}
+                  onScroll={(event) => {
+                    const target = event.target as HTMLUListElement;
+                    searchResultsScrollDistanceFromTop.current =
+                      target.scrollTop;
+                    console.log(searchResultsScrollDistanceFromTop.current);
                   }}
                   dense
                 >

@@ -19,7 +19,7 @@ export const useIsInViewport = <TRef extends Element>(ref: RefObject<TRef>) => {
         observer.disconnect();
       };
     }
-  }, [ref, observer]);
+  }, [ref.current, observer]);
 
   return isIntersecting;
 };
