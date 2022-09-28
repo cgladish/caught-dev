@@ -1,6 +1,13 @@
-import { Attachment, Download } from "@mui/icons-material";
+import { Attachment, Download, Launch } from "@mui/icons-material";
 import filesize from "filesize";
-import { Typography, Avatar, ListItem, Modal, Skeleton } from "@mui/material";
+import {
+  Typography,
+  Avatar,
+  ListItem,
+  Modal,
+  Skeleton,
+  IconButton,
+} from "@mui/material";
 import { forwardRef, useState } from "react";
 import { format } from "date-fns";
 import { DiscordMessage } from "../../../../api/messages";
@@ -90,9 +97,22 @@ export const MessageItem = ({
         padding: "10px 5px",
         borderRadius: isSearchResult ? 4 : 0,
         margin: isSearchResult ? "10px 0" : 0,
+        cursor: isSearchResult ? "pointer" : "default",
+        position: "relative",
+      }}
+      onClick={() => {
+        console.log("clicked");
       }}
       disablePadding
     >
+      {isSearchResult && (
+        <IconButton
+          className="search-result-jump-icon"
+          style={{ position: "absolute", top: 2, right: 2 }}
+        >
+          <Launch />
+        </IconButton>
+      )}
       <div style={{ display: "flex", width: "100%" }}>
         <Avatar
           src={
@@ -141,7 +161,10 @@ export const MessageItem = ({
                   cursor: "pointer",
                   width: "fit-content",
                 }}
-                onClick={() => window.api.urls.openExternal(url)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  window.api.urls.openExternal(url);
+                }}
               >
                 View Original
               </Typography>
@@ -156,7 +179,10 @@ export const MessageItem = ({
                   width: "auto",
                   cursor: "pointer",
                 }}
-                onClick={() => setViewedImage({ url, filename })}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setViewedImage({ url, filename });
+                }}
               />
             </div>
           ))}
@@ -195,7 +221,10 @@ export const MessageItem = ({
                   width: isSearchResult ? 250 : 400,
                   justifyContent: "space-between",
                 }}
-                onClick={() => window.api.urls.openExternal(url)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  window.api.urls.openExternal(url);
+                }}
               >
                 <div
                   style={{

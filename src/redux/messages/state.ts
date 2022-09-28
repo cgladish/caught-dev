@@ -3,7 +3,8 @@ import { ResourceStatus } from "../types";
 
 export type MessagesResult = {
   data: Message[];
-  isLastPage: boolean;
+  isLastPageBefore: boolean;
+  isLastPageAfter: boolean;
 };
 
 export type SearchResult = {

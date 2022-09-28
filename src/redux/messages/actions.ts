@@ -1,4 +1,3 @@
-import { Message } from "../../../api/messages";
 import { MessagesResult, SearchResult } from "./state";
 
 export enum ActionType {
@@ -26,7 +25,13 @@ export type FetchSuccessAction = {
   payload: {
     preservationRuleId: number;
     channelId: string;
-    messagesResult: MessagesResult;
+    cursor?: {
+      before?: number;
+      after?: number;
+    };
+    messagesResult: Awaited<
+      ReturnType<typeof window.api.messages.fetchMessages>
+    >;
   };
 };
 export type FetchFailureAction = {

@@ -24,6 +24,7 @@ function* fetch(action: FetchStartAction) {
       payload: {
         preservationRuleId: action.payload.preservationRuleId,
         channelId: action.payload.channelId,
+        cursor: action.payload.cursor,
         messagesResult,
       },
     });

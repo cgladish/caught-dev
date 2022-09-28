@@ -56,11 +56,13 @@ export default function Messages({
     useState<HTMLUListElement | null>(null);
 
   const messagesStartRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const searchResultsEndRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
 
   const messagesScrollDistanceFromBottom = useRef<number>();
+  const messagesScrollDistanceFromTop = useRef<number>();
   const searchResultsScrollDistanceFromTop = useRef<number>();
 
   const allMessages = useSelector(getMessages);
@@ -123,7 +125,7 @@ export default function Messages({
   useEffect(() => {
     if (
       isMessageStartRefInViewport &&
-      !messagesResult?.isLastPage &&
+      !messagesResult?.isLastPageBefore &&
       messages?.[0]
     ) {
       dispatch({
@@ -136,6 +138,24 @@ export default function Messages({
       });
     }
   }, [isMessageStartRefInViewport]);
+
+  const isMessageEndRefInViewport = useIsInViewport(messagesEndRef);
+  useEffect(() => {
+    if (
+      isMessageEndRefInViewport &&
+      !messagesResult?.isLastPageAfter &&
+      messages?.[messages.length - 1]
+    ) {
+      dispatch({
+        type: ActionType.fetchStart,
+        payload: {
+          preservationRuleId,
+          channelId,
+          cursor: { after: messages[messages.length - 1]?.id },
+        },
+      });
+    }
+  }, [isMessageEndRefInViewport]);
 
   const isSearchResultsEndRefInViewport = useIsInViewport(searchResultsEndRef);
   useEffect(() => {
@@ -349,10 +369,11 @@ export default function Messages({
               const target = event.target as HTMLUListElement;
               messagesScrollDistanceFromBottom.current =
                 target.scrollHeight - target.scrollTop;
+              messagesScrollDistanceFromTop.current = target.scrollTop;
             }}
             dense
           >
-            {!messagesResult?.isLastPage && (
+            {!messagesResult?.isLastPageBefore && (
               <>
                 <LoadingMessageItem />
                 <LoadingMessageItem />
@@ -363,6 +384,14 @@ export default function Messages({
             {messages.map((message) => (
               <MessageItem key={message.id} message={message} />
             ))}
+            {!messagesResult?.isLastPageAfter && (
+              <>
+                <LoadingMessageItem ref={messagesEndRef} />
+                <LoadingMessageItem />
+                <LoadingMessageItem />
+                <LoadingMessageItem />
+              </>
+            )}
           </List>
         ) : (
           <LinearProgress />
@@ -410,7 +439,6 @@ export default function Messages({
                     const target = event.target as HTMLUListElement;
                     searchResultsScrollDistanceFromTop.current =
                       target.scrollTop;
-                    console.log(searchResultsScrollDistanceFromTop.current);
                   }}
                   dense
                 >

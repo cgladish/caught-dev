@@ -4,6 +4,12 @@
 .message-content:hover {
   background-color: #444;
 }
+.message-content .search-result-jump-icon {
+  visibility: hidden;
+}
+.message-content:hover .search-result-jump-icon {
+  visibility: visible;
+}
 .message-view-original:hover {
   color: #eee;
 }

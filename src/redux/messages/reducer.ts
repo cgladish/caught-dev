@@ -72,9 +72,16 @@ export const messages = (
         ],
         "sentAt"
       );
+      const oldMessages =
+        state[action.payload.preservationRuleId]![action.payload.channelId];
       newState[action.payload.preservationRuleId]![action.payload.channelId] = {
         data: newMessages,
-        isLastPage: action.payload.messagesResult.isLastPage,
+        isLastPageBefore: action.payload.cursor?.before
+          ? action.payload.messagesResult.isLastPage
+          : !!oldMessages?.isLastPageBefore,
+        isLastPageAfter: action.payload.cursor?.after
+          ? action.payload.messagesResult.isLastPage
+          : !!oldMessages?.isLastPageAfter,
       };
       return newState;
     }
