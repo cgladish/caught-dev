@@ -118,6 +118,8 @@ export default function PreservationRule() {
   const showDms = showDmsTab && !viewedDmChannelId;
   const showDmChannelMessages = showDmsTab && !!viewedDmChannelId;
 
+  console.log(guilds, dmChannels, filteredGuilds, filteredDmChannels);
+
   return (
     <div style={{ marginLeft: 40, marginTop: 20, width: 850 }}>
       <div
@@ -163,7 +165,7 @@ export default function PreservationRule() {
             ` before ${preservationRule.endDatetime.toLocaleDateString()}`}
         </div>
       )}
-      <Card style={{ height: 648, width: "100%" }}>
+      <Card style={{ height: 598, width: "100%" }}>
         <Tabs
           value={selectedTab}
           onChange={(event, tabIndex) => setSelectedTab(tabIndex)}
@@ -205,7 +207,7 @@ export default function PreservationRule() {
               <List
                 style={{
                   overflowY: "scroll",
-                  maxHeight: 550,
+                  maxHeight: 500,
                 }}
                 dense
               >
@@ -285,7 +287,7 @@ export default function PreservationRule() {
               )}
               <List
                 style={{
-                  maxHeight: 550,
+                  maxHeight: 500,
                   overflowY: "scroll",
                 }}
                 dense
@@ -348,7 +350,7 @@ export default function PreservationRule() {
               <List
                 style={{
                   overflowY: "scroll",
-                  maxHeight: 550,
+                  maxHeight: 500,
                 }}
                 dense
               >

@@ -82,9 +82,11 @@ export const LoadingMessageItem = forwardRef<
 
 export const MessageItem = ({
   message,
+  scrollMessagesToHeight,
   isSearchResult,
 }: {
   message: DiscordMessage;
+  scrollMessagesToHeight: (height: number) => void;
   isSearchResult?: boolean;
 }) => {
   const dispatch = useDispatch<Dispatch>();
@@ -99,9 +101,11 @@ export const MessageItem = ({
   useEffect(() => {
     if (
       (jumpStatus === "pending" || jumpStatus === "success") &&
-      isJumpedToMessage
+      !isSearchResult &&
+      isJumpedToMessage &&
+      myRef?.current
     ) {
-      myRef.current?.scrollIntoView({ block: "center" });
+      scrollMessagesToHeight(myRef.current.offsetTop);
     }
   }, [jumpStatus]);
 

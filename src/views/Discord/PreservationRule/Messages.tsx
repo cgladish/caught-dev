@@ -107,18 +107,21 @@ export default function Messages({
     }
   }, [searchStatus]);
 
+  const scrollMessagesToHeight = (height: number) => {
+    messagesElem?.scrollTo(0, height);
+  };
+
   const prevMessages = useRef<DiscordMessage[] | null | undefined>();
   useEffect(() => {
     if (fetchStatus === "success") {
       // If first element of messages has changed
       if (prevMessages.current?.[0]?.id !== messages?.[0]?.id) {
-        messagesElem?.scrollTo(
-          0,
-          messagesElem.scrollHeight -
-            (messagesScrollDistanceFromBottom.current ?? 0)
+        scrollMessagesToHeight(
+          messagesElem?.scrollHeight ??
+            0 - (messagesScrollDistanceFromBottom.current ?? 0)
         );
       } else {
-        messagesElem?.scrollTo(0, messagesScrollDistanceFromTop.current ?? 0);
+        scrollMessagesToHeight(messagesScrollDistanceFromTop.current ?? 0);
       }
     }
     prevMessages.current = messages;
@@ -379,7 +382,7 @@ export default function Messages({
             ref={(node) => setMessagesElem(node)}
             style={{
               overflowY: "scroll",
-              maxHeight: 550,
+              maxHeight: 500,
               height: "100%",
               width: "100%",
               padding: 0,
@@ -401,7 +404,11 @@ export default function Messages({
               </>
             )}
             {messages.map((message) => (
-              <MessageItem key={message.id} message={message} />
+              <MessageItem
+                key={message.id}
+                message={message}
+                scrollMessagesToHeight={scrollMessagesToHeight}
+              />
             ))}
             {!messagesResult?.isLastPageAfter && (
               <>
@@ -465,6 +472,7 @@ export default function Messages({
                     <MessageItem
                       key={message.id}
                       message={message}
+                      scrollMessagesToHeight={scrollMessagesToHeight}
                       isSearchResult
                     />
                   ))}
