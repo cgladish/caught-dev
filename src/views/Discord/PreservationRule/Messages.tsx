@@ -117,8 +117,8 @@ export default function Messages({
       // If first element of messages has changed
       if (prevMessages.current?.[0]?.id !== messages?.[0]?.id) {
         scrollMessagesToHeight(
-          messagesElem?.scrollHeight ??
-            0 - (messagesScrollDistanceFromBottom.current ?? 0)
+          (messagesElem?.scrollHeight ?? 0) -
+            (messagesScrollDistanceFromBottom.current ?? 0)
         );
       } else {
         scrollMessagesToHeight(messagesScrollDistanceFromTop.current ?? 0);
