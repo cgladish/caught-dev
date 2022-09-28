@@ -132,7 +132,9 @@ export default function Messages({
     }
   }, [searchStatus]);
 
-  const isMessageStartRefInViewport = useIsInViewport(messagesStartRef);
+  const isMessageStartRefInViewport = useIsInViewport(messagesStartRef, [
+    fetchStatus,
+  ]);
   useEffect(() => {
     if (
       jumpStatus !== "pending" &&
@@ -151,7 +153,9 @@ export default function Messages({
     }
   }, [isMessageStartRefInViewport]);
 
-  const isMessageEndRefInViewport = useIsInViewport(messagesEndRef);
+  const isMessageEndRefInViewport = useIsInViewport(messagesEndRef, [
+    fetchStatus,
+  ]);
   useEffect(() => {
     if (
       jumpStatus !== "pending" &&
@@ -170,7 +174,9 @@ export default function Messages({
     }
   }, [isMessageEndRefInViewport]);
 
-  const isSearchResultsEndRefInViewport = useIsInViewport(searchResultsEndRef);
+  const isSearchResultsEndRefInViewport = useIsInViewport(searchResultsEndRef, [
+    searchStatus,
+  ]);
   useEffect(() => {
     if (
       isSearchResultsEndRefInViewport &&
