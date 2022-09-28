@@ -376,7 +376,7 @@ export default function Messages({
           </form>
         </div>
       )}
-      <div style={{ display: "flex", wordWrap: "break-word" }}>
+      <div style={{ display: "flex", wordWrap: "break-word", height: "100%" }}>
         {messages ? (
           <List
             ref={(node) => setMessagesElem(node)}
@@ -395,7 +395,7 @@ export default function Messages({
             }}
             dense
           >
-            {!messagesResult?.isLastPageBefore && (
+            {messagesResult && !messagesResult.isLastPageBefore && (
               <>
                 <LoadingMessageItem />
                 <LoadingMessageItem />
@@ -410,7 +410,7 @@ export default function Messages({
                 scrollMessagesToHeight={scrollMessagesToHeight}
               />
             ))}
-            {!messagesResult?.isLastPageAfter && (
+            {messagesResult && !messagesResult.isLastPageAfter && (
               <>
                 <LoadingMessageItem ref={messagesEndRef} />
                 <LoadingMessageItem />
@@ -476,7 +476,7 @@ export default function Messages({
                       isSearchResult
                     />
                   ))}
-                  {!searchResults?.isLastPage && (
+                  {searchResults && !searchResults.isLastPage && (
                     <>
                       <LoadingMessageItem
                         ref={searchResultsEndRef}

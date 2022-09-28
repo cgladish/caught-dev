@@ -31,7 +31,7 @@ function* fetch(action: FetchStartAction) {
           messagesResult: {
             data: fetchedMessages.data,
             isLastPageBefore: fetchedMessages.isLastPage,
-            isLastPageAfter: false,
+            isLastPageAfter: true,
           },
         },
       });

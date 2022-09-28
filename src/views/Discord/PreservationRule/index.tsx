@@ -118,8 +118,6 @@ export default function PreservationRule() {
   const showDms = showDmsTab && !viewedDmChannelId;
   const showDmChannelMessages = showDmsTab && !!viewedDmChannelId;
 
-  console.log(guilds, dmChannels, filteredGuilds, filteredDmChannels);
-
   return (
     <div style={{ marginLeft: 40, marginTop: 20, width: 850 }}>
       <div

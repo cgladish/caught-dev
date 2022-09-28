@@ -110,11 +110,11 @@ export const messages = (
         isLastPageBefore:
           action.payload.messagesResult.isLastPageBefore ??
           oldState?.isLastPageBefore ??
-          false,
+          true,
         isLastPageAfter:
           action.payload.messagesResult.isLastPageAfter ??
           oldState?.isLastPageAfter ??
-          false,
+          true,
       };
       return newState;
     }
