@@ -1,29 +1,16 @@
-import {
-  Attachment,
-  Clear,
-  Close,
-  Download,
-  NavigateBefore,
-  Search,
-} from "@mui/icons-material";
-import filesize from "filesize";
+import { Clear, Close, NavigateBefore, Search } from "@mui/icons-material";
 import {
   IconButton,
   Typography,
   List,
   LinearProgress,
-  useTheme,
-  Avatar,
-  ListItem,
   TextField,
   Button,
   InputAdornment,
   Popper,
   Paper,
-  Modal,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { format } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { Dispatch } from "../../../redux";
@@ -36,196 +23,8 @@ import {
 } from "../../../redux/messages/selectors";
 import { combineDateAndTime } from "../../../utils";
 import "./Messages.css";
-import { partition } from "lodash";
-
-const MessageItem = ({
-  message,
-  isSearchResult,
-}: {
-  message: DiscordMessage;
-  isSearchResult?: boolean;
-}) => {
-  const [viewedImage, setViewedImage] = useState<{
-    url: string;
-    filename: string;
-  } | null>(null);
-  const [imageAttachments, nonImageAttachments] = message.appSpecificData
-    ?.attachments
-    ? partition(message.appSpecificData.attachments, ({ content_type }) =>
-        content_type?.includes("image")
-      )
-    : [];
-  return (
-    <ListItem
-      className="message-content"
-      key={message.id}
-      style={{
-        padding: "10px 5px",
-        borderRadius: isSearchResult ? 4 : 0,
-        margin: isSearchResult ? "10px 0" : 0,
-      }}
-      disablePadding
-    >
-      <div style={{ display: "flex", width: "100%" }}>
-        <Avatar
-          src={
-            message.authorAvatar
-              ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
-              : "app-logos/discord.png"
-          }
-        />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginLeft: 10,
-            width: "100%",
-            maxWidth: "calc(100% - 60px)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Typography style={{ fontWeight: "500" }}>
-              {message.authorName}
-            </Typography>
-            <Typography
-              color="text.secondary"
-              style={{ fontSize: ".75rem", marginLeft: 20 }}
-            >
-              {format(message.sentAt, "P")} at {format(message.sentAt, "p")}
-            </Typography>
-          </div>
-          <Typography style={{ marginTop: "2px" }}>
-            {message.content}
-          </Typography>
-          {imageAttachments?.map(({ filename, url }, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-              }}
-            >
-              <Typography
-                className="message-view-original"
-                color="text.secondary"
-                style={{
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  width: "fit-content",
-                }}
-                onClick={() => window.api.urls.openExternal(url)}
-              >
-                View Original
-              </Typography>
-              <img
-                src={url}
-                alt={filename}
-                style={{
-                  borderRadius: 4,
-                  maxHeight: isSearchResult ? 250 : 300,
-                  maxWidth: isSearchResult ? 250 : 300,
-                  height: "auto",
-                  width: "auto",
-                  cursor: "pointer",
-                }}
-                onClick={() => setViewedImage({ url, filename })}
-              />
-            </div>
-          ))}
-          {viewedImage && (
-            <Modal onClose={() => setViewedImage(null)} open>
-              <img
-                src={viewedImage.url}
-                alt={viewedImage.filename}
-                style={{
-                  maxWidth: 800,
-                  maxHeight: 600,
-                  height: "auto",
-                  width: "auto",
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              />
-            </Modal>
-          )}
-          {nonImageAttachments?.map(
-            ({ filename, url, content_type, size }, index) => (
-              <div
-                key={index}
-                style={{
-                  background: "#111",
-                  height: 55,
-                  display: "flex",
-                  alignItems: "center",
-                  margin: "5px 0 5px 0",
-                  borderRadius: 4,
-                  border: "1px solid #666",
-                  cursor: "pointer",
-                  padding: "0 10px",
-                  width: isSearchResult ? 250 : 400,
-                  justifyContent: "space-between",
-                }}
-                onClick={() => window.api.urls.openExternal(url)}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <Attachment />
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      marginLeft: 5,
-                    }}
-                  >
-                    <Typography
-                      style={{
-                        width: isSearchResult ? 100 : 250,
-                        justifyContent: "space-between",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {filename}
-                    </Typography>
-                    <Typography
-                      color="text.secondary"
-                      style={{ fontSize: ".875rem" }}
-                    >
-                      {content_type}
-                    </Typography>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography
-                    color="text.secondary"
-                    style={{ fontSize: ".875rem", whiteSpace: "nowrap" }}
-                  >
-                    {filesize(size)}
-                  </Typography>
-                  <Download />
-                </div>
-              </div>
-            )
-          )}
-          {message.appSpecificData?.embeds.map((embed) => "EMBED")}
-        </div>
-      </div>
-    </ListItem>
-  );
-};
+import { LoadingMessageItem, MessageItem } from "./MessageItem";
+import { useIsInViewport } from "../../../hooks/useIsInViewport";
 
 export default function Messages({
   visible,
@@ -240,10 +39,6 @@ export default function Messages({
   preservationRuleId: number;
   channelId: string;
 }) {
-  const {
-    palette: { primary },
-  } = useTheme();
-
   const dispatch = useDispatch<Dispatch>();
 
   const [searchContent, setSearchContent] = useState<string>("");
@@ -254,7 +49,9 @@ export default function Messages({
   const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
   const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
 
+  const messagesStartRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const searchResultsEndRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const startDateRef = useRef<HTMLDivElement>(null);
@@ -308,8 +105,9 @@ export default function Messages({
     prevMessagesRef.current = messages ?? undefined;
   }, [messages]);
 
-  const loadMoreMessages: React.UIEventHandler<HTMLUListElement> = (event) => {
-    if (messages?.[0] && (event.target as HTMLElement).scrollTop <= 100) {
+  const isMessageStartRefInViewport = useIsInViewport(messagesStartRef);
+  useEffect(() => {
+    if (isMessageStartRefInViewport && messages?.[0]) {
       dispatch({
         type: ActionType.fetchStart,
         payload: {
@@ -319,16 +117,13 @@ export default function Messages({
         },
       });
     }
-  };
+  }, [isMessageStartRefInViewport]);
 
-  const loadMoreSearchResults: React.UIEventHandler<HTMLUListElement> = (
-    event
-  ) => {
+  const isSearchResultsEndRefInViewport = useIsInViewport(searchResultsEndRef);
+  useEffect(() => {
     if (
-      searchResults &&
-      !searchResults.isLastPage &&
-      (event.target as HTMLElement).scrollTop + 615 >=
-        (event.target as HTMLElement).scrollHeight
+      isSearchResultsEndRefInViewport &&
+      searchResults?.data[searchResults.data.length - 1]
     ) {
       dispatch({
         type: ActionType.searchStart,
@@ -348,7 +143,7 @@ export default function Messages({
         },
       });
     }
-  };
+  }, [isSearchResultsEndRefInViewport]);
 
   const onSearch = () => {
     dispatch({
@@ -530,9 +325,12 @@ export default function Messages({
               width: "100%",
               padding: 0,
             }}
-            onScroll={(event) => loadMoreMessages(event)}
             dense
           >
+            <LoadingMessageItem />
+            <LoadingMessageItem />
+            <LoadingMessageItem />
+            <LoadingMessageItem ref={messagesStartRef} />
             {messages.map((message) => (
               <MessageItem key={message.id} message={message} />
             ))}
@@ -579,7 +377,6 @@ export default function Messages({
                     maxHeight: 515,
                     padding: "0 10px",
                   }}
-                  onScroll={(event) => loadMoreSearchResults(event)}
                   dense
                 >
                   {searchResultMessages.map((message) => (
@@ -589,6 +386,17 @@ export default function Messages({
                       isSearchResult
                     />
                   ))}
+                  {!searchResults?.isLastPage && (
+                    <>
+                      <LoadingMessageItem
+                        ref={searchResultsEndRef}
+                        isSearchResult
+                      />
+                      <LoadingMessageItem isSearchResult />
+                      <LoadingMessageItem isSearchResult />
+                      <LoadingMessageItem isSearchResult />
+                    </>
+                  )}
                 </List>
               </>
             ) : (
