@@ -51,12 +51,8 @@ export default function Messages({
   const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
   const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
 
-  const [messagesElem, setMessagesElem] = useState<HTMLUListElement | null>(
-    null
-  );
-  const [searchResultsElem, setSearchResultsElem] =
-    useState<HTMLUListElement | null>(null);
-
+  const messagesRef = useRef<HTMLUListElement>(null);
+  const searchResultsRef = useRef<HTMLUListElement>(null);
   const messagesStartRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const searchResultsEndRef = useRef<HTMLDivElement>(null);
@@ -108,7 +104,7 @@ export default function Messages({
   }, [searchStatus]);
 
   const scrollMessagesToHeight = (height: number) => {
-    messagesElem?.scrollTo(0, height);
+    messagesRef?.current?.scrollTo(0, height);
   };
 
   const prevMessages = useRef<DiscordMessage[] | null | undefined>();
@@ -117,7 +113,7 @@ export default function Messages({
       // If first element of messages has changed
       if (prevMessages.current?.[0]?.id !== messages?.[0]?.id) {
         scrollMessagesToHeight(
-          (messagesElem?.scrollHeight ?? 0) -
+          (messagesRef.current?.scrollHeight ?? 0) -
             (messagesScrollDistanceFromBottom.current ?? 0)
         );
       } else {
@@ -128,7 +124,7 @@ export default function Messages({
   }, [fetchStatus]);
   useEffect(() => {
     if (searchStatus === "success") {
-      searchResultsElem?.scrollTo(
+      searchResultsRef.current?.scrollTo(
         0,
         searchResultsScrollDistanceFromTop.current ?? 0
       );
@@ -378,47 +374,70 @@ export default function Messages({
       )}
       <div style={{ display: "flex", wordWrap: "break-word", height: "100%" }}>
         {messages ? (
-          <List
-            ref={(node) => setMessagesElem(node)}
+          <div
             style={{
-              overflowY: "scroll",
-              maxHeight: 500,
-              height: "100%",
-              width: "100%",
-              padding: 0,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+              maxWidth: showSearchResults ? 500 : 850,
+              minWidth: showSearchResults ? 500 : 850,
+              height: 500,
             }}
-            onScroll={(event) => {
-              const target = event.target as HTMLUListElement;
-              messagesScrollDistanceFromBottom.current =
-                target.scrollHeight - target.scrollTop;
-              messagesScrollDistanceFromTop.current = target.scrollTop;
-            }}
-            dense
           >
-            {messagesResult && !messagesResult.isLastPageBefore && (
-              <>
-                <LoadingMessageItem />
-                <LoadingMessageItem />
-                <LoadingMessageItem />
-                <LoadingMessageItem ref={messagesStartRef} />
-              </>
+            {!messages.length && (
+              <div
+                style={{
+                  display: "flex",
+                  height: "100%",
+                  width: "100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Typography>There are no messages to display.</Typography>
+              </div>
             )}
-            {messages.map((message) => (
-              <MessageItem
-                key={message.id}
-                message={message}
-                scrollMessagesToHeight={scrollMessagesToHeight}
-              />
-            ))}
-            {messagesResult && !messagesResult.isLastPageAfter && (
-              <>
-                <LoadingMessageItem ref={messagesEndRef} />
-                <LoadingMessageItem />
-                <LoadingMessageItem />
-                <LoadingMessageItem />
-              </>
-            )}
-          </List>
+            <List
+              ref={messagesRef}
+              style={{
+                overflowY: "scroll",
+                maxHeight: 500,
+                width: "100%",
+                padding: 0,
+              }}
+              onScroll={(event) => {
+                const target = event.target as HTMLUListElement;
+                messagesScrollDistanceFromBottom.current =
+                  target.scrollHeight - target.scrollTop;
+                messagesScrollDistanceFromTop.current = target.scrollTop;
+              }}
+              dense
+            >
+              {messagesResult && !messagesResult.isLastPageBefore && (
+                <>
+                  <LoadingMessageItem />
+                  <LoadingMessageItem />
+                  <LoadingMessageItem />
+                  <LoadingMessageItem ref={messagesStartRef} />
+                </>
+              )}
+              {messages.map((message) => (
+                <MessageItem
+                  key={message.id}
+                  message={message}
+                  scrollMessagesToHeight={scrollMessagesToHeight}
+                />
+              ))}
+              {messagesResult && !messagesResult.isLastPageAfter && (
+                <>
+                  <LoadingMessageItem ref={messagesEndRef} />
+                  <LoadingMessageItem />
+                  <LoadingMessageItem />
+                  <LoadingMessageItem />
+                </>
+              )}
+            </List>
+          </div>
         ) : (
           <LinearProgress />
         )}
@@ -455,7 +474,7 @@ export default function Messages({
             {searchResultMessages ? (
               <>
                 <List
-                  ref={(node) => setSearchResultsElem(node)}
+                  ref={searchResultsRef}
                   style={{
                     overflowY: "scroll",
                     maxHeight: 515,
