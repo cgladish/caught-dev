@@ -1,7 +1,7 @@
 .message-content {
   background-color: #222;
 }
-.message-content:hover {
+.message-content-search-result:hover {
   background-color: #444;
 }
 .message-content .search-result-jump-icon {

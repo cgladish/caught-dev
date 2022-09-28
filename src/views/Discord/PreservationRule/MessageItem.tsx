@@ -91,7 +91,10 @@ export const MessageItem = ({
     : [];
   return (
     <ListItem
-      className="message-content"
+      className={
+        "message-content" +
+        (isSearchResult ? " message-content-search-result" : "")
+      }
       key={message.id}
       style={{
         padding: "10px 5px",
@@ -99,6 +102,9 @@ export const MessageItem = ({
         margin: isSearchResult ? "10px 0" : 0,
         cursor: isSearchResult ? "pointer" : "default",
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        borderTop: isSearchResult ? "none" : "1px solid #666",
       }}
       onClick={() => {
         console.log("clicked");
@@ -108,7 +114,7 @@ export const MessageItem = ({
       {isSearchResult && (
         <IconButton
           className="search-result-jump-icon"
-          style={{ position: "absolute", top: 2, right: 2 }}
+          style={{ position: "absolute", top: 2, right: 2, background: "#222" }}
         >
           <Launch />
         </IconButton>
@@ -130,14 +136,17 @@ export const MessageItem = ({
             maxWidth: "calc(100% - 60px)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Typography style={{ fontWeight: "500" }}>
               {message.authorName}
             </Typography>
-            <Typography
-              color="text.secondary"
-              style={{ fontSize: ".75rem", marginLeft: 20 }}
-            >
+            <Typography color="text.secondary" style={{ fontSize: ".75rem" }}>
               {format(message.sentAt, "P")} at {format(message.sentAt, "p")}
             </Typography>
           </div>
