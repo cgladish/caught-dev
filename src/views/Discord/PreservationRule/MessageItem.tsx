@@ -8,11 +8,18 @@ import {
   Skeleton,
   IconButton,
 } from "@mui/material";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { DiscordMessage } from "../../../../api/messages";
 import "./Messages.css";
 import { partition } from "lodash";
+import { useDispatch, useSelector } from "react-redux";
+import { Dispatch } from "../../../redux";
+import { ActionType } from "../../../redux/messages/actions";
+import {
+  getJumpedToMessage,
+  getJumpStatus,
+} from "../../../redux/messages/selectors";
 
 export const LoadingMessageItem = forwardRef<
   HTMLDivElement,
@@ -79,18 +86,39 @@ export const MessageItem = ({
   message: DiscordMessage;
   isSearchResult?: boolean;
 }) => {
+  const dispatch = useDispatch<Dispatch>();
+
+  const myRef = useRef<HTMLLIElement>(null);
+
+  const jumpStatus = useSelector(getJumpStatus);
+  const jumpedToMessage = useSelector(getJumpedToMessage);
+
+  const isJumpedToMessage = message.id === jumpedToMessage?.id;
+
+  useEffect(() => {
+    if (
+      (jumpStatus === "pending" || jumpStatus === "success") &&
+      isJumpedToMessage
+    ) {
+      myRef.current?.scrollIntoView({ block: "center" });
+    }
+  }, [jumpStatus]);
+
   const [viewedImage, setViewedImage] = useState<{
     url: string;
     filename: string;
   } | null>(null);
+
   const [imageAttachments, nonImageAttachments] = message.appSpecificData
     ?.attachments
     ? partition(message.appSpecificData.attachments, ({ content_type }) =>
         content_type?.includes("image")
       )
     : [];
+
   return (
     <ListItem
+      ref={myRef}
       className={
         "message-content" +
         (isSearchResult ? " message-content-search-result" : "")
@@ -105,10 +133,11 @@ export const MessageItem = ({
         display: "flex",
         flexDirection: "column",
         borderTop: isSearchResult ? "none" : "1px solid #666",
+        background: isJumpedToMessage ? "#444" : undefined,
       }}
-      onClick={() => {
-        console.log("clicked");
-      }}
+      onClick={() =>
+        dispatch({ type: ActionType.jumpStart, payload: { message } })
+      }
       disablePadding
     >
       {isSearchResult && (

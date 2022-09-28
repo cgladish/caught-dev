@@ -15,7 +15,9 @@ export type SearchResult = {
 
 export type State = {
   fetchStatus: ResourceStatus;
+  jumpStatus: ResourceStatus;
   searchStatus: ResourceStatus;
+  jumpedToMessage: Message | null;
   messages: {
     [preservationRuleId: number]: {
       [channelId: string]: MessagesResult | null;
@@ -30,7 +32,9 @@ export type State = {
 
 export const initialState: State = {
   fetchStatus: "initial",
+  jumpStatus: "initial",
   searchStatus: "initial",
+  jumpedToMessage: null,
   messages: {},
   searchResults: {},
 };

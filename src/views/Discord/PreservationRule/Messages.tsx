@@ -17,6 +17,8 @@ import { Dispatch } from "../../../redux";
 import { ActionType } from "../../../redux/messages/actions";
 import { DiscordMessage } from "../../../../api/messages";
 import {
+  getFetchStatus,
+  getJumpStatus,
   getMessages,
   getSearchResults,
   getSearchStatus,
@@ -67,6 +69,8 @@ export default function Messages({
 
   const allMessages = useSelector(getMessages);
   const allSearchResults = useSelector(getSearchResults);
+  const fetchStatus = useSelector(getFetchStatus);
+  const jumpStatus = useSelector(getJumpStatus);
   const searchStatus = useSelector(getSearchStatus);
 
   const messagesResult = allMessages[preservationRuleId]?.[channelId];
@@ -104,26 +108,27 @@ export default function Messages({
   }, [searchStatus]);
 
   useEffect(() => {
-    if (messages) {
+    if (fetchStatus === "success") {
       messagesElem?.scrollTo(
         0,
         messagesElem.scrollHeight -
           (messagesScrollDistanceFromBottom.current ?? 0)
       );
     }
-  }, [messages]);
+  }, [fetchStatus]);
   useEffect(() => {
-    if (searchResults) {
+    if (searchStatus === "success") {
       searchResultsElem?.scrollTo(
         0,
         searchResultsScrollDistanceFromTop.current ?? 0
       );
     }
-  }, [searchResults]);
+  }, [searchStatus]);
 
   const isMessageStartRefInViewport = useIsInViewport(messagesStartRef);
   useEffect(() => {
     if (
+      jumpStatus !== "pending" &&
       isMessageStartRefInViewport &&
       !messagesResult?.isLastPageBefore &&
       messages?.[0]
@@ -142,6 +147,7 @@ export default function Messages({
   const isMessageEndRefInViewport = useIsInViewport(messagesEndRef);
   useEffect(() => {
     if (
+      jumpStatus !== "pending" &&
       isMessageEndRefInViewport &&
       !messagesResult?.isLastPageAfter &&
       messages?.[messages.length - 1]
@@ -417,7 +423,7 @@ export default function Messages({
               }}
             >
               <Typography>
-                {searchResults?.totalCount
+                {searchResults?.totalCount != null
                   ? `${searchResults.totalCount} results`
                   : ""}
               </Typography>

@@ -1,9 +1,13 @@
-import { MessagesResult, SearchResult } from "./state";
+import { Message } from "../../../api/messages";
+import { SearchResult } from "./state";
 
 export enum ActionType {
   fetchStart = "@@messages/FETCH_START",
   fetchSuccess = "@@messages/FETCH_SUCCESS",
   fetchFailure = "@@messages/FETCH_FAILURE",
+  jumpStart = "@@messages/JUMP_START",
+  jumpSuccess = "@@messages/JUMP_SUCCESS",
+  jumpFailure = "@@messages/JUMP_FAILURE",
   searchStart = "@@messages/SEARCH_START",
   searchSuccess = "@@messages/SEARCH_SUCCESS",
   searchFailure = "@@messages/SEARCH_FAILURE",
@@ -25,17 +29,36 @@ export type FetchSuccessAction = {
   payload: {
     preservationRuleId: number;
     channelId: string;
-    cursor?: {
-      before?: number;
-      after?: number;
+    messagesResult: {
+      data: Message[];
+      isLastPageBefore?: boolean;
+      isLastPageAfter?: boolean;
     };
-    messagesResult: Awaited<
-      ReturnType<typeof window.api.messages.fetchMessages>
-    >;
   };
 };
 export type FetchFailureAction = {
   type: ActionType.fetchFailure;
+  payload: { error: string };
+};
+
+export type JumpStartAction = {
+  type: ActionType.jumpStart;
+  payload: { message: Message };
+};
+export type JumpSuccessAction = {
+  type: ActionType.jumpSuccess;
+  payload: {
+    preservationRuleId: number;
+    channelId: string;
+    messagesResult: {
+      data: Message[];
+      isLastPageBefore: boolean;
+      isLastPageAfter: boolean;
+    };
+  };
+};
+export type JumpFailureAction = {
+  type: ActionType.jumpFailure;
   payload: { error: string };
 };
 
@@ -70,6 +93,9 @@ export type Action =
   | FetchStartAction
   | FetchSuccessAction
   | FetchFailureAction
+  | JumpStartAction
+  | JumpSuccessAction
+  | JumpFailureAction
   | SearchStartAction
   | SearchSuccessAction
   | SearchFailureAction;

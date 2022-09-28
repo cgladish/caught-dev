@@ -22,6 +22,25 @@ export const fetchStatus = (
   }
 };
 
+export const jumpStatus = (
+  state = initialState.jumpStatus,
+  action: Action
+): State["jumpStatus"] => {
+  switch (action.type) {
+    case ActionType.jumpStart: {
+      return "pending";
+    }
+    case ActionType.jumpSuccess: {
+      return "success";
+    }
+    case ActionType.jumpFailure: {
+      return "errored";
+    }
+    default:
+      return state;
+  }
+};
+
 export const searchStatus = (
   state = initialState.searchStatus,
   action: Action
@@ -36,6 +55,18 @@ export const searchStatus = (
     case ActionType.searchFailure: {
       return "errored";
     }
+    default:
+      return state;
+  }
+};
+
+export const jumpedToMessage = (
+  state = initialState.jumpedToMessage,
+  action: Action
+): State["jumpedToMessage"] => {
+  switch (action.type) {
+    case ActionType.jumpStart:
+      return action.payload.message;
     default:
       return state;
   }
@@ -72,16 +103,53 @@ export const messages = (
         ],
         "sentAt"
       );
-      const oldMessages =
-        state[action.payload.preservationRuleId]![action.payload.channelId];
+      const oldState =
+        state[action.payload.preservationRuleId]?.[action.payload.channelId];
       newState[action.payload.preservationRuleId]![action.payload.channelId] = {
         data: newMessages,
-        isLastPageBefore: action.payload.cursor?.before
-          ? action.payload.messagesResult.isLastPage
-          : !!oldMessages?.isLastPageBefore,
-        isLastPageAfter: action.payload.cursor?.after
-          ? action.payload.messagesResult.isLastPage
-          : !!oldMessages?.isLastPageAfter,
+        isLastPageBefore:
+          action.payload.messagesResult.isLastPageBefore ??
+          oldState?.isLastPageBefore ??
+          false,
+        isLastPageAfter:
+          action.payload.messagesResult.isLastPageAfter ??
+          oldState?.isLastPageAfter ??
+          false,
+      };
+      return newState;
+    }
+    case ActionType.jumpStart: {
+      const newState = { ...state };
+      newState[action.payload.message.preservationRuleId] = {
+        ...state[action.payload.message.preservationRuleId],
+      };
+      newState[action.payload.message.preservationRuleId]![
+        action.payload.message.externalChannelId
+      ] = {
+        data: [action.payload.message],
+        isLastPageBefore: false,
+        isLastPageAfter: false,
+      };
+      return newState;
+    }
+    case ActionType.jumpSuccess: {
+      const newState = { ...state };
+      newState[action.payload.preservationRuleId] = {
+        ...state[action.payload.preservationRuleId],
+      };
+      const newMessages = sortBy(
+        [
+          ...(newState[action.payload.preservationRuleId]![
+            action.payload.channelId
+          ]?.data ?? []),
+          ...action.payload.messagesResult.data,
+        ],
+        "sentAt"
+      );
+      newState[action.payload.preservationRuleId]![action.payload.channelId] = {
+        data: newMessages,
+        isLastPageBefore: action.payload.messagesResult.isLastPageBefore,
+        isLastPageAfter: action.payload.messagesResult.isLastPageAfter,
       };
       return newState;
     }
@@ -135,7 +203,9 @@ export const searchResults = (
 
 export const reducer = combineReducers({
   fetchStatus,
+  jumpStatus,
   searchStatus,
+  jumpedToMessage,
   messages,
   searchResults,
 });
