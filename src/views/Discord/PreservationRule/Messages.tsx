@@ -1,5 +1,4 @@
 import {
-  AttachFile,
   Attachment,
   Clear,
   Close,
@@ -310,7 +309,7 @@ export default function Messages({
   }, [messages]);
 
   const loadMoreMessages: React.UIEventHandler<HTMLUListElement> = (event) => {
-    if (messages?.[0] && (event.target as HTMLElement).scrollTop < 10) {
+    if (messages?.[0] && (event.target as HTMLElement).scrollTop <= 100) {
       dispatch({
         type: ActionType.fetchStart,
         payload: {
@@ -328,7 +327,7 @@ export default function Messages({
     if (
       searchResults &&
       !searchResults.isLastPage &&
-      (event.target as HTMLElement).scrollTop + 525 >=
+      (event.target as HTMLElement).scrollTop + 615 >=
         (event.target as HTMLElement).scrollHeight
     ) {
       dispatch({
@@ -535,7 +534,7 @@ export default function Messages({
             dense
           >
             {messages.map((message) => (
-              <MessageItem message={message} />
+              <MessageItem key={message.id} message={message} />
             ))}
             <div ref={messagesEndRef} />
           </List>
@@ -584,7 +583,11 @@ export default function Messages({
                   dense
                 >
                   {searchResultMessages.map((message) => (
-                    <MessageItem message={message} isSearchResult />
+                    <MessageItem
+                      key={message.id}
+                      message={message}
+                      isSearchResult
+                    />
                   ))}
                 </List>
               </>

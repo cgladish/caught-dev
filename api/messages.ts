@@ -146,7 +146,13 @@ export const searchMessages = async (
 
   let messagesQuery = createQuery();
   if (before) {
-    messagesQuery = messagesQuery.andWhere("id", "<", before);
+    const message = await db<MessageEntity>(TableName.Message)
+      .where({ id: before })
+      .first();
+    if (!message) {
+      throw new Error("invalid message id");
+    }
+    messagesQuery = messagesQuery.where("sentAt", "<", message.sentAt);
   }
   const messages = await messagesQuery
     .orderBy("sentAt", "desc")
@@ -176,7 +182,7 @@ export const fetchMessages = async (
       .where({ id: cursor.before })
       .first();
     if (!message) {
-      return [];
+      throw new Error("invalid message id");
     }
     query = query
       .where("sentAt", "<", message.sentAt)
@@ -186,7 +192,7 @@ export const fetchMessages = async (
       .where({ id: cursor.after })
       .first();
     if (!message) {
-      return [];
+      throw new Error("invalid message id");
     }
     query = query.where("sentAt", ">", message.sentAt).orderBy("sentAt", "asc");
   } else {
