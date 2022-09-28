@@ -182,48 +182,62 @@ export const MessageItem = ({
           <Typography style={{ marginTop: "2px" }}>
             {message.content}
           </Typography>
-          {imageAttachments?.map(({ filename, url }, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-              }}
-            >
-              <Typography
-                className="message-view-original"
-                color="text.secondary"
+          {imageAttachments?.map(({ filename, url, width, height }, index) => {
+            const widthHeightRatio = width && height && width / height;
+            let widthToUse: number | undefined;
+            let heightToUse: number | undefined;
+            if (widthHeightRatio) {
+              if (widthHeightRatio > 1) {
+                widthToUse = Math.min(width, isSearchResult ? 250 : 300);
+                heightToUse = widthToUse / widthHeightRatio;
+              } else {
+                heightToUse = Math.min(height, isSearchResult ? 250 : 300);
+                widthToUse = heightToUse * widthHeightRatio;
+              }
+            }
+            return (
+              <div
+                key={index}
                 style={{
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  width: "fit-content",
-                }}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  window.api.urls.openExternal(url);
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
                 }}
               >
-                View Original
-              </Typography>
-              <img
-                src={url}
-                alt={filename}
-                style={{
-                  borderRadius: 4,
-                  maxHeight: isSearchResult ? 250 : 300,
-                  maxWidth: isSearchResult ? 250 : 300,
-                  height: "auto",
-                  width: "auto",
-                  cursor: "pointer",
-                }}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setViewedImage({ url, filename });
-                }}
-              />
-            </div>
-          ))}
+                <Typography
+                  className="message-view-original"
+                  color="text.secondary"
+                  style={{
+                    fontSize: "0.75rem",
+                    cursor: "pointer",
+                    width: "fit-content",
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    window.api.urls.openExternal(url);
+                  }}
+                >
+                  View Original
+                </Typography>
+                <img
+                  src={url}
+                  alt={filename}
+                  style={{
+                    borderRadius: 4,
+                    maxHeight: isSearchResult ? 250 : 300,
+                    maxWidth: isSearchResult ? 250 : 300,
+                    height: heightToUse ?? "auto",
+                    width: widthToUse ?? "auto",
+                    cursor: "pointer",
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setViewedImage({ url, filename });
+                  }}
+                />
+              </div>
+            );
+          })}
           {viewedImage && (
             <Modal onClose={() => setViewedImage(null)} open>
               <img
