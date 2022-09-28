@@ -107,14 +107,21 @@ export default function Messages({
     }
   }, [searchStatus]);
 
+  const prevMessages = useRef<DiscordMessage[] | null | undefined>();
   useEffect(() => {
     if (fetchStatus === "success") {
-      messagesElem?.scrollTo(
-        0,
-        messagesElem.scrollHeight -
-          (messagesScrollDistanceFromBottom.current ?? 0)
-      );
+      // If first element of messages has changed
+      if (prevMessages.current?.[0]?.id !== messages?.[0]?.id) {
+        messagesElem?.scrollTo(
+          0,
+          messagesElem.scrollHeight -
+            (messagesScrollDistanceFromBottom.current ?? 0)
+        );
+      } else {
+        messagesElem?.scrollTo(0, messagesScrollDistanceFromTop.current ?? 0);
+      }
     }
+    prevMessages.current = messages;
   }, [fetchStatus]);
   useEffect(() => {
     if (searchStatus === "success") {
@@ -146,6 +153,12 @@ export default function Messages({
 
   const isMessageEndRefInViewport = useIsInViewport(messagesEndRef);
   useEffect(() => {
+    console.log(
+      jumpStatus !== "pending",
+      isMessageEndRefInViewport,
+      !messagesResult?.isLastPageAfter,
+      messages?.[messages.length - 1]
+    );
     if (
       jumpStatus !== "pending" &&
       isMessageEndRefInViewport &&
