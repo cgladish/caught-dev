@@ -153,12 +153,6 @@ export default function Messages({
 
   const isMessageEndRefInViewport = useIsInViewport(messagesEndRef);
   useEffect(() => {
-    console.log(
-      jumpStatus !== "pending",
-      isMessageEndRefInViewport,
-      !messagesResult?.isLastPageAfter,
-      messages?.[messages.length - 1]
-    );
     if (
       jumpStatus !== "pending" &&
       isMessageEndRefInViewport &&

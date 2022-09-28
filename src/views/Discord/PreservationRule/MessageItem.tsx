@@ -33,6 +33,7 @@ export const LoadingMessageItem = forwardRef<
       padding: "10px 5px",
       borderRadius: isSearchResult ? 4 : 0,
       margin: isSearchResult ? "10px 0" : 0,
+      borderTop: isSearchResult ? "none" : "1px solid #666",
     }}
     disablePadding
   >
@@ -47,8 +48,8 @@ export const LoadingMessageItem = forwardRef<
           maxWidth: "calc(100% - 60px)",
         }}
       >
-        <div style={{ display: "flex" }}>
-          <Skeleton variant="rectangular" width={80} height={20} />
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <Skeleton variant="rectangular" width={100} height={20} />
           <Skeleton
             variant="rectangular"
             width={150}
@@ -135,8 +136,10 @@ export const MessageItem = ({
         borderTop: isSearchResult ? "none" : "1px solid #666",
         background: isJumpedToMessage ? "#444" : undefined,
       }}
-      onClick={() =>
-        dispatch({ type: ActionType.jumpStart, payload: { message } })
+      onClick={
+        isSearchResult
+          ? () => dispatch({ type: ActionType.jumpStart, payload: { message } })
+          : undefined
       }
       disablePadding
     >
