@@ -1,6 +1,11 @@
 import { Message } from "../../../api/messages";
 import { ResourceStatus } from "../types";
 
+export type MessagesResult = {
+  data: Message[];
+  isLastPage: boolean;
+};
+
 export type SearchResult = {
   data: Message[];
   totalCount: number;
@@ -12,7 +17,7 @@ export type State = {
   searchStatus: ResourceStatus;
   messages: {
     [preservationRuleId: number]: {
-      [channelId: string]: Message[] | null;
+      [channelId: string]: MessagesResult | null;
     };
   };
   searchResults: {

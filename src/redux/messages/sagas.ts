@@ -11,7 +11,7 @@ import {
 
 function* fetch(action: FetchStartAction) {
   try {
-    const messages: Awaited<
+    const messagesResult: Awaited<
       ReturnType<typeof window.api.messages.fetchMessages>
     > = yield call(
       window.api.messages.fetchMessages,
@@ -24,7 +24,7 @@ function* fetch(action: FetchStartAction) {
       payload: {
         preservationRuleId: action.payload.preservationRuleId,
         channelId: action.payload.channelId,
-        messages,
+        messagesResult,
       },
     });
   } catch (e) {

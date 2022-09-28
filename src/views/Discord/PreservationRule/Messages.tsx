@@ -67,10 +67,8 @@ export default function Messages({
   const allSearchResults = useSelector(getSearchResults);
   const searchStatus = useSelector(getSearchStatus);
 
-  const messages = allMessages[preservationRuleId]?.[channelId] as
-    | DiscordMessage[]
-    | null
-    | undefined;
+  const messagesResult = allMessages[preservationRuleId]?.[channelId];
+  const messages = messagesResult?.data as DiscordMessage[] | null | undefined;
   const searchResults = allSearchResults[preservationRuleId]?.[channelId];
   const searchResultMessages = searchResults?.data as
     | DiscordMessage[]
@@ -123,7 +121,11 @@ export default function Messages({
 
   const isMessageStartRefInViewport = useIsInViewport(messagesStartRef);
   useEffect(() => {
-    if (isMessageStartRefInViewport && messages?.[0]) {
+    if (
+      isMessageStartRefInViewport &&
+      !messagesResult?.isLastPage &&
+      messages?.[0]
+    ) {
       dispatch({
         type: ActionType.fetchStart,
         payload: {
@@ -139,7 +141,8 @@ export default function Messages({
   useEffect(() => {
     if (
       isSearchResultsEndRefInViewport &&
-      searchResults?.data[searchResults.data.length - 1]
+      !searchResults?.isLastPage &&
+      searchResultMessages?.[searchResultMessages.length - 1]
     ) {
       dispatch({
         type: ActionType.searchStart,
@@ -155,7 +158,7 @@ export default function Messages({
               ? combineDateAndTime(searchEndDate, searchEndTime)
               : undefined,
           },
-          before: searchResults.data[searchResults.data.length - 1]?.id,
+          before: searchResultMessages[searchResultMessages.length - 1]?.id,
         },
       });
     }
@@ -349,10 +352,14 @@ export default function Messages({
             }}
             dense
           >
-            <LoadingMessageItem />
-            <LoadingMessageItem />
-            <LoadingMessageItem />
-            <LoadingMessageItem ref={messagesStartRef} />
+            {!messagesResult?.isLastPage && (
+              <>
+                <LoadingMessageItem />
+                <LoadingMessageItem />
+                <LoadingMessageItem />
+                <LoadingMessageItem ref={messagesStartRef} />
+              </>
+            )}
             {messages.map((message) => (
               <MessageItem key={message.id} message={message} />
             ))}

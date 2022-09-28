@@ -355,9 +355,10 @@ describe("preservationRules", () => {
     it("fetches messages", async () => {
       let searchResult = await fetchMessages(preservationRuleId, channelId);
 
-      expect(searchResult).toEqual(
+      expect(searchResult.data).toEqual(
         messages.slice(messages.length - MESSAGE_LIMIT).reverse()
       );
+      expect(searchResult.isLastPage).toBeFalsy();
     });
 
     it("fetches more messages before provided message ID", async () => {
@@ -365,13 +366,15 @@ describe("preservationRules", () => {
         before: messages[50]!.id,
       });
 
-      expect(searchResult).toEqual(messages.slice(30, 50).reverse());
+      expect(searchResult.data).toEqual(messages.slice(30, 50).reverse());
+      expect(searchResult.isLastPage).toBeFalsy();
 
       searchResult = await fetchMessages(preservationRuleId, channelId, {
         before: messages[10]!.id,
       });
 
-      expect(searchResult).toEqual(messages.slice(0, 10).reverse());
+      expect(searchResult.data).toEqual(messages.slice(0, 10).reverse());
+      expect(searchResult.isLastPage).toBeTruthy();
     });
 
     it("fetches more messages after provided message ID", async () => {
@@ -379,13 +382,15 @@ describe("preservationRules", () => {
         after: messages[50]!.id,
       });
 
-      expect(searchResult).toEqual(messages.slice(51, 71));
+      expect(searchResult.data).toEqual(messages.slice(51, 71));
+      expect(searchResult.isLastPage).toBeFalsy();
 
       searchResult = await fetchMessages(preservationRuleId, channelId, {
         after: messages[90]!.id,
       });
 
-      expect(searchResult).toEqual(messages.slice(91, 100));
+      expect(searchResult.data).toEqual(messages.slice(91, 100));
+      expect(searchResult.isLastPage).toBeTruthy();
     });
   });
 });

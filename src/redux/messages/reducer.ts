@@ -63,16 +63,19 @@ export const messages = (
       newState[action.payload.preservationRuleId] = {
         ...state[action.payload.preservationRuleId],
       };
-      newState[action.payload.preservationRuleId]![action.payload.channelId] =
-        sortBy(
-          [
-            ...(newState[action.payload.preservationRuleId]![
-              action.payload.channelId
-            ] ?? []),
-            ...action.payload.messages,
-          ],
-          "sentAt"
-        );
+      const newMessages = sortBy(
+        [
+          ...(newState[action.payload.preservationRuleId]![
+            action.payload.channelId
+          ]?.data ?? []),
+          ...action.payload.messagesResult.data,
+        ],
+        "sentAt"
+      );
+      newState[action.payload.preservationRuleId]![action.payload.channelId] = {
+        data: newMessages,
+        isLastPage: action.payload.messagesResult.isLastPage,
+      };
       return newState;
     }
     default:

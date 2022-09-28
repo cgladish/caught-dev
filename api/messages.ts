@@ -171,7 +171,10 @@ export const fetchMessages = async (
     before?: number;
     after?: number;
   }
-): Promise<Message[]> => {
+): Promise<{
+  data: Message[];
+  isLastPage: boolean;
+}> => {
   const db = await getDb();
   let query = db<MessageEntity>(TableName.Message).where({
     preservationRuleId,
@@ -198,8 +201,11 @@ export const fetchMessages = async (
   } else {
     query = query.orderBy("sentAt", "desc");
   }
-  const messages = await query.limit(MESSAGE_LIMIT);
-  return messages.map(entityToType);
+  const messages = await query.limit(MESSAGE_LIMIT + 1);
+  return {
+    data: messages.slice(0, MESSAGE_LIMIT).map(entityToType),
+    isLastPage: messages.length <= MESSAGE_LIMIT,
+  };
 };
 
 const regularBackupQueue = queue({

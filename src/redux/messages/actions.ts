@@ -1,5 +1,5 @@
 import { Message } from "../../../api/messages";
-import { SearchResult } from "./state";
+import { MessagesResult, SearchResult } from "./state";
 
 export enum ActionType {
   fetchStart = "@@messages/FETCH_START",
@@ -26,7 +26,7 @@ export type FetchSuccessAction = {
   payload: {
     preservationRuleId: number;
     channelId: string;
-    messages: Message[];
+    messagesResult: MessagesResult;
   };
 };
 export type FetchFailureAction = {
