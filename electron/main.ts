@@ -108,6 +108,7 @@ app.whenReady().then(async () => {
     const trayIcon = new Tray("public/logo192.png");
     trayIcon.setToolTip("Preserve.dev");
     trayIcon.setContextMenu(trayContextMenu);
+    trayIcon.on("click", () => win.show());
   }
 
   session.defaultSession.webRequest.onBeforeSendHeaders(
