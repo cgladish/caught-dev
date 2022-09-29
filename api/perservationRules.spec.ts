@@ -1,13 +1,15 @@
 import { Knex } from "knex";
 import omit from "lodash/omit";
 import getDb from "../db";
+import { MessageEntity } from "../db/entities";
 import TableName from "../db/tableName";
-import { makePreservationRule } from "./mockData";
+import { makeMessage, makePreservationRule } from "./mockData";
 import {
   createPreservationRule,
   updatePreservationRule,
   fetchPreservationRules,
   PreservationRule,
+  deletePreservationRule,
 } from "./preservationRules";
 
 describe("preservationRules", () => {
@@ -74,6 +76,34 @@ describe("preservationRules", () => {
       expect(
         omit(preservationRules[1], "id", "createdAt", "updatedAt")
       ).toMatchSnapshot();
+    });
+  });
+
+  describe("deletePreservatinoRule", () => {
+    it("deletes a preservation rule and associated messages", async () => {
+      const { id } = await makePreservationRule({
+        appName: "twitter" as any,
+      });
+      const { id: otherId } = await makePreservationRule({
+        name: "Rule",
+        startDatetime: "2022-09-21T02:00:00.000Z",
+        endDatetime: "2022-09-21T04:00:00.000Z",
+      });
+      await makeMessage(id);
+      await makeMessage(id);
+      const { id: otherMessageId } = await makeMessage(otherId);
+
+      await deletePreservationRule(id);
+
+      const preservationRules = await db<PreservationRule>(
+        TableName.PreservationRule
+      ).select();
+      expect(preservationRules.length).toEqual(1);
+      expect(preservationRules[0]!.id).toEqual(otherId);
+
+      const messages = await db<MessageEntity>(TableName.Message).select();
+      expect(messages.length).toEqual(1);
+      expect(messages[0]!.id).toEqual(otherMessageId);
     });
   });
 
