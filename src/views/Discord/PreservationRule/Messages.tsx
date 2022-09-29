@@ -1,4 +1,10 @@
-import { Clear, Close, NavigateBefore, Search } from "@mui/icons-material";
+import {
+  ArrowDownward,
+  Clear,
+  Close,
+  NavigateBefore,
+  Search,
+} from "@mui/icons-material";
 import {
   IconButton,
   Typography,
@@ -110,8 +116,10 @@ export default function Messages({
   const prevMessages = useRef<DiscordMessage[] | null | undefined>();
   useEffect(() => {
     if (fetchStatus === "success") {
-      // If first element of messages has changed
-      if (prevMessages.current?.[0]?.id !== messages?.[0]?.id) {
+      if (!prevMessages.current) {
+        scrollMessagesToHeight(messagesRef.current?.scrollHeight ?? 0);
+      } else if (prevMessages.current?.[0]?.id !== messages?.[0]?.id) {
+        // If first element of messages has changed
         scrollMessagesToHeight(
           (messagesRef.current?.scrollHeight ?? 0) -
             (messagesScrollDistanceFromBottom.current ?? 0)
@@ -382,8 +390,38 @@ export default function Messages({
               maxWidth: showSearchResults ? 500 : 850,
               minWidth: showSearchResults ? 500 : 850,
               height: 500,
+              position: "relative",
             }}
           >
+            {messagesResult && !messagesResult.isLastPageAfter && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  width: showSearchResults ? 500 : 850,
+                  background: "#111",
+                  opacity: 0.9,
+                  borderRadius: "16px 16px 0 0",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 25,
+                  cursor: "pointer",
+                  zIndex: 1,
+                }}
+                onClick={() =>
+                  dispatch({
+                    type: ActionType.fetchStart,
+                    payload: { preservationRuleId, channelId },
+                  })
+                }
+              >
+                <Typography style={{ fontWeight: 500 }}>
+                  Back to present
+                </Typography>
+                <ArrowDownward fontSize="small" />
+              </div>
+            )}
             {!messages.length && (
               <div
                 style={{
