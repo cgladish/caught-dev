@@ -152,11 +152,11 @@ function ChannelGrid({
       setSelectedChannels(newSelectedChannels);
     }
 
-    if (guilds) {
-      const newAutoPreserveNewChannels: { [guildId: string]: boolean } = {};
-      newAutoPreserveNewChannels[guildId] = newSelected;
-      setAutoPreserveNewChannels(newAutoPreserveNewChannels);
-    }
+    const newAutoPreserveNewChannels: { [guildId: string]: boolean } = {
+      ...autoPreserveNewChannels,
+    };
+    newAutoPreserveNewChannels[guildId] = newSelected;
+    setAutoPreserveNewChannels(newAutoPreserveNewChannels);
   };
 
   const toggleSelectedChannel = (channelId: string) => {
