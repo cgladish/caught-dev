@@ -15,6 +15,7 @@ import { PreservationRule, updatePreservationRule } from "./preservationRules";
 import retry from "async-retry";
 import queue from "queue";
 import { pick } from "lodash";
+import { createOrUpdateChannels } from "./channels";
 
 export type Message = {
   id: number;
@@ -23,10 +24,10 @@ export type Message = {
   externalChannelId: string;
   authorId: string;
   authorName: string;
-  authorAvatar?: string;
+  authorAvatar?: string | null;
   content: string;
   sentAt: Date;
-  appSpecificData?: object;
+  appSpecificData?: object | null;
 };
 
 export type DiscordMessage = Omit<Message, "appSpecificData"> & {
@@ -247,20 +248,30 @@ export const runRegularBackupDiscord = async (
     const preservationRuleCreatedSnowflake = datetimeToSnowflake(
       preservationRule.createdAt
     );
-    for (let [
-      guildId,
-      { channelIds, autoPreserveNewChannels },
-    ] of Object.entries(selected.guilds)) {
-      if (autoPreserveNewChannels && channelIds) {
+
+    for (let [guildId, guild] of Object.entries(selected.guilds)) {
+      if (guild.autoPreserveNewChannels && guild.channelIds) {
         const channels = await retry(() => fetchChannels(guildId), {
           retries: 5,
         });
         const newChannels = channels.filter(
           ({ id }) =>
-            !channelIds!.includes(id) &&
+            !guild.channelIds!.includes(id) &&
             BigInt(id) > preservationRuleCreatedSnowflake
         );
-        channelIds.push(...newChannels.map(({ id }) => id));
+        await retry(
+          () =>
+            createOrUpdateChannels(
+              newChannels.map(({ id, name }) => ({
+                appName: "discord",
+                externalId: id,
+                name: name,
+                iconUrl: null,
+              }))
+            ),
+          { retries: 2 }
+        );
+        guild.channelIds.push(...newChannels.map(({ id }) => id));
       }
     }
     if (selected.autoPreserveNewGuilds) {
@@ -272,6 +283,20 @@ export const runRegularBackupDiscord = async (
           !selected.dmChannelIds.includes(id) &&
           BigInt(id) > preservationRuleCreatedSnowflake
       );
+      await retry(
+        () =>
+          createOrUpdateChannels(
+            newGuilds.map(({ id, name, icon }) => ({
+              appName: "discord",
+              externalId: id,
+              name: name,
+              iconUrl: icon
+                ? `https://cdn.discordapp.com/icons/${id}/${icon}`
+                : null,
+            }))
+          ),
+        { retries: 2 }
+      );
       for (let newGuild of newGuilds) {
         const channels = await retry(() => fetchChannels(newGuild.id), {
           retries: 5,
@@ -282,6 +307,7 @@ export const runRegularBackupDiscord = async (
         };
       }
     }
+
     if (selected.autoPreserveNewDmChannels) {
       const dmChannels = await retry(() => fetchDmChannels(), {
         retries: 5,
@@ -290,6 +316,23 @@ export const runRegularBackupDiscord = async (
         ({ id }) =>
           !selected.dmChannelIds.includes(id) &&
           BigInt(id) > preservationRuleCreatedSnowflake
+      );
+      await retry(
+        () =>
+          createOrUpdateChannels(
+            newChannels.map(({ id, recipients }) => ({
+              appName: "discord",
+              externalId: id,
+              name: recipients.map(({ username }) => username).join(", "),
+              iconUrl:
+                recipients.length === 1
+                  ? `https://cdn.discordapp.com/avatars/${recipients[0]!.id}/${
+                      recipients[0]!.avatar
+                    }`
+                  : null,
+            }))
+          ),
+        { retries: 2 }
       );
       selected.dmChannelIds.push(...newChannels.map(({ id }) => id));
     }
@@ -408,15 +451,65 @@ export const runInitialBackupDiscord = async (
       : 0;
     const endSnowflake = datetimeToSnowflake(endDatetime ?? new Date());
 
+    const guilds = await retry(() => fetchGuilds(), {
+      retries: 5,
+    });
+    await retry(
+      () =>
+        createOrUpdateChannels(
+          guilds.map(({ id, name, icon }) => ({
+            appName: "discord",
+            externalId: id,
+            name: name,
+            iconUrl: icon
+              ? `https://cdn.discordapp.com/icons/${id}/${icon}`
+              : null,
+          }))
+        ),
+      { retries: 2 }
+    );
+
     for (let [guildId, { channelIds }] of Object.entries(selected.guilds)) {
+      const channels = await retry(() => fetchChannels(guildId), {
+        retries: 5,
+      });
+      await retry(
+        () =>
+          createOrUpdateChannels(
+            channels.map(({ id, name }) => ({
+              appName: "discord",
+              externalId: id,
+              name: name,
+              iconUrl: null,
+            }))
+          ),
+        { retries: 2 }
+      );
       if (!channelIds) {
-        const channels = await retry(() => fetchChannels(guildId), {
-          retries: 5,
-        });
         channelIds = channels.map(({ id }) => id);
         selected.guilds[guildId]!.channelIds = channelIds;
       }
     }
+
+    const dmChannels = await retry(() => fetchDmChannels(), { retries: 5 });
+    await retry(
+      () =>
+        createOrUpdateChannels(
+          dmChannels.map(({ id, recipients }) => ({
+            appName: "discord",
+            externalId: id,
+            name: recipients.map(({ username }) => username).join(", "),
+            iconUrl:
+              recipients.length === 1
+                ? `https://cdn.discordapp.com/avatars/${recipients[0]!.id}/${
+                    recipients[0]!.avatar
+                  }`
+                : null,
+          }))
+        ),
+      { retries: 2 }
+    );
+
     const allChannelIds = [
       ...Object.values(selected.guilds).flatMap(
         ({ channelIds }) => channelIds!

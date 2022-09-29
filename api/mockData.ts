@@ -1,6 +1,10 @@
 import { v4 } from "uuid";
 import getDb from "../db";
-import { MessageEntity, PreservationRuleEntity } from "../db/entities";
+import {
+  ChannelEntity,
+  MessageEntity,
+  PreservationRuleEntity,
+} from "../db/entities";
 import TableName from "../db/tableName";
 
 export const makeMessage = async (
@@ -16,6 +20,7 @@ export const makeMessage = async (
     authorName: "Name",
     content: "Content",
     sentAt: "2022-09-21T02:00:00.000Z",
+    appSpecificDataJson: null,
     ...overwrites,
   });
   const entity = await db<MessageEntity>(TableName.Message)
@@ -40,6 +45,23 @@ export const makePreservationRule = async (
     ...overwrites,
   });
   const entity = await db<PreservationRuleEntity>(TableName.PreservationRule)
+    .where({ id })
+    .first();
+  return entity!;
+};
+
+export const makeChannel = async (
+  overwrites?: Partial<ChannelEntity>
+): Promise<ChannelEntity> => {
+  const db = await getDb();
+  const [id] = await db<ChannelEntity>(TableName.Channel).insert({
+    appName: "discord",
+    externalId: v4(),
+    name: "channel name",
+    iconUrl: null,
+    ...overwrites,
+  });
+  const entity = await db<ChannelEntity>(TableName.Channel)
     .where({ id })
     .first();
   return entity!;

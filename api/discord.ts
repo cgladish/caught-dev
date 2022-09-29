@@ -354,13 +354,21 @@ export const fetchMessages = async (
     throw new Error("Not logged in!");
   }
   await waitForInterval();
-  const response: AxiosResponse<FetchedMessageInfo[]> = await axios({
-    method: "get",
-    url: `https://discord.com/api/v9/channels/${channelId}/messages`,
-    headers: { authorization: token },
-    params,
-  });
-  return response.data;
+  try {
+    const response: AxiosResponse<FetchedMessageInfo[]> = await axios({
+      method: "get",
+      url: `https://discord.com/api/v9/channels/${channelId}/messages`,
+      headers: { authorization: token },
+      params,
+    });
+    return response.data;
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response?.status === 404) {
+      return [];
+    }
+    throw err;
+  }
 };
 
 export const fetchMessagesCount = async ({

@@ -1,22 +1,9 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { deleteAuthentication } from "../api/appLogin";
-import {
-  fetchUserInfo,
-  fetchGuilds,
-  fetchChannels,
-  fetchDmChannels,
-} from "../api/discord";
-import {
-  fetchMessages,
-  getBackupProgress,
-  searchMessages,
-} from "../api/messages";
-import {
-  createPreservationRule,
-  deletePreservationRule,
-  fetchPreservationRules,
-  updatePreservationRule,
-} from "../api/preservationRules";
+import * as AppLoginApi from "../api/appLogin";
+import * as DiscordApi from "../api/discord";
+import * as MessagesApi from "../api/messages";
+import * as PreservationRulesApi from "../api/preservationRules";
+import * as ChannelsApi from "../api/channels";
 
 const makeInvoker =
   <
@@ -58,56 +45,61 @@ export const api = {
     openExternal: makeInvoker<(url: string) => void>("urls", "openExternal"),
   },
   appLogin: {
-    fetchUserInfo: makeInvoker<typeof fetchUserInfo>(
+    fetchUserInfo: makeInvoker<typeof DiscordApi.fetchUserInfo>(
       "appLogin",
       "fetchUserInfo"
     ),
-    logout: makeInvoker<typeof deleteAuthentication>(
+    logout: makeInvoker<typeof AppLoginApi.deleteAuthentication>(
       "appLogin",
       "deleteAuthentication"
     ),
   },
   discord: {
-    fetchGuilds: makeInvoker<typeof fetchGuilds>("discord", "fetchGuilds"),
-    fetchChannels: makeInvoker<typeof fetchChannels>(
+    fetchGuilds: makeInvoker<typeof DiscordApi.fetchGuilds>(
+      "discord",
+      "fetchGuilds"
+    ),
+    fetchChannels: makeInvoker<typeof DiscordApi.fetchChannels>(
       "discord",
       "fetchChannels"
     ),
-    fetchDmChannels: makeInvoker<typeof fetchDmChannels>(
+    fetchDmChannels: makeInvoker<typeof DiscordApi.fetchDmChannels>(
       "discord",
       "fetchDmChannels"
     ),
   },
   preservationRules: {
-    createPreservationRule: makeInvoker<typeof createPreservationRule>(
-      "preservationRules",
-      "createPreservationRule"
-    ),
-    updatePreservationRule: makeInvoker<typeof updatePreservationRule>(
-      "preservationRules",
-      "updatePreservationRule"
-    ),
-    deletePreservationRule: makeInvoker<typeof deletePreservationRule>(
-      "preservationRules",
-      "deletePreservationRule"
-    ),
-    fetchPreservationRules: makeInvoker<typeof fetchPreservationRules>(
-      "preservationRules",
-      "fetchPreservationRules"
-    ),
+    createPreservationRule: makeInvoker<
+      typeof PreservationRulesApi.createPreservationRule
+    >("preservationRules", "createPreservationRule"),
+    updatePreservationRule: makeInvoker<
+      typeof PreservationRulesApi.updatePreservationRule
+    >("preservationRules", "updatePreservationRule"),
+    deletePreservationRule: makeInvoker<
+      typeof PreservationRulesApi.deletePreservationRule
+    >("preservationRules", "deletePreservationRule"),
+    fetchPreservationRules: makeInvoker<
+      typeof PreservationRulesApi.fetchPreservationRules
+    >("preservationRules", "fetchPreservationRules"),
   },
   messages: {
-    getBackupProgress: makeInvoker<typeof getBackupProgress>(
+    getBackupProgress: makeInvoker<typeof MessagesApi.getBackupProgress>(
       "messages",
       "getBackupProgress"
     ),
-    searchMessages: makeInvoker<typeof searchMessages>(
+    searchMessages: makeInvoker<typeof MessagesApi.searchMessages>(
       "messages",
       "searchMessages"
     ),
-    fetchMessages: makeInvoker<typeof fetchMessages>(
+    fetchMessages: makeInvoker<typeof MessagesApi.fetchMessages>(
       "messages",
       "fetchMessages"
+    ),
+  },
+  channels: {
+    fetchChannels: makeInvoker<typeof ChannelsApi.fetchChannels>(
+      "channels",
+      "fetchChannels"
     ),
   },
 };

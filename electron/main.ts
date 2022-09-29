@@ -4,29 +4,11 @@ import debounce from "lodash/debounce";
 import path from "path";
 import cron from "node-cron";
 import { shell } from "electron";
-import { saveAuthentication, deleteAuthentication } from "../api/appLogin";
-import {
-  fetchChannels,
-  fetchDmChannels,
-  fetchGuilds,
-  fetchUserInfo,
-} from "../api/discord";
-import {
-  addInitialBackupToQueue,
-  addRegularBackupToQueue,
-  getBackupProgress,
-  isRegularBackupInProgress,
-  searchMessages,
-  fetchMessages,
-} from "../api/messages";
-import {
-  createPreservationRule,
-  deletePreservationRule,
-  fetchCompletePreservationRules,
-  fetchIncompletePreservationRules,
-  fetchPreservationRules,
-  updatePreservationRule,
-} from "../api/preservationRules";
+import * as AppLoginApi from "../api/appLogin";
+import * as DiscordApi from "../api/discord";
+import * as MessagesApi from "../api/messages";
+import * as PreservationRulesApi from "../api/preservationRules";
+import * as ChannelsApi from "../api/channels";
 
 const startApiListener = (moduleName: string, func: Function) => {
   ipcMain.handle(`@@${moduleName}/${func.name}`, async (event, ...args) => {
@@ -49,18 +31,31 @@ const startApiListener = (moduleName: string, func: Function) => {
 startApiListener("urls", function openExternal(url: string) {
   shell.openExternal(url);
 });
-startApiListener("appLogin", fetchUserInfo);
-startApiListener("appLogin", deleteAuthentication);
-startApiListener("discord", fetchGuilds);
-startApiListener("discord", fetchChannels);
-startApiListener("discord", fetchDmChannels);
-startApiListener("preservationRules", createPreservationRule);
-startApiListener("preservationRules", updatePreservationRule);
-startApiListener("preservationRules", deletePreservationRule);
-startApiListener("preservationRules", fetchPreservationRules);
-startApiListener("messages", getBackupProgress);
-startApiListener("messages", searchMessages);
-startApiListener("messages", fetchMessages);
+startApiListener("appLogin", DiscordApi.fetchUserInfo);
+startApiListener("appLogin", AppLoginApi.deleteAuthentication);
+startApiListener("discord", DiscordApi.fetchGuilds);
+startApiListener("discord", DiscordApi.fetchChannels);
+startApiListener("discord", DiscordApi.fetchDmChannels);
+startApiListener(
+  "preservationRules",
+  PreservationRulesApi.createPreservationRule
+);
+startApiListener(
+  "preservationRules",
+  PreservationRulesApi.updatePreservationRule
+);
+startApiListener(
+  "preservationRules",
+  PreservationRulesApi.deletePreservationRule
+);
+startApiListener(
+  "preservationRules",
+  PreservationRulesApi.fetchPreservationRules
+);
+startApiListener("messages", MessagesApi.getBackupProgress);
+startApiListener("messages", MessagesApi.searchMessages);
+startApiListener("messages", MessagesApi.fetchMessages);
+startApiListener("channels", ChannelsApi.fetchChannels);
 
 app.whenReady().then(async () => {
   const win = new BrowserWindow({
@@ -95,7 +90,7 @@ app.whenReady().then(async () => {
     debounce(async (details) => {
       const token = details.requestHeaders.Authorization;
       if (token) {
-        await saveAuthentication("discord", token);
+        await AppLoginApi.saveAuthentication("discord", token);
         BrowserWindow.getAllWindows().forEach((window) => {
           if (window.webContents.getURL().includes("discord.com")) {
             window.close();
@@ -105,22 +100,24 @@ app.whenReady().then(async () => {
     }, 1000)
   );
 
-  const incompletePreservationRules = await fetchIncompletePreservationRules();
+  const incompletePreservationRules =
+    await PreservationRulesApi.fetchIncompletePreservationRules();
   incompletePreservationRules.forEach((preservationRule) => {
     if (preservationRule.appName === "discord") {
-      addInitialBackupToQueue(preservationRule);
+      MessagesApi.addInitialBackupToQueue(preservationRule);
     }
   });
 
   cron.schedule("*/1 * * * *", async () => {
-    if (isRegularBackupInProgress) {
+    if (MessagesApi.isRegularBackupInProgress) {
       return;
     }
     console.log("running regular backup");
-    const completePreservationRules = await fetchCompletePreservationRules();
+    const completePreservationRules =
+      await PreservationRulesApi.fetchCompletePreservationRules();
     completePreservationRules.forEach((preservationRule) => {
       if (preservationRule.appName === "discord") {
-        addRegularBackupToQueue(preservationRule);
+        MessagesApi.addRegularBackupToQueue(preservationRule);
       }
     });
   });

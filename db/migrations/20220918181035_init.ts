@@ -17,6 +17,15 @@ export async function up(knex: Knex): Promise<void> {
     table.boolean("initialBackupComplete").notNullable().defaultTo(false);
     table.timestamps(false, true, true);
   });
+  await knex.schema.createTable(TableName.Channel, function (table) {
+    table.increments("id");
+    table.string("appName").notNullable().index();
+    table.string("externalId").notNullable().index();
+    table.string("name").notNullable();
+    table.string("iconUrl");
+
+    table.unique(["appName", "externalId"]);
+  });
   await knex.schema.createTable(TableName.Message, function (table) {
     table.increments("id");
     table

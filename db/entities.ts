@@ -9,11 +9,19 @@ export type PreservationRuleEntity = {
   appName: AppName;
   name: string;
   selectedJson: string;
-  startDatetime: string | null;
-  endDatetime: string | null;
+  startDatetime?: string | null;
+  endDatetime?: string | null;
   initialBackupComplete: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ChannelEntity = {
+  id: number;
+  appName: AppName;
+  externalId: string;
+  name: string;
+  iconUrl?: string | null;
 };
 
 export type MessageEntity = {
@@ -23,8 +31,8 @@ export type MessageEntity = {
   externalChannelId: string;
   authorId: string;
   authorName: string;
-  authorAvatar?: string;
+  authorAvatar?: string | null;
   content: string;
   sentAt: string;
-  appSpecificDataJson?: string;
+  appSpecificDataJson?: string | null;
 };

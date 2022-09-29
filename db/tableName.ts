@@ -3,6 +3,7 @@ enum TableName {
   PreservationRule = "PreservationRule",
   Message = "Message",
   MessageSearch = "MessageSearch",
+  Channel = "Channel",
 }
 
 export default TableName;

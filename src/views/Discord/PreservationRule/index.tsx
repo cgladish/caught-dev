@@ -13,18 +13,19 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { ActionType as DiscordActionType } from "../../../redux/discord/actions";
+import { ActionType as ChannelsActionType } from "../../../redux/channels/actions";
 import {
   getDiscordPreservationRules,
   getSaveStatus,
 } from "../../../redux/preservationRules/selectors";
 import { ActionType as PreservationRulesActionType } from "../../../redux/preservationRules/actions";
-import { getDmChannels, getGuilds } from "../../../redux/discord/selectors";
 import { DiscordSelected } from "../../../../types/discord";
 import Messages from "./Messages";
+import { Dispatch } from "../../../redux";
+import { getDiscordChannels } from "../../../redux/channels/selectors";
 
 export default function PreservationRule() {
   const [viewedGuildId, setViewedGuildId] = useState<string | null>(null);
@@ -36,85 +37,80 @@ export default function PreservationRule() {
 
   const navigate = useNavigate();
 
+  const dispatch = useDispatch<Dispatch>();
+
+  const allChannels = useSelector(getDiscordChannels);
+
   const params = useParams();
   const preservationRuleId = Number(params.preservationRuleId);
   const preservationRules = useSelector(getDiscordPreservationRules);
   const preservationRule = preservationRules?.[preservationRuleId];
   const selected = preservationRule?.selected as DiscordSelected | undefined;
 
-  const guilds = useSelector(getGuilds);
-  const dmChannels = useSelector(getDmChannels);
+  const preservationRuleChannels = allChannels?.[preservationRuleId];
+  const guilds =
+    selected &&
+    preservationRuleChannels &&
+    Object.keys(selected.guilds).map((id) => preservationRuleChannels[id]!);
+  const channels =
+    selected &&
+    !!viewedGuildId &&
+    preservationRuleChannels &&
+    selected.guilds[viewedGuildId]?.channelIds?.map(
+      (id) => preservationRuleChannels[id]!
+    );
+  const dmChannels =
+    selected &&
+    preservationRuleChannels &&
+    selected.dmChannelIds.map((id) => preservationRuleChannels[id]!);
 
-  const viewedGuild = viewedGuildId ? guilds?.[viewedGuildId] : null;
-  const channels = viewedGuild?.channels;
+  const viewedGuild = viewedGuildId
+    ? preservationRuleChannels?.[viewedGuildId]
+    : null;
   const viewedChannel = viewedChannelId
-    ? viewedGuild?.channels?.[viewedChannelId]
+    ? preservationRuleChannels?.[viewedChannelId]
     : null;
   const viewedDmChannel = viewedDmChannelId
-    ? dmChannels?.[viewedDmChannelId]
+    ? preservationRuleChannels?.[viewedDmChannelId]
     : null;
 
   useEffect(() => {
-    if (viewedGuildId && !channels) {
+    if (selected) {
+      const channelIds = [
+        ...Object.keys(selected.guilds),
+        ...Object.values(selected.guilds).flatMap(
+          ({ channelIds }) => channelIds ?? []
+        ),
+        ...selected.dmChannelIds,
+      ];
       dispatch({
-        type: DiscordActionType.fetchChannelsStart,
-        payload: { guildId: viewedGuildId },
+        type: ChannelsActionType.fetchStart,
+        payload: { appName: "discord", preservationRuleId, channelIds },
       });
     }
-  }, [viewedGuildId]);
+  }, [selected]);
 
   const saveStatus = useSelector(getSaveStatus);
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch({
       type: PreservationRulesActionType.fetchStart,
       payload: { appName: "discord" },
     });
-    dispatch({ type: DiscordActionType.fetchGuildsStart });
-    dispatch({ type: DiscordActionType.fetchDmChannelsStart });
   }, []);
-
-  const filteredGuilds = useMemo(
-    () =>
-      guilds &&
-      selected &&
-      Object.values(guilds).filter(({ id }) => selected.guilds[id]),
-    [guilds, selected]
-  );
-  const filteredChannels = useMemo(
-    () =>
-      viewedGuildId &&
-      channels &&
-      selected &&
-      Object.values(channels).filter(({ id }) =>
-        selected.guilds[viewedGuildId]?.channelIds?.includes(id)
-      ),
-    [channels, selected]
-  );
-  const filteredDmChannels = useMemo(
-    () =>
-      dmChannels &&
-      selected &&
-      Object.values(dmChannels).filter(({ id }) =>
-        selected.dmChannelIds.includes(id)
-      ),
-    [dmChannels, selected]
-  );
 
   if (!preservationRule) {
     return <LinearProgress />;
   }
 
-  const showServersTab = !!filteredGuilds?.length && selectedTab === 0;
+  const showServersTab = !!guilds?.length && selectedTab === 0;
   const showServers = showServersTab && !viewedGuildId;
   const showChannels = showServersTab && !!viewedGuildId && !viewedChannelId;
   const showChannelMessages = showServersTab && !!viewedChannelId;
 
   const showDmsTab =
-    !!filteredDmChannels?.length &&
-    (filteredGuilds?.length ? selectedTab === 1 : selectedTab === 0);
+    !!dmChannels?.length &&
+    (guilds?.length ? selectedTab === 1 : selectedTab === 0);
   const showDms = showDmsTab && !viewedDmChannelId;
   const showDmChannelMessages = showDmsTab && !!viewedDmChannelId;
 
@@ -169,8 +165,8 @@ export default function PreservationRule() {
           onChange={(event, tabIndex) => setSelectedTab(tabIndex)}
           style={{ minHeight: 48 }}
         >
-          {!!filteredGuilds?.length && <Tab label="Servers" />}
-          {!!filteredDmChannels?.length && <Tab label="DMs" />}
+          {!!guilds?.length && <Tab label="Servers" />}
+          {!!dmChannels?.length && <Tab label="DMs" />}
         </Tabs>
         <div
           style={{
@@ -179,7 +175,7 @@ export default function PreservationRule() {
             width: showServers ? "100%" : 0,
           }}
         >
-          {filteredGuilds ? (
+          {guilds ? (
             <>
               {showServers && (
                 <div
@@ -209,16 +205,14 @@ export default function PreservationRule() {
                 }}
                 dense
               >
-                {filteredGuilds.map((guild) => (
+                {guilds.map((guild) => (
                   <ListItem key={guild.id} disablePadding>
-                    <ListItemButton onClick={() => setViewedGuildId(guild.id)}>
+                    <ListItemButton
+                      onClick={() => setViewedGuildId(guild.externalId)}
+                    >
                       <ListItemAvatar>
                         <Avatar
-                          src={
-                            guild.icon
-                              ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}`
-                              : "/app-logos/discord.png"
-                          }
+                          src={guild.iconUrl ?? "/app-logos/discord.png"}
                         />
                       </ListItemAvatar>
                       <ListItemText
@@ -247,7 +241,7 @@ export default function PreservationRule() {
             width: showChannels ? "100%" : 0,
           }}
         >
-          {filteredChannels && viewedGuild ? (
+          {channels && viewedGuild ? (
             <>
               {showChannels && (
                 <div
@@ -266,11 +260,7 @@ export default function PreservationRule() {
                   </IconButton>
                   <Avatar
                     style={{ marginLeft: 5 }}
-                    src={
-                      viewedGuild.icon
-                        ? `https://cdn.discordapp.com/icons/${viewedGuild.id}/${viewedGuild.icon}`
-                        : "/app-logos/discord.png"
-                    }
+                    src={viewedGuild.iconUrl ?? "/app-logos/discord.png"}
                   />
                   <Typography
                     sx={{
@@ -290,10 +280,10 @@ export default function PreservationRule() {
                 }}
                 dense
               >
-                {filteredChannels.map((channel) => (
+                {channels.map((channel) => (
                   <ListItem key={channel.id} disablePadding>
                     <ListItemButton
-                      onClick={() => setViewedChannelId(channel.id)}
+                      onClick={() => setViewedChannelId(channel.externalId)}
                       style={{ height: 50 }}
                     >
                       <ListItemText
@@ -322,7 +312,7 @@ export default function PreservationRule() {
             width: showDms ? "100%" : 0,
           }}
         >
-          {filteredDmChannels ? (
+          {dmChannels ? (
             <>
               {showDms && (
                 <div
@@ -352,19 +342,16 @@ export default function PreservationRule() {
                 }}
                 dense
               >
-                {filteredDmChannels.map((dmChannel) => (
+                {dmChannels.map((dmChannel) => (
                   <ListItem key={dmChannel.id} disablePadding>
                     <ListItemButton
-                      onClick={() => setViewedDmChannelId(dmChannel.id)}
+                      onClick={() => setViewedDmChannelId(dmChannel.externalId)}
                     >
                       <ListItemAvatar>
                         <Avatar
                           src={
-                            dmChannel.recipients.length === 1
-                              ? dmChannel.recipients[0]?.avatar
-                                ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
-                                : "app-logos/discord.png"
-                              : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
+                            dmChannel?.iconUrl ??
+                            "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
                           }
                         />
                       </ListItemAvatar>
@@ -376,9 +363,7 @@ export default function PreservationRule() {
                           },
                         }}
                       >
-                        {dmChannel.recipients
-                          .map(({ username }) => username)
-                          .join(", ")}
+                        {dmChannel.name}
                       </ListItemText>
                     </ListItemButton>
                   </ListItem>
@@ -389,26 +374,22 @@ export default function PreservationRule() {
             <LinearProgress />
           )}
         </div>
-        {viewedChannel && (
+        {showChannelMessages && viewedChannel && (
           <Messages
             visible={showChannelMessages}
             title={`# ${viewedChannel.name}`}
             onBack={() => setViewedChannelId(null)}
             preservationRuleId={preservationRule.id}
-            channelId={viewedChannel.id}
+            channelId={viewedChannel.externalId}
           />
         )}
-        {viewedDmChannel && (
+        {showDmChannelMessages && viewedDmChannel && (
           <Messages
             visible={showDmChannelMessages}
-            title={
-              viewedDmChannel?.recipients
-                .map(({ username }) => username)
-                .join(", ") ?? ""
-            }
+            title={viewedDmChannel.name}
             onBack={() => setViewedDmChannelId(null)}
             preservationRuleId={preservationRule.id}
-            channelId={viewedDmChannel.id}
+            channelId={viewedDmChannel.externalId}
           />
         )}
       </Card>

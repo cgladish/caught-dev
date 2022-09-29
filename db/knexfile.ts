@@ -11,6 +11,7 @@ const config: { [env: string]: Knex.Config } = {
       tableName: "migrations",
       directory: path.join(__dirname, "migrations"),
     },
+    useNullAsDefault: true,
   },
   production: {
     client: "sqlite3",
@@ -21,6 +22,7 @@ const config: { [env: string]: Knex.Config } = {
       tableName: "migrations",
       directory: path.join(__dirname, "migrations"),
     },
+    useNullAsDefault: true,
   },
 };
 
