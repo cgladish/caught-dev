@@ -85,10 +85,20 @@ app.whenReady().then(async () => {
 
   if (process.platform === "win32") {
     let isQuitting = false;
+    let hasShownBackgroundRunningBalloon = false;
     win.on("close", (event) => {
       if (!isQuitting) {
         event.preventDefault();
         win.hide();
+        if (!hasShownBackgroundRunningBalloon) {
+          trayIcon.displayBalloon({
+            icon: "public/logo192.png",
+            title: "Preserve.dev",
+            content:
+              "Application is running in the background. Messages will continue to be fetched and preserved.",
+          });
+          hasShownBackgroundRunningBalloon = true;
+        }
       }
       return false;
     });
