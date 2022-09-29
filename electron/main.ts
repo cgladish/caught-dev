@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session, ipcMain } from "electron";
+import { app, BrowserWindow, session, ipcMain, Menu, Tray } from "electron";
 import isDev from "electron-is-dev";
 import debounce from "lodash/debounce";
 import path from "path";
@@ -81,6 +81,33 @@ app.whenReady().then(async () => {
     win.webContents.openDevTools({ mode: "detach" });
   } else {
     win.loadFile("public/index.html");
+  }
+
+  if (process.platform === "win32") {
+    let isQuitting = false;
+    win.on("close", (event) => {
+      if (!isQuitting) {
+        event.preventDefault();
+        win.hide();
+      }
+      return false;
+    });
+    const trayContextMenu = Menu.buildFromTemplate([
+      {
+        label: "Open Preserve.dev",
+        click: () => win.show(),
+      },
+      {
+        label: "Quit",
+        click: () => {
+          isQuitting = true;
+          app.quit();
+        },
+      },
+    ]);
+    const trayIcon = new Tray("public/logo192.png");
+    trayIcon.setToolTip("Preserve.dev");
+    trayIcon.setContextMenu(trayContextMenu);
   }
 
   session.defaultSession.webRequest.onBeforeSendHeaders(

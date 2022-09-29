@@ -395,7 +395,8 @@ export const fetchMessagesCount = async ({
     },
     headers: { authorization: token },
   });
-  return response.data.total_results;
+  const totalCount = Number(response.data.total_results);
+  return Number.isNaN(totalCount) ? 0 : totalCount;
 };
 
 // This code was tranlated from the Python snippet here:
