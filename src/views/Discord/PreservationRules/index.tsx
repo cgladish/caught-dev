@@ -1,4 +1,4 @@
-import { Add, Delete, Edit, Visibility } from "@mui/icons-material";
+import { Add, Visibility } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -22,6 +22,7 @@ import {
   getSaveStatus,
 } from "../../../redux/preservationRules/selectors";
 import { timeAgo } from "../../../utils";
+import { DeletePreservationRuleButton } from "../../../components/DeletePreservationRuleButton";
 
 function LinearProgressWithLabel({
   errored,
@@ -156,6 +157,7 @@ export default function PreservationRules() {
                     >
                       <Visibility />
                     </IconButton>
+                    {/*
                     <IconButton
                       disabled={
                         isSaving ||
@@ -165,20 +167,11 @@ export default function PreservationRules() {
                     >
                       <Edit />
                     </IconButton>
-                    <IconButton
-                      onClick={() =>
-                        dispatch({
-                          type: ActionType.deleteStart,
-                          payload: {
-                            appName: "discord",
-                            preservationRuleId: preservationRule.id,
-                          },
-                        })
-                      }
+                    */}
+                    <DeletePreservationRuleButton
+                      preservationRuleId={preservationRule.id}
                       disabled={isSaving}
-                    >
-                      <Delete />
-                    </IconButton>
+                    />
                   </div>
                   <Typography color="text.secondary">
                     {(preservationRule.createdAt.getTime() ===

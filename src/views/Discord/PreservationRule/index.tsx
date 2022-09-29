@@ -1,4 +1,4 @@
-import { Delete, Edit, NavigateBefore } from "@mui/icons-material";
+import { NavigateBefore } from "@mui/icons-material";
 import {
   Avatar,
   Card,
@@ -26,6 +26,7 @@ import { DiscordSelected } from "../../../../types/discord";
 import Messages from "./Messages";
 import { Dispatch } from "../../../redux";
 import { getDiscordChannels } from "../../../redux/channels/selectors";
+import { DeletePreservationRuleButton } from "../../../components/DeletePreservationRuleButton";
 
 export default function PreservationRule() {
   const [viewedGuildId, setViewedGuildId] = useState<string | null>(null);
@@ -127,23 +128,17 @@ export default function PreservationRule() {
           <NavigateBefore />
         </IconButton>
         <Typography variant="h6">{preservationRule.name}</Typography>
+        {/*
         <IconButton style={{ marginLeft: "auto" }}>
           <Edit />
         </IconButton>
-        <IconButton
-          onClick={() =>
-            dispatch({
-              type: PreservationRulesActionType.deleteStart,
-              payload: {
-                appName: "discord",
-                preservationRuleId: preservationRule.id,
-              },
-            })
-          }
-          disabled={saveStatus === "pending"}
-        >
-          <Delete />
-        </IconButton>
+        */}
+        <div style={{ marginLeft: "auto" }}>
+          <DeletePreservationRuleButton
+            preservationRuleId={preservationRule.id}
+            disabled={saveStatus === "pending"}
+          />
+        </div>
       </div>
       {(preservationRule.startDatetime || preservationRule.endDatetime) && (
         <div style={{ display: "flex", marginBottom: 10 }}>
