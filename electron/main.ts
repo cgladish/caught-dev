@@ -115,7 +115,7 @@ app.whenReady().then(async () => {
         },
       },
     ]);
-    const trayIcon = new Tray("public/logo192.png");
+    const trayIcon = new Tray("public/favicon.icon");
     trayIcon.setToolTip("Preserve.dev");
     trayIcon.setContextMenu(trayContextMenu);
     trayIcon.on("click", () => win.show());

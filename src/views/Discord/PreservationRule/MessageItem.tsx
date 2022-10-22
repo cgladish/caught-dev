@@ -186,7 +186,7 @@ export const MessageItem = ({
               {format(message.sentAt, "P")} at {format(message.sentAt, "p")}
             </Typography>
           </div>
-          <Typography style={{ marginTop: "2px" }}>
+          <Typography style={{ marginTop: "2px", wordWrap: "break-word" }}>
             {message.content}
           </Typography>
           {imageAttachments?.map(({ filename, url, width, height }, index) => {
