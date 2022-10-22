@@ -66,6 +66,7 @@ app.whenReady().then(async () => {
       nodeIntegration: false,
       preload: path.join(__dirname, "preload.js"),
     },
+    icon: "public/favicon.ico",
   });
   win.webContents.setWindowOpenHandler(() => {
     return {
@@ -92,7 +93,7 @@ app.whenReady().then(async () => {
         win.hide();
         if (!hasShownBackgroundRunningBalloon) {
           trayIcon.displayBalloon({
-            icon: "public/logo192.png",
+            icon: "public/favicon.ico",
             title: "Preserve.dev",
             content:
               "Application is running in the background. Messages will continue to be fetched and preserved.",
@@ -115,7 +116,7 @@ app.whenReady().then(async () => {
         },
       },
     ]);
-    const trayIcon = new Tray("public/favicon.icon");
+    const trayIcon = new Tray("public/favicon.ico");
     trayIcon.setToolTip("Preserve.dev");
     trayIcon.setContextMenu(trayContextMenu);
     trayIcon.on("click", () => win.show());
