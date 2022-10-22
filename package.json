@@ -7,6 +7,7 @@
     "name": "Preserve.dev",
     "email": "support@preserve.dev"
   },
+  "main": ".webpack/main",
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
@@ -49,10 +50,11 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
     "test": "rm -f db/test.db.sqlite3 && jest --forceExit --runInBand",
-    "eject": "react-scripts eject",
     "dev": "tsc && cross-env BROWSER=none concurrently -k \"yarn start\" \"yarn electron\"",
     "electron": "electron ./dist/electron/main.js"
   },
@@ -78,7 +80,60 @@
       "last 1 safari version"
     ]
   },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "Preserve.dev"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "plugins": [
+    [
+      "@electron-forge/plugin-webpack",
+      {
+        "mainConfig": "./webpack.main.config.js",
+        "renderer": {
+          "config": "./webpack.renderer.config.js",
+          "entryPoints": [
+            {
+              "html": "./public/index.html",
+              "js": "./src/index.tsx",
+              "name": "main_window",
+              "preload": {
+                "js": "./electron/preload.ts"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  ],
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.67",
+    "@electron-forge/maker-deb": "^6.0.0-beta.67",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.67",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.67",
+    "@electron-forge/maker-zip": "^6.0.0-beta.67",
     "@types/async-retry": "^1.4.5",
     "@types/lodash": "^4.14.185",
     "@types/node-cron": "^3.0.4",

@@ -10,6 +10,8 @@ import * as MessagesApi from "../api/messages";
 import * as PreservationRulesApi from "../api/preservationRules";
 import * as ChannelsApi from "../api/channels";
 
+if (require("electron-squirrel-startup")) app.quit();
+
 const startApiListener = (moduleName: string, func: Function) => {
   ipcMain.handle(`@@${moduleName}/${func.name}`, async (event, ...args) => {
     try {
