@@ -93,7 +93,7 @@ app.whenReady().then(async () => {
         win.hide();
         if (!hasShownBackgroundRunningBalloon) {
           trayIcon.displayBalloon({
-            icon: "public/favicon.ico",
+            icon: "public/icon-512.png",
             title: "Preserve.dev",
             content:
               "Application is running in the background. Messages will continue to be fetched and preserved.",
