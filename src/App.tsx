@@ -3,7 +3,7 @@ import { HashRouter, Link, Route, Routes, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./redux";
 import Alerts from "./Alerts";
-import { Home } from "@mui/icons-material";
+import { Home as HomeIcon } from "@mui/icons-material";
 import {
   createTheme,
   ThemeProvider,
@@ -21,6 +21,7 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import Discord from "./views/Discord";
+import Home from "./views/Home";
 
 const theme = createTheme({
   palette: {
@@ -102,8 +103,13 @@ function App() {
                   variant="permanent"
                   anchor="left"
                 >
+                  <img
+                    src="/logo-darkmode.png"
+                    alt="logo"
+                    style={{ margin: "10px 10px" }}
+                  />
                   <List>
-                    <MenuLink to="/" text="Home" iconElement={<Home />} />
+                    <MenuLink to="/" text="Home" iconElement={<HomeIcon />} />
                   </List>
                   <Divider />
                   <List>
