@@ -24,3 +24,5 @@ yarn-error.log*
 
 *.sqlite3
 dist
+
+.webpack
