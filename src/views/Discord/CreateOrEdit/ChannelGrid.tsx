@@ -1,5 +1,6 @@
 import { useEffect, useState, memo, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import discordLogo from "../../../assets/app-logos/discord.png";
 import { ActionType as DiscordActionType } from "../../../redux/discord/actions";
 import { Dispatch } from "../../../redux";
 import { getDmChannels, getGuilds } from "../../../redux/discord/selectors";
@@ -319,7 +320,7 @@ function ChannelGrid({
                       src={
                         guild.icon
                           ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}`
-                          : "/app-logos/discord.png"
+                          : discordLogo
                       }
                     />
                   </ListItemAvatar>
@@ -382,7 +383,7 @@ function ChannelGrid({
               src={
                 viewedGuild.icon
                   ? `https://cdn.discordapp.com/icons/${viewedGuild.id}/${viewedGuild.icon}`
-                  : "/app-logos/discord.png"
+                  : discordLogo
               }
             />
             <Typography
@@ -564,7 +565,7 @@ function ChannelGrid({
                         dmChannel.recipients.length === 1
                           ? dmChannel.recipients[0]?.avatar
                             ? `https://cdn.discordapp.com/avatars/${dmChannel.recipients[0].id}/${dmChannel.recipients[0].avatar}`
-                            : "app-logos/discord.png"
+                            : discordLogo
                           : "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
                       }
                     />

@@ -1,4 +1,5 @@
 import knex from "knex";
+
 const config = require("./knexfile");
 
 const environment = process.env.JEST_WORKER_ID ? "test" : "production";

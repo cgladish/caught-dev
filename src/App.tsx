@@ -4,6 +4,8 @@ import { Provider } from "react-redux";
 import { store } from "./redux";
 import Alerts from "./Alerts";
 import { Home as HomeIcon } from "@mui/icons-material";
+import logo from "./assets/logo-darkmode.png";
+import discordLogo from "./assets/app-logos/discord.png";
 import {
   createTheme,
   ThemeProvider,
@@ -103,11 +105,7 @@ function App() {
                   variant="permanent"
                   anchor="left"
                 >
-                  <img
-                    src="/logo-darkmode.png"
-                    alt="logo"
-                    style={{ margin: "10px 10px" }}
-                  />
+                  <img src={logo} alt="logo" style={{ margin: "10px 10px" }} />
                   <List>
                     <MenuLink to="/" text="Home" iconElement={<HomeIcon />} />
                   </List>
@@ -118,11 +116,7 @@ function App() {
                       to="/apps/discord"
                       text="Discord"
                       iconElement={
-                        <img
-                          src="/app-logos/discord.png"
-                          alt="discord"
-                          height={25}
-                        />
+                        <img src={discordLogo} alt="discord" height={25} />
                       }
                     />
                   </List>

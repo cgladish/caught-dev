@@ -10,7 +10,8 @@ import {
 } from "@mui/material";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { DiscordMessage } from "../../../../api/messages";
+import discordLogo from "../../../assets/app-logos/discord.png";
+import { DiscordMessage } from "../../../api/messages";
 import "./Messages.css";
 import { partition } from "lodash";
 import { useDispatch, useSelector } from "react-redux";
@@ -160,7 +161,7 @@ export const MessageItem = ({
           src={
             message.authorAvatar
               ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
-              : "app-logos/discord.png"
+              : discordLogo
           }
         />
         <div

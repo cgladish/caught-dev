@@ -1,9 +1,9 @@
 import { contextBridge, ipcRenderer } from "electron";
-import * as AppLoginApi from "../api/appLogin";
-import * as DiscordApi from "../api/discord";
-import * as MessagesApi from "../api/messages";
-import * as PreservationRulesApi from "../api/preservationRules";
-import * as ChannelsApi from "../api/channels";
+import * as AppLoginApi from "./api/appLogin";
+import * as DiscordApi from "./api/discord";
+import * as MessagesApi from "./api/messages";
+import * as PreservationRulesApi from "./api/preservationRules";
+import * as ChannelsApi from "./api/channels";
 
 const makeInvoker =
   <

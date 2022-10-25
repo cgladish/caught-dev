@@ -1,4 +1,4 @@
-import { Channel } from "../../../api/channels";
+import { Channel } from "../../api/channels";
 import { ResourceStatus } from "../types";
 
 export type State = {

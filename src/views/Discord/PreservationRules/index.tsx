@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Dispatch } from "../../../redux";
 import { ActionType } from "../../../redux/preservationRules/actions";
-import { BackupsInProgress } from "../../../../api/messages";
+import { BackupsInProgress } from "../../../api/messages";
 import {
   getDiscordPreservationRules,
   getSaveStatus,

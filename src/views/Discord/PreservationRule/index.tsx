@@ -16,13 +16,14 @@ import {
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import discordLogo from "../../../assets/app-logos/discord.png";
 import { ActionType as ChannelsActionType } from "../../../redux/channels/actions";
 import {
   getDiscordPreservationRules,
   getSaveStatus,
 } from "../../../redux/preservationRules/selectors";
 import { ActionType as PreservationRulesActionType } from "../../../redux/preservationRules/actions";
-import { DiscordSelected } from "../../../../types/discord";
+import { DiscordSelected } from "../../../discord";
 import Messages from "./Messages";
 import { Dispatch } from "../../../redux";
 import { getDiscordChannels } from "../../../redux/channels/selectors";
@@ -206,9 +207,7 @@ export default function PreservationRule() {
                       onClick={() => setViewedGuildId(guild.externalId)}
                     >
                       <ListItemAvatar>
-                        <Avatar
-                          src={guild.iconUrl ?? "/app-logos/discord.png"}
-                        />
+                        <Avatar src={guild.iconUrl ?? discordLogo} />
                       </ListItemAvatar>
                       <ListItemText
                         primaryTypographyProps={{
@@ -255,7 +254,7 @@ export default function PreservationRule() {
                   </IconButton>
                   <Avatar
                     style={{ marginLeft: 5 }}
-                    src={viewedGuild.iconUrl ?? "/app-logos/discord.png"}
+                    src={viewedGuild.iconUrl ?? discordLogo}
                   />
                   <Typography
                     sx={{

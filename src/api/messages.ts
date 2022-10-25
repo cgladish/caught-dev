@@ -1,7 +1,7 @@
 import getDb from "../db";
 import { MessageEntity } from "../db/entities";
 import TableName from "../db/tableName";
-import { DiscordSelected } from "../types/discord";
+import { DiscordSelected } from "../discord";
 import {
   datetimeToSnowflake,
   fetchChannels,

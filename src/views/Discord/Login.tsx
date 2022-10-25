@@ -1,4 +1,5 @@
 import { Card, Typography, Button } from "@mui/material";
+import discordLogo from "../../assets/app-logos/discord.png";
 
 export default function Login() {
   return (
@@ -22,7 +23,7 @@ export default function Login() {
         }}
       >
         <img
-          src="/app-logos/discord.png"
+          src={discordLogo}
           width={50}
           alt="discord"
           style={{ marginBottom: 20 }}

@@ -1,4 +1,4 @@
-import { Message } from "../../../api/messages";
+import { Message } from "../../api/messages";
 import { SearchResult } from "./state";
 
 export enum ActionType {

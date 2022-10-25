@@ -1,14 +1,17 @@
 import { app, BrowserWindow, session, ipcMain, Menu, Tray } from "electron";
-import isDev from "electron-is-dev";
 import debounce from "lodash/debounce";
-import path from "path";
 import cron from "node-cron";
 import { shell } from "electron";
-import * as AppLoginApi from "../api/appLogin";
-import * as DiscordApi from "../api/discord";
-import * as MessagesApi from "../api/messages";
-import * as PreservationRulesApi from "../api/preservationRules";
-import * as ChannelsApi from "../api/channels";
+import icon from "./assets/favicon.ico";
+import iconLarge from "./assets/icon-512.png";
+import * as AppLoginApi from "./api/appLogin";
+import * as DiscordApi from "./api/discord";
+import * as MessagesApi from "./api/messages";
+import * as PreservationRulesApi from "./api/preservationRules";
+import * as ChannelsApi from "./api/channels";
+
+declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
+declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 if (require("electron-squirrel-startup")) app.quit();
 
@@ -66,9 +69,9 @@ app.whenReady().then(async () => {
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
-      preload: path.join(__dirname, "preload.js"),
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
-    icon: "public/favicon.ico",
+    icon,
   });
   win.webContents.setWindowOpenHandler(() => {
     return {
@@ -79,12 +82,7 @@ app.whenReady().then(async () => {
       },
     };
   });
-  if (isDev) {
-    win.loadURL("http://localhost:3000");
-    win.webContents.openDevTools({ mode: "detach" });
-  } else {
-    win.loadFile("public/index.html");
-  }
+  win.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   if (process.platform === "win32") {
     let isQuitting = false;
@@ -95,7 +93,7 @@ app.whenReady().then(async () => {
         win.hide();
         if (!hasShownBackgroundRunningBalloon) {
           trayIcon.displayBalloon({
-            icon: "public/icon-512.png",
+            icon: iconLarge,
             title: "Preserve.dev",
             content:
               "Application is running in the background. Messages will continue to be fetched and preserved.",
@@ -118,7 +116,7 @@ app.whenReady().then(async () => {
         },
       },
     ]);
-    const trayIcon = new Tray("public/favicon.ico");
+    const trayIcon = new Tray(icon);
     trayIcon.setToolTip("Preserve.dev");
     trayIcon.setContextMenu(trayContextMenu);
     trayIcon.on("click", () => win.show());

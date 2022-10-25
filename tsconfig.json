@@ -16,8 +16,12 @@
     "jsx": "react-jsx",
     "outDir": "dist",
     "sourceMap": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": "src",
+    "paths": {
+      "*": ["src/global.d.ts", "node_modules/*"]
+    }
   },
-  "include": ["api", "db", "electron", "src"],
-  "files": ["./types/global.d.ts"]
+  "include": ["src"],
+  "files": ["./src/global.d.ts"]
 }

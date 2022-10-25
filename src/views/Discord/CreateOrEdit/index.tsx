@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { DiscordSelected } from "../../../../types/discord";
+import { DiscordSelected } from "../../../discord";
 import ChannelGrid, { GRID_WIDTH } from "./ChannelGrid";
 import { Dispatch, ResourceStatus } from "../../../redux";
 import { getDiscordUserInfo } from "../../../redux/appLogin/selectors";

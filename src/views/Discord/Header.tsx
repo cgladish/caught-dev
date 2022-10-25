@@ -1,5 +1,6 @@
 import { Typography, Button } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
+import discordLogo from "../../assets/app-logos/discord.png";
 import { Dispatch } from "../../redux";
 import { ActionType as AppLoginActionType } from "../../redux/appLogin/actions";
 import { getDiscordUserInfo } from "../../redux/appLogin/selectors";
@@ -29,7 +30,7 @@ export default function Header() {
         src={
           userInfo.avatar
             ? `https://cdn.discordapp.com/avatars/${userInfo.id}/${userInfo.avatar}`
-            : "/app-logos/discord.png"
+            : discordLogo
         }
         alt="avatar"
         width={60}

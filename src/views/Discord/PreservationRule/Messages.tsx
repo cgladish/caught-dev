@@ -21,7 +21,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { Dispatch } from "../../../redux";
 import { ActionType } from "../../../redux/messages/actions";
-import { DiscordMessage } from "../../../../api/messages";
+import { DiscordMessage } from "../../../api/messages";
 import {
   getFetchStatus,
   getJumpStatus,
