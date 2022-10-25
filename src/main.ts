@@ -122,8 +122,27 @@ app.whenReady().then(async () => {
     trayIcon.on("click", () => win.show());
   }
 
-  console.log("LKASJDFLKJASLK");
-
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    if (details.url.includes("localhost")) {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          "Content-Security-Policy": [
+            `
+          default-src 'self' 'unsafe-inline' data:;
+          script-src 'self' 'unsafe-eval' 'unsafe-inline' data:;
+          style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
+          img-src 'self' https://discord.com https://cdn.discordapp.com;
+          `,
+          ],
+        },
+      });
+    } else {
+      callback({ responseHeaders: details.responseHeaders });
+    }
+  });
   session.defaultSession.webRequest.onBeforeSendHeaders(
     {
       urls: ["*://discord.com/*/users/@me/*"],
