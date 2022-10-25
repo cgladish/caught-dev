@@ -49,7 +49,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "test": "rm -f db/test.db.sqlite3 && jest --forceExit --runInBand",
+    "test": "rm -f src/db/test.db.sqlite3 && jest --forceExit --runInBand",
     "dev": "tsc && cross-env BROWSER=none concurrently -k \"yarn start\" \"yarn electron\"",
     "electron": "electron ./distmain.js"
   },
