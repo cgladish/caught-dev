@@ -2,8 +2,8 @@ import { app, BrowserWindow, session, ipcMain, Menu, Tray } from "electron";
 import debounce from "lodash/debounce";
 import cron from "node-cron";
 import { shell } from "electron";
-import icon from "./assets/favicon.ico";
-import iconLarge from "./assets/icon-512.png";
+import path from "path";
+import icon from "./assets/icon-512.png";
 import * as AppLoginApi from "./api/appLogin";
 import * as DiscordApi from "./api/discord";
 import * as MessagesApi from "./api/messages";
@@ -71,7 +71,7 @@ app.whenReady().then(async () => {
       nodeIntegration: false,
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
-    icon,
+    icon: path.resolve(__dirname, icon),
   });
   win.webContents.setWindowOpenHandler(() => {
     return {
@@ -93,7 +93,7 @@ app.whenReady().then(async () => {
         win.hide();
         if (!hasShownBackgroundRunningBalloon) {
           trayIcon.displayBalloon({
-            icon: iconLarge,
+            icon: path.resolve(__dirname, icon),
             title: "Preserve.dev",
             content:
               "Application is running in the background. Messages will continue to be fetched and preserved.",
@@ -116,11 +116,13 @@ app.whenReady().then(async () => {
         },
       },
     ]);
-    const trayIcon = new Tray(icon);
+    const trayIcon = new Tray(path.resolve(__dirname, icon));
     trayIcon.setToolTip("Preserve.dev");
     trayIcon.setContextMenu(trayContextMenu);
     trayIcon.on("click", () => win.show());
   }
+
+  console.log("LKASJDFLKJASLK");
 
   session.defaultSession.webRequest.onBeforeSendHeaders(
     {

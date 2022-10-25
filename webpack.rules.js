@@ -32,10 +32,4 @@ module.exports = [
       loader: "file-loader",
     },
   },
-  {
-    test: /\.ico$/,
-    use: {
-      loader: "file-loader",
-    },
-  },
 ];
