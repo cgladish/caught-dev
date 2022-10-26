@@ -35,6 +35,7 @@ const makeInvoker =
     }
 
     if (result!.error) {
+      console.error(result!.error);
       throw new Error(result!.error);
     }
     return result!.data;

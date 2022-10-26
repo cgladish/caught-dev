@@ -15,6 +15,7 @@ import { PreservationRule, updatePreservationRule } from "./preservationRules";
 import retry from "async-retry";
 import queue from "queue";
 import { pick } from "lodash";
+import log from "electron-log";
 import { createOrUpdateChannels } from "./channels";
 
 export type Message = {
@@ -397,7 +398,7 @@ export const runRegularBackupDiscord = async (
       ),
     });
   } catch (err) {
-    console.error(err);
+    log.error(err);
   }
 };
 
@@ -592,7 +593,7 @@ export const runInitialBackupDiscord = async (
       initialBackupComplete: true,
     });
   } catch (err) {
-    console.error(err);
+    log.error(err);
     backupInProgress.status = "errored";
   }
 };

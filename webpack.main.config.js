@@ -27,6 +27,13 @@ module.exports = {
     }),
   ],
   externals: {
-    sqlite3: "sqlite3",
+    pg: "pg",
+    "pg-native": "pg-native",
+    "better-sqlite3": "better-sqlite3",
+    mysql: "mysql",
+    mysql2: "mysql2",
+    oracledb: "oracledb",
+    tedious: "tedious",
+    "pg-query-stream": "pg-query-stream",
   },
 };
