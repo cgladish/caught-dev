@@ -1,4 +1,12 @@
-import { app, BrowserWindow, session, ipcMain, Menu, Tray } from "electron";
+import {
+  app,
+  BrowserWindow,
+  session,
+  ipcMain,
+  Menu,
+  Tray,
+  autoUpdater,
+} from "electron";
 import log from "electron-log";
 import debounce from "lodash/debounce";
 import cron from "node-cron";
@@ -14,6 +22,8 @@ import * as ChannelsApi from "./api/channels";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
+autoUpdater.setFeedURL({ url: "https://download.preserve.dev" });
 
 if (require("electron-squirrel-startup")) {
   app.quit();
