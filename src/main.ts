@@ -4,6 +4,7 @@ import debounce from "lodash/debounce";
 import cron from "node-cron";
 import { shell } from "electron";
 import path from "path";
+import iconSmall from "./assets/icon-16.png";
 import icon from "./assets/icon-512.png";
 import * as AppLoginApi from "./api/appLogin";
 import * as DiscordApi from "./api/discord";
@@ -101,7 +102,7 @@ if (!gotTheLock) {
         nodeIntegration: false,
         preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       },
-      icon: path.resolve(__dirname, icon),
+      icon: path.resolve(__dirname, iconSmall),
     });
     win.webContents.setWindowOpenHandler(() => {
       return {
@@ -146,7 +147,7 @@ if (!gotTheLock) {
           },
         },
       ]);
-      const trayIcon = new Tray(path.resolve(__dirname, icon));
+      const trayIcon = new Tray(path.resolve(__dirname, iconSmall));
       trayIcon.setToolTip("Preserve.dev");
       trayIcon.setContextMenu(trayContextMenu);
       trayIcon.on("click", () => win.show());
