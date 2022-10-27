@@ -1,5 +1,5 @@
 {
-  "name": "preserve-dev-desktop",
+  "name": "Preserve.dev",
   "description": "Desktop application for Preserve.dev",
   "version": "0.1.1",
   "private": true,
@@ -46,7 +46,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "electron-forge start",
+    "start": "NODE_ENV=development && electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -97,25 +97,20 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "Preserve.dev"
+            "name": "Preserve.dev",
+            "setupIcon": "./src/assets/favicon.ico"
           }
         },
         {
-          "name": "@electron-forge/maker-dmg"
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
+          "name": "@electron-forge/maker-dmg",
+          "config": {
+            "additionalDMGOptions": {
+              "title": "Preserve.dev",
+              "icon": "./src/assets/favicon.icns"
+            },
+            "name": "Preserve.dev",
+            "icon": "./src/assets/favicon.icns"
+          }
         }
       ],
       "plugins": [

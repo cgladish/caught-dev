@@ -23,7 +23,13 @@ import * as ChannelsApi from "./api/channels";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
-autoUpdater.setFeedURL({ url: "https://download.preserve.dev" });
+if (process.env.NODE_ENV !== "development") {
+  autoUpdater.setFeedURL({
+    url: `https://download.preserve.dev/update/${
+      process.platform
+    }/${app.getVersion()}`,
+  });
+}
 
 if (require("electron-squirrel-startup")) {
   app.quit();
