@@ -81,6 +81,18 @@
       "packagerConfig": {
         "icon": "./src/assets/favicon.ico"
       },
+      "publishers": [
+        {
+          "name": "@electron-forge/publisher-github",
+          "config": {
+            "repository": {
+              "owner": "cgladish",
+              "name": "caught-dev"
+            },
+            "prerelease": true
+          }
+        }
+      ],
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
@@ -137,6 +149,7 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.67",
     "@electron-forge/maker-zip": "^6.0.0-beta.67",
     "@electron-forge/plugin-webpack": "^6.0.0-beta.67",
+    "@electron-forge/publisher-github": "^6.0.0-beta.68",
     "@types/async-retry": "^1.4.5",
     "@types/jest": "^29.0.3",
     "@types/lodash": "^4.14.185",
