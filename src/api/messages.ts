@@ -17,6 +17,7 @@ import queue from "queue";
 import { pick } from "lodash";
 import log from "electron-log";
 import { createOrUpdateChannels } from "./channels";
+import { updateWordCounts } from "./wordCounts";
 
 export type Message = {
   id: number;
@@ -384,6 +385,10 @@ export const runRegularBackupDiscord = async (
               db<MessageEntity>(TableName.Message).insert(messagesToCreate!),
             { retries: 2 }
           );
+          await retry(
+            () => updateWordCounts(preservationRule.id, messagesToCreate!),
+            { retries: 2 }
+          );
         }
       }
     }
@@ -574,6 +579,10 @@ export const runInitialBackupDiscord = async (
           await retry(
             () =>
               db<MessageEntity>(TableName.Message).insert(messagesToCreate!),
+            { retries: 2 }
+          );
+          await retry(
+            () => updateWordCounts(preservationRule.id, messagesToCreate!),
             { retries: 2 }
           );
         }

@@ -18,7 +18,7 @@ export const getTopWordCounts = async (
 
 export const updateWordCounts = async (
   preservationRuleId: number,
-  messages: MessageEntity[]
+  messages: Pick<MessageEntity, "content">[]
 ): Promise<void> => {
   const wordCounts: Record<string, number> = {};
   messages.forEach(({ content }) => {
