@@ -4,6 +4,7 @@ import {
   ChannelEntity,
   MessageEntity,
   PreservationRuleEntity,
+  WordCountEntity,
 } from "../db/entities";
 import TableName from "../db/tableName";
 
@@ -24,6 +25,23 @@ export const makeMessage = async (
     ...overwrites,
   });
   const entity = await db<MessageEntity>(TableName.Message)
+    .where({ id })
+    .first();
+  return entity!;
+};
+
+export const makeWordCount = async (
+  preservationRuleId: number,
+  overwrites?: Partial<WordCountEntity>
+): Promise<WordCountEntity> => {
+  const db = await getDb();
+  const [id] = await db<WordCountEntity>(TableName.WordCount).insert({
+    preservationRuleId,
+    word: "word",
+    count: 5,
+    ...overwrites,
+  });
+  const entity = await db<WordCountEntity>(TableName.WordCount)
     .where({ id })
     .first();
   return entity!;

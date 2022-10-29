@@ -84,12 +84,10 @@ export default function Messages({
     | undefined;
 
   useEffect(() => {
-    if (!messages) {
-      dispatch({
-        type: ActionType.fetchStart,
-        payload: { preservationRuleId, channelId },
-      });
-    }
+    dispatch({
+      type: ActionType.fetchStart,
+      payload: { preservationRuleId, channelId },
+    });
 
     const onClick = (event: MouseEvent) => {
       if (

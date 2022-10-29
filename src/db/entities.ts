@@ -36,3 +36,10 @@ export type MessageEntity = {
   sentAt: string;
   appSpecificDataJson?: string | null;
 };
+
+export type WordCountEntity = {
+  id: number;
+  preservationRuleId: number;
+  word: string;
+  count: number;
+};

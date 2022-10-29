@@ -2,7 +2,6 @@ import { addMinutes } from "date-fns";
 import { Knex } from "knex";
 import { sortBy } from "lodash";
 import getDb from "../db";
-import { MessageEntity } from "../db/entities";
 import {
   entityToType,
   fetchMessages,

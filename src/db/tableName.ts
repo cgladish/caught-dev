@@ -4,6 +4,7 @@ enum TableName {
   Message = "Message",
   MessageSearch = "MessageSearch",
   Channel = "Channel",
+  WordCount = "WordCount",
 }
 
 export default TableName;

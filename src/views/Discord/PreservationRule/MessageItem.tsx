@@ -336,7 +336,7 @@ export const MessageItem = ({
               </div>
             )
           )}
-          {message.appSpecificData?.embeds.map((embed) => "EMBED")}
+          {/* message.appSpecificData?.embeds.map((embed) => "EMBED") */}
         </div>
       </div>
     </ListItem>

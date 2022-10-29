@@ -43,6 +43,20 @@ exports.up = async function (knex) {
 
     table.unique(["preservationRuleId", "externalId"]);
   });
+  await knex.schema.createTable("WordCount", function (table) {
+    table.increments("id");
+    table
+      .integer("preservationRuleId")
+      .notNullable()
+      .references("id")
+      .inTable("PreservationRule")
+      .onDelete("CASCADE")
+      .index();
+    table.string("word").notNullable().index();
+    table.integer("count").notNullable().index();
+
+    table.unique(["preservationRuleId", "word"]);
+  });
   await knex.raw(`
 CREATE VIRTUAL TABLE ${"MessageSearch"} USING fts5(
   id UNINDEXED,
