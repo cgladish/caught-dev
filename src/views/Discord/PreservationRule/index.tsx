@@ -12,11 +12,13 @@ import {
   Tab,
   Tabs,
   Typography,
+  useTheme,
 } from "@mui/material";
 import WordCloud from "wordcloud";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import chroma from "chroma-js";
 import discordLogo from "../../../assets/app-logos/discord.png";
 import { ActionType as ChannelsActionType } from "../../../redux/channels/actions";
 import {
@@ -41,6 +43,12 @@ export default function PreservationRule() {
 
   const navigate = useNavigate();
 
+  const {
+    palette: {
+      primary: { main },
+    },
+  } = useTheme();
+
   const dispatch = useDispatch<Dispatch>();
 
   const allChannels = useSelector(getDiscordChannels);
@@ -60,17 +68,21 @@ export default function PreservationRule() {
           500
         );
         const biggestCount = wordCounts[0]?.count ?? 1;
+        const colorScale = chroma.scale(["#eee", main]);
         WordCloud(wordCloudRef.current, {
           list: wordCounts.map(({ word, count }) => [word, count]),
           gridSize: Math.round((16 * wordCloudRef.current.width) / 1024),
-          weightFactor: function (size) {
+          weightFactor: (weight) => {
             return (
-              (((size * 200) / biggestCount) * wordCloudRef.current!.width) /
+              (((weight * 200) / biggestCount) * wordCloudRef.current!.width) /
               1024
             );
           },
+          color: (_, weight) => {
+            return colorScale((weight as number) / biggestCount).hex();
+          },
           fontFamily: "Roboto, serif",
-          backgroundColor: "#ddd",
+          backgroundColor: "rgba(0, 0, 0, 0)",
         });
       }
     })();
@@ -426,7 +438,9 @@ export default function PreservationRule() {
         </Card>
       )}
       {selectedTab === 1 && (
-        <canvas ref={wordCloudRef} width={800} height={600} />
+        <Card style={{ width: 800, height: 600 }}>
+          <canvas ref={wordCloudRef} width={800} height={600} />
+        </Card>
       )}
     </div>
   );
