@@ -13,7 +13,8 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import WordCloud from "wordcloud";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import discordLogo from "../../../assets/app-logos/discord.png";
@@ -36,6 +37,7 @@ export default function PreservationRule() {
     null
   );
   const [selectedTab, setSelectedTab] = useState<number>(0);
+  const [selectedMessagesTab, setSelectedMessagesTab] = useState<number>(0);
 
   const navigate = useNavigate();
 
@@ -48,6 +50,31 @@ export default function PreservationRule() {
   const preservationRules = useSelector(getDiscordPreservationRules);
   const preservationRule = preservationRules?.[preservationRuleId];
   const selected = preservationRule?.selected as DiscordSelected | undefined;
+
+  const wordCloudRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    (async () => {
+      if (selectedTab === 1 && wordCloudRef.current) {
+        const wordCounts = await window.api.wordCounts.fetchTopWordCounts(
+          preservationRuleId,
+          500
+        );
+        const biggestCount = wordCounts[0]?.count ?? 1;
+        WordCloud(wordCloudRef.current, {
+          list: wordCounts.map(({ word, count }) => [word, count]),
+          gridSize: Math.round((16 * wordCloudRef.current.width) / 1024),
+          weightFactor: function (size) {
+            return (
+              (((size * 200) / biggestCount) * wordCloudRef.current!.width) /
+              1024
+            );
+          },
+          fontFamily: "Roboto, serif",
+          backgroundColor: "#ddd",
+        });
+      }
+    })();
+  }, [selectedTab]);
 
   const preservationRuleChannels = allChannels?.[preservationRuleId];
   const guilds =
@@ -105,14 +132,14 @@ export default function PreservationRule() {
     return <LinearProgress />;
   }
 
-  const showServersTab = !!guilds?.length && selectedTab === 0;
+  const showServersTab = !!guilds?.length && selectedMessagesTab === 0;
   const showServers = showServersTab && !viewedGuildId;
   const showChannels = showServersTab && !!viewedGuildId && !viewedChannelId;
   const showChannelMessages = showServersTab && !!viewedChannelId;
 
   const showDmsTab =
     !!dmChannels?.length &&
-    (guilds?.length ? selectedTab === 1 : selectedTab === 0);
+    (guilds?.length ? selectedMessagesTab === 1 : selectedMessagesTab === 0);
   const showDms = showDmsTab && !viewedDmChannelId;
   const showDmChannelMessages = showDmsTab && !!viewedDmChannelId;
 
@@ -155,238 +182,252 @@ export default function PreservationRule() {
             ` before ${preservationRule.endDatetime.toLocaleDateString()}`}
         </div>
       )}
-      <Card style={{ height: 598, width: "100%" }}>
-        <Tabs
-          value={selectedTab}
-          onChange={(event, tabIndex) => setSelectedTab(tabIndex)}
-          style={{ minHeight: 48 }}
-        >
-          {!!guilds?.length && <Tab label="Servers" />}
-          {!!dmChannels?.length && <Tab label="DMs" />}
-        </Tabs>
-        <div
-          style={{
-            backgroundColor: "#222",
-            height: showServers ? "100%" : 0,
-            width: showServers ? "100%" : 0,
-          }}
-        >
-          {guilds ? (
-            <>
-              {showServers && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    borderBottom: "1px solid #111",
-                    height: 50,
-                    paddingLeft: 10,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      marginLeft: "10px",
+      <Tabs
+        value={selectedTab}
+        onChange={(event, tabIndex) => setSelectedTab(tabIndex)}
+      >
+        <Tab label="Messages" />
+        <Tab label="Word Cloud" />
+      </Tabs>
+      {selectedTab === 0 && (
+        <Card style={{ height: 598, width: "100%" }}>
+          <Tabs
+            value={selectedMessagesTab}
+            onChange={(event, tabIndex) => setSelectedMessagesTab(tabIndex)}
+            style={{ minHeight: 48 }}
+          >
+            {!!guilds?.length && <Tab label="Servers" />}
+            {!!dmChannels?.length && <Tab label="DMs" />}
+          </Tabs>
+          <div
+            style={{
+              backgroundColor: "#222",
+              height: showServers ? "100%" : 0,
+              width: showServers ? "100%" : 0,
+            }}
+          >
+            {guilds ? (
+              <>
+                {showServers && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      borderBottom: "1px solid #111",
+                      height: 50,
+                      paddingLeft: 10,
                     }}
                   >
-                    All Servers
-                  </Typography>
-                </div>
-              )}
-              <List
-                style={{
-                  overflowY: "scroll",
-                  maxHeight: 500,
-                }}
-                dense
-              >
-                {guilds.map((guild) => (
-                  <ListItem key={guild.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => setViewedGuildId(guild.externalId)}
+                    <Typography
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        marginLeft: "10px",
+                      }}
                     >
-                      <ListItemAvatar>
-                        <Avatar src={guild.iconUrl ?? discordLogo} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primaryTypographyProps={{
-                          sx: {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      >
-                        {guild.name}
-                      </ListItemText>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </>
-          ) : (
-            <LinearProgress />
-          )}
-        </div>
-        <div
-          style={{
-            backgroundColor: "#222",
-            height: showChannels ? "100%" : 0,
-            width: showChannels ? "100%" : 0,
-          }}
-        >
-          {channels && viewedGuild ? (
-            <>
-              {showChannels && (
-                <div
+                      All Servers
+                    </Typography>
+                  </div>
+                )}
+                <List
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    borderBottom: "1px solid #111",
-                    height: 50,
+                    overflowY: "scroll",
+                    maxHeight: 500,
                   }}
+                  dense
                 >
-                  <IconButton
-                    style={{ marginLeft: 5 }}
-                    onClick={() => setViewedGuildId(null)}
-                  >
-                    <NavigateBefore />
-                  </IconButton>
-                  <Avatar
-                    style={{ marginLeft: 5 }}
-                    src={viewedGuild.iconUrl ?? discordLogo}
-                  />
-                  <Typography
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      marginLeft: "10px",
+                  {guilds.map((guild) => (
+                    <ListItem key={guild.id} disablePadding>
+                      <ListItemButton
+                        onClick={() => setViewedGuildId(guild.externalId)}
+                      >
+                        <ListItemAvatar>
+                          <Avatar src={guild.iconUrl ?? discordLogo} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primaryTypographyProps={{
+                            sx: {
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            },
+                          }}
+                        >
+                          {guild.name}
+                        </ListItemText>
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            ) : (
+              <LinearProgress />
+            )}
+          </div>
+          <div
+            style={{
+              backgroundColor: "#222",
+              height: showChannels ? "100%" : 0,
+              width: showChannels ? "100%" : 0,
+            }}
+          >
+            {channels && viewedGuild ? (
+              <>
+                {showChannels && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      borderBottom: "1px solid #111",
+                      height: 50,
                     }}
                   >
-                    {viewedGuild.name}
-                  </Typography>
-                </div>
-              )}
-              <List
-                style={{
-                  maxHeight: 500,
-                  overflowY: "scroll",
-                }}
-                dense
-              >
-                {channels.map((channel) => (
-                  <ListItem key={channel.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => setViewedChannelId(channel.externalId)}
-                      style={{ height: 50 }}
+                    <IconButton
+                      style={{ marginLeft: 5 }}
+                      onClick={() => setViewedGuildId(null)}
                     >
-                      <ListItemText
-                        primaryTypographyProps={{
-                          sx: {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      >
-                        # {channel.name}
-                      </ListItemText>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </>
-          ) : (
-            viewedGuildId && <LinearProgress />
-          )}
-        </div>
-        <div
-          style={{
-            backgroundColor: "#222",
-            height: showDms ? "100%" : 0,
-            width: showDms ? "100%" : 0,
-          }}
-        >
-          {dmChannels ? (
-            <>
-              {showDms && (
-                <div
+                      <NavigateBefore />
+                    </IconButton>
+                    <Avatar
+                      style={{ marginLeft: 5 }}
+                      src={viewedGuild.iconUrl ?? discordLogo}
+                    />
+                    <Typography
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        marginLeft: "10px",
+                      }}
+                    >
+                      {viewedGuild.name}
+                    </Typography>
+                  </div>
+                )}
+                <List
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    borderBottom: "1px solid #111",
-                    height: 50,
-                    paddingLeft: 10,
+                    maxHeight: 500,
+                    overflowY: "scroll",
                   }}
+                  dense
                 >
-                  <Typography
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      marginLeft: "10px",
+                  {channels.map((channel) => (
+                    <ListItem key={channel.id} disablePadding>
+                      <ListItemButton
+                        onClick={() => setViewedChannelId(channel.externalId)}
+                        style={{ height: 50 }}
+                      >
+                        <ListItemText
+                          primaryTypographyProps={{
+                            sx: {
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            },
+                          }}
+                        >
+                          # {channel.name}
+                        </ListItemText>
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            ) : (
+              viewedGuildId && <LinearProgress />
+            )}
+          </div>
+          <div
+            style={{
+              backgroundColor: "#222",
+              height: showDms ? "100%" : 0,
+              width: showDms ? "100%" : 0,
+            }}
+          >
+            {dmChannels ? (
+              <>
+                {showDms && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      borderBottom: "1px solid #111",
+                      height: 50,
+                      paddingLeft: 10,
                     }}
                   >
-                    All Conversations
-                  </Typography>
-                </div>
-              )}
-              <List
-                style={{
-                  overflowY: "scroll",
-                  maxHeight: 500,
-                }}
-                dense
-              >
-                {dmChannels.map((dmChannel) => (
-                  <ListItem key={dmChannel.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => setViewedDmChannelId(dmChannel.externalId)}
+                    <Typography
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        marginLeft: "10px",
+                      }}
                     >
-                      <ListItemAvatar>
-                        <Avatar
-                          src={
-                            dmChannel?.iconUrl ??
-                            "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
-                          }
-                        />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primaryTypographyProps={{
-                          sx: {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
+                      All Conversations
+                    </Typography>
+                  </div>
+                )}
+                <List
+                  style={{
+                    overflowY: "scroll",
+                    maxHeight: 500,
+                  }}
+                  dense
+                >
+                  {dmChannels.map((dmChannel) => (
+                    <ListItem key={dmChannel.id} disablePadding>
+                      <ListItemButton
+                        onClick={() =>
+                          setViewedDmChannelId(dmChannel.externalId)
+                        }
                       >
-                        {dmChannel.name}
-                      </ListItemText>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </>
-          ) : (
-            <LinearProgress />
+                        <ListItemAvatar>
+                          <Avatar
+                            src={
+                              dmChannel?.iconUrl ??
+                              "https://discord.com/assets/e2779af34b8d9126b77420e5f09213ce.png"
+                            }
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primaryTypographyProps={{
+                            sx: {
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            },
+                          }}
+                        >
+                          {dmChannel.name}
+                        </ListItemText>
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            ) : (
+              <LinearProgress />
+            )}
+          </div>
+          {showChannelMessages && viewedChannel && (
+            <Messages
+              visible={showChannelMessages}
+              title={`# ${viewedChannel.name}`}
+              onBack={() => setViewedChannelId(null)}
+              preservationRuleId={preservationRule.id}
+              channelId={viewedChannel.externalId}
+            />
           )}
-        </div>
-        {showChannelMessages && viewedChannel && (
-          <Messages
-            visible={showChannelMessages}
-            title={`# ${viewedChannel.name}`}
-            onBack={() => setViewedChannelId(null)}
-            preservationRuleId={preservationRule.id}
-            channelId={viewedChannel.externalId}
-          />
-        )}
-        {showDmChannelMessages && viewedDmChannel && (
-          <Messages
-            visible={showDmChannelMessages}
-            title={viewedDmChannel.name}
-            onBack={() => setViewedDmChannelId(null)}
-            preservationRuleId={preservationRule.id}
-            channelId={viewedDmChannel.externalId}
-          />
-        )}
-      </Card>
+          {showDmChannelMessages && viewedDmChannel && (
+            <Messages
+              visible={showDmChannelMessages}
+              title={viewedDmChannel.name}
+              onBack={() => setViewedDmChannelId(null)}
+              preservationRuleId={preservationRule.id}
+              channelId={viewedDmChannel.externalId}
+            />
+          )}
+        </Card>
+      )}
+      {selectedTab === 1 && (
+        <canvas ref={wordCloudRef} width={800} height={600} />
+      )}
     </div>
   );
 }

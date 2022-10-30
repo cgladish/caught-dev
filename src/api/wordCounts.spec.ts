@@ -3,7 +3,7 @@ import TableName from "../db/tableName";
 import { Knex } from "knex";
 import getDb from "../db";
 import { makeMessage, makePreservationRule, makeWordCount } from "./mockData";
-import { getTopWordCounts, updateWordCounts } from "./wordCounts";
+import { fetchTopWordCounts, updateWordCounts } from "./wordCounts";
 
 describe("preservationRules", () => {
   let db: Knex;
@@ -12,7 +12,7 @@ describe("preservationRules", () => {
     db = await getDb();
   });
 
-  describe("getTopWordCounts", () => {
+  describe("fetchTopWordCounts", () => {
     it("successfully fetches top word counts", async () => {
       const { id: preservationRuleId } = await makePreservationRule();
       for (let i = 0; i < 10; ++i) {
@@ -24,7 +24,7 @@ describe("preservationRules", () => {
         await db<WordCountEntity>(TableName.WordCount).insert(wordCounts);
       }
 
-      expect(await getTopWordCounts(preservationRuleId)).toMatchSnapshot();
+      expect(await fetchTopWordCounts(preservationRuleId)).toMatchSnapshot();
     });
   });
 
@@ -45,7 +45,7 @@ describe("preservationRules", () => {
         }),
       ]);
       await Promise.all([
-        makeWordCount(preservationRuleId, { word: "this", count: 2 }),
+        makeWordCount(preservationRuleId, { word: "hello", count: 2 }),
         makeWordCount(preservationRuleId, { word: "message", count: 1 }),
         makeWordCount(preservationRuleId, { word: "test", count: 3 }),
         makeWordCount(preservationRuleId, { word: "other", count: 6 }),

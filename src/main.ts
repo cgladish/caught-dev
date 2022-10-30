@@ -19,6 +19,7 @@ import * as DiscordApi from "./api/discord";
 import * as MessagesApi from "./api/messages";
 import * as PreservationRulesApi from "./api/preservationRules";
 import * as ChannelsApi from "./api/channels";
+import * as WordCountsApi from "./api/wordCounts";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -113,6 +114,11 @@ if (require("electron-squirrel-startup")) {
     startApiListener("messages", "searchMessages", MessagesApi.searchMessages);
     startApiListener("messages", "fetchMessages", MessagesApi.fetchMessages);
     startApiListener("channels", "fetchChannels", ChannelsApi.fetchChannels);
+    startApiListener(
+      "wordCounts",
+      "fetchTopWordCounts",
+      WordCountsApi.fetchTopWordCounts
+    );
 
     app.whenReady().then(async () => {
       win = new BrowserWindow({

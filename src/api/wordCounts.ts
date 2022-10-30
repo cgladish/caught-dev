@@ -1,10 +1,12 @@
 import getDb from "../db";
 import { MessageEntity, WordCountEntity } from "../db/entities";
 import TableName from "../db/tableName";
+import chunk from "lodash/chunk";
+import { removeStopwords } from "stopword";
 
 type TempWordCountEntity = Omit<WordCountEntity, "preservationRuleId">;
 
-export const getTopWordCounts = async (
+export const fetchTopWordCounts = async (
   preservationRuleId: number,
   limit: number = 200
 ): Promise<WordCountEntity[]> => {
@@ -16,17 +18,20 @@ export const getTopWordCounts = async (
     .limit(limit);
 };
 
+const INSERT_BATCH_SIZE = 100;
 export const updateWordCounts = async (
   preservationRuleId: number,
   messages: Pick<MessageEntity, "content">[]
 ): Promise<void> => {
   const wordCounts: Record<string, number> = {};
   messages.forEach(({ content }) => {
-    const words = content
-      .replace(/[.,\/#!\?$%\^&\*;:{}=\-_`~()]/g, "")
-      .replace(/\s{2,}/g, " ")
-      .trim()
-      .split(" ");
+    const words = removeStopwords(
+      content
+        // .replace(/[.,\/#!\?$%\^&\*;:{}=\-_`~()]/g, "")
+        .replace(/\s{2,}/g, " ")
+        .trim()
+        .split(" ")
+    );
     words.forEach((word) => {
       const wordLower = word.toLocaleLowerCase();
       wordCounts[wordLower] = (wordCounts[wordLower] ?? 0) + 1;
@@ -46,9 +51,14 @@ export const updateWordCounts = async (
       table.string("word").notNullable().index();
       table.integer("count").notNullable();
     });
-    await tx
-      .table<TempWordCountEntity>(tempTableName)
-      .insert(wordCountEntities);
+    for (let wordCountEntityChunk of chunk(
+      wordCountEntities,
+      INSERT_BATCH_SIZE
+    )) {
+      await tx
+        .table<TempWordCountEntity>(tempTableName)
+        .insert(wordCountEntityChunk);
+    }
 
     await tx.raw(`
       UPDATE ${TableName.WordCount}
@@ -75,9 +85,15 @@ export const updateWordCounts = async (
     const newWordCountEntities = wordCountEntities
       .filter(({ word }) => newWords.some((newWord) => newWord.word === word))
       .map((entity) => ({ ...entity, preservationRuleId }));
-    await tx
-      .table<WordCountEntity>(TableName.WordCount)
-      .insert(newWordCountEntities);
+
+    for (let wordCountEntityChunk of chunk(
+      newWordCountEntities,
+      INSERT_BATCH_SIZE
+    )) {
+      await tx
+        .table<WordCountEntity>(TableName.WordCount)
+        .insert(wordCountEntityChunk);
+    }
 
     await tx.schema.dropTable(tempTableName);
   });

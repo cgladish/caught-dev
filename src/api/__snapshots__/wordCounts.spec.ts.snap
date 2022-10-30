@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`preservationRules getTopWordCounts successfully fetches top word counts 1`] = `
+exports[`preservationRules fetchTopWordCounts successfully fetches top word counts 1`] = `
 [
   {
     "count": 999,
@@ -1208,32 +1208,40 @@ exports[`preservationRules getTopWordCounts successfully fetches top word counts
 exports[`preservationRules updateWordCounts successfully updates word counts for a preservation rule 1`] = `
 [
   {
-    "count": 4,
-    "word": "a",
-  },
-  {
     "count": 1,
-    "word": "also",
+    "word": ":)",
   },
   {
     "count": 1,
     "word": "definitely",
   },
   {
-    "count": 1,
+    "count": 2,
     "word": "hello",
   },
   {
     "count": 1,
-    "word": "is",
+    "word": "hello,",
   },
   {
     "count": 1,
     "word": "maybe",
   },
   {
-    "count": 5,
+    "count": 2,
     "word": "message",
+  },
+  {
+    "count": 1,
+    "word": "message!",
+  },
+  {
+    "count": 1,
+    "word": "message!!",
+  },
+  {
+    "count": 1,
+    "word": "message?",
   },
   {
     "count": 1,
@@ -1250,10 +1258,6 @@ exports[`preservationRules updateWordCounts successfully updates word counts for
   {
     "count": 7,
     "word": "test",
-  },
-  {
-    "count": 3,
-    "word": "this",
   },
 ]
 `;
