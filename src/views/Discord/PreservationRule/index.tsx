@@ -15,7 +15,7 @@ import {
   useTheme,
 } from "@mui/material";
 import WordCloud from "wordcloud";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import chroma from "chroma-js";
@@ -31,6 +31,7 @@ import Messages from "./Messages";
 import { Dispatch } from "../../../redux";
 import { getDiscordChannels } from "../../../redux/channels/selectors";
 import { DeletePreservationRuleButton } from "../../../components/DeletePreservationRuleButton";
+import { AlertContext } from "../../../Alerts";
 
 export default function PreservationRule() {
   const [viewedGuildId, setViewedGuildId] = useState<string | null>(null);
@@ -59,31 +60,38 @@ export default function PreservationRule() {
   const preservationRule = preservationRules?.[preservationRuleId];
   const selected = preservationRule?.selected as DiscordSelected | undefined;
 
+  const { showAlert } = useContext(AlertContext);
+
   const wordCloudRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     (async () => {
       if (selectedTab === 1 && wordCloudRef.current) {
-        const wordCounts = await window.api.wordCounts.fetchTopWordCounts(
-          preservationRuleId,
-          500
-        );
-        const biggestCount = wordCounts[0]?.count ?? 1;
-        const colorScale = chroma.scale(["#eee", main]);
-        WordCloud(wordCloudRef.current, {
-          list: wordCounts.map(({ word, count }) => [word, count]),
-          gridSize: Math.round((16 * wordCloudRef.current.width) / 1024),
-          weightFactor: (weight) => {
-            return (
-              (((weight * 200) / biggestCount) * wordCloudRef.current!.width) /
-              1024
-            );
-          },
-          color: (_, weight) => {
-            return colorScale((weight as number) / biggestCount).hex();
-          },
-          fontFamily: "Roboto, serif",
-          backgroundColor: "rgba(0, 0, 0, 0)",
-        });
+        try {
+          const wordCounts = await window.api.wordCounts.fetchTopWordCounts(
+            preservationRuleId,
+            500
+          );
+          const biggestCount = wordCounts[0]?.count ?? 1;
+          const colorScale = chroma.scale(["#eee", main]);
+          WordCloud(wordCloudRef.current, {
+            list: wordCounts.map(({ word, count }) => [word, count]),
+            gridSize: Math.round((16 * wordCloudRef.current.width) / 1024),
+            weightFactor: (weight) => {
+              return (
+                (((weight * 200) / biggestCount) *
+                  wordCloudRef.current!.width) /
+                1024
+              );
+            },
+            color: (_, weight) => {
+              return colorScale((weight as number) / biggestCount).hex();
+            },
+            fontFamily: "Roboto, serif",
+            backgroundColor: "rgba(0, 0, 0, 0)",
+          });
+        } catch (err) {
+          showAlert({ type: "error", message: "Failed to create word cloud" });
+        }
       }
     })();
   }, [selectedTab]);

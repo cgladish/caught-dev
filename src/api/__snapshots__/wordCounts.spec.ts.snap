@@ -1209,39 +1209,23 @@ exports[`preservationRules updateWordCounts successfully updates word counts for
 [
   {
     "count": 1,
-    "word": ":)",
+    "word": ":",
   },
   {
     "count": 1,
     "word": "definitely",
   },
   {
-    "count": 2,
+    "count": 3,
     "word": "hello",
-  },
-  {
-    "count": 1,
-    "word": "hello,",
   },
   {
     "count": 1,
     "word": "maybe",
   },
   {
-    "count": 2,
+    "count": 5,
     "word": "message",
-  },
-  {
-    "count": 1,
-    "word": "message!",
-  },
-  {
-    "count": 1,
-    "word": "message!!",
-  },
-  {
-    "count": 1,
-    "word": "message?",
   },
   {
     "count": 1,

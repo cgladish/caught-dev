@@ -27,7 +27,7 @@ export const updateWordCounts = async (
   messages.forEach(({ content }) => {
     const words = removeStopwords(
       content
-        // .replace(/[.,\/#!\?$%\^&\*;:{}=\-_`~()]/g, "")
+        .replace(/[.,\/#!\?$%\^&\*;:{}=\-_`~()]/g, "")
         .replace(/\s{2,}/g, " ")
         .trim()
         .split(" ")

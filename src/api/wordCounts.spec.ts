@@ -34,7 +34,7 @@ describe("preservationRules", () => {
       const { id: otherPreservationRuleId } = await makePreservationRule();
       const messages = await Promise.all([
         makeMessage(preservationRuleId, {
-          content: "Hello, this is a test message!",
+          content: 'Hello, this is a "test" message!',
         }),
         makeMessage(preservationRuleId, { content: "Also a test message :)" }),
         makeMessage(preservationRuleId, {
