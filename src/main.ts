@@ -18,6 +18,7 @@ import * as AppLoginApi from "./api/appLogin";
 import * as DiscordApi from "./api/discord";
 import * as MessagesApi from "./api/messages";
 import * as PreservationRulesApi from "./api/preservationRules";
+import * as SnippetsApi from "./api/snippets";
 import * as ChannelsApi from "./api/channels";
 import * as WordCountsApi from "./api/wordCounts";
 
@@ -119,6 +120,7 @@ if (require("electron-squirrel-startup")) {
       "fetchTopWordCounts",
       WordCountsApi.fetchTopWordCounts
     );
+    startApiListener("snippets", "createSnippet", SnippetsApi.createSnippet);
 
     app.whenReady().then(async () => {
       win = new BrowserWindow({

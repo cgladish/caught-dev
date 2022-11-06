@@ -15,8 +15,9 @@ import {
   InputAdornment,
   Popper,
   Paper,
+  Card,
 } from "@mui/material";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { Dispatch } from "../../../redux";
@@ -33,6 +34,13 @@ import { combineDateAndTime } from "../../../utils";
 import "./Messages.css";
 import { LoadingMessageItem, MessageItem } from "./MessageItem";
 import { useIsInViewport } from "../../../hooks/useIsInViewport";
+import { AlertContext } from "../../../Alerts";
+import { LoadingButton } from "@mui/lab";
+
+const APP_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : "https://www.preserve.dev";
 
 export default function Messages({
   visible,
@@ -74,6 +82,8 @@ export default function Messages({
   const fetchStatus = useSelector(getFetchStatus);
   const jumpStatus = useSelector(getJumpStatus);
   const searchStatus = useSelector(getSearchStatus);
+
+  const { showAlert } = useContext(AlertContext);
 
   const messagesResult = allMessages[preservationRuleId]?.[channelId];
   const messages = messagesResult?.data as DiscordMessage[] | null | undefined;
@@ -261,6 +271,48 @@ export default function Messages({
     setShowFilterMenu(false);
   };
 
+  const [isCreatingSnippet, setIsCreatingSnippet] = useState(false);
+  const onPreserve = async () => {
+    if (
+      !messages ||
+      firstSelectedMessageIndex == null ||
+      lastSelectedMessageIndex == null
+    ) {
+      return;
+    }
+    setIsCreatingSnippet(true);
+    try {
+      const snippetId = await window.api.snippets.createSnippet(
+        "discord",
+        messages
+          .slice(firstSelectedMessageIndex, lastSelectedMessageIndex + 1)
+          .map((message) => ({
+            content: message.content,
+            sentAt: message.sentAt,
+            attachments: message.appSpecificData?.attachments?.map(
+              (attachment) => ({
+                type: attachment.content_type ?? "file",
+                url: attachment.url,
+                width: attachment.width,
+                height: attachment.height,
+                size: attachment.size,
+              })
+            ),
+            authorUsername: message.authorName,
+            authorAvatarUrl: message.authorAvatar
+              ? `https://cdn.discordapp.com/avatars/${message.authorId}/${message.authorAvatar}`
+              : undefined,
+          }))
+      );
+      window.api.urls.openExternal(`${APP_URL}/p/${snippetId}`);
+    } catch (err) {
+      showAlert({ type: "error", message: "Failed to create snippet" });
+    }
+    setIsCreatingSnippet(false);
+    setFirstSelectedMessageId(null);
+    setLastSelectedMessageId(null);
+  };
+
   return (
     <div
       style={{
@@ -268,6 +320,48 @@ export default function Messages({
         width: visible ? "100%" : 0,
       }}
     >
+      {firstSelectedMessageIndex != null && lastSelectedMessageIndex != null && (
+        <Card
+          style={{
+            position: "fixed",
+            bottom: 20,
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "20px 20px",
+            zIndex: 9999,
+          }}
+        >
+          <Typography variant="h5">
+            {lastSelectedMessageIndex - firstSelectedMessageIndex + 1} selected
+          </Typography>
+          <div style={{ marginTop: 10 }}>
+            <Button
+              variant="text"
+              size="large"
+              onClick={() => {
+                setFirstSelectedMessageId(null);
+                setLastSelectedMessageId(null);
+              }}
+              disabled={isCreatingSnippet}
+            >
+              Cancel
+            </Button>
+            <LoadingButton
+              variant="contained"
+              style={{ marginLeft: 10 }}
+              size="large"
+              onClick={() => onPreserve()}
+              disabled={isCreatingSnippet}
+              loading={isCreatingSnippet}
+            >
+              Preserve it!
+            </LoadingButton>
+          </div>
+        </Card>
+      )}
       {visible && (
         <div
           style={{

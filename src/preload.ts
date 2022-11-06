@@ -4,6 +4,7 @@ import * as DiscordApi from "./api/discord";
 import * as MessagesApi from "./api/messages";
 import * as PreservationRulesApi from "./api/preservationRules";
 import * as ChannelsApi from "./api/channels";
+import * as SnippetsApi from "./api/snippets";
 import * as WordCountsApi from "./api/wordCounts";
 
 const makeInvoker =
@@ -108,6 +109,12 @@ export const api = {
     fetchTopWordCounts: makeInvoker<typeof WordCountsApi.fetchTopWordCounts>(
       "wordCounts",
       "fetchTopWordCounts"
+    ),
+  },
+  snippets: {
+    createSnippet: makeInvoker<typeof SnippetsApi.createSnippet>(
+      "snippets",
+      "createSnippet"
     ),
   },
 };
