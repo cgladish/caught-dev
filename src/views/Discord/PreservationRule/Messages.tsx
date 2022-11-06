@@ -16,7 +16,7 @@ import {
   Popper,
   Paper,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { Dispatch } from "../../../redux";
@@ -106,6 +106,39 @@ export default function Messages({
       setShowSearchResults(true);
     }
   }, [searchStatus]);
+
+  const [firstSelectedMessageId, setFirstSelectedMessageId] = useState<
+    number | null
+  >(null);
+  const [lastSelectedMessageId, setLastSelectedMessageId] = useState<
+    number | null
+  >(null);
+  const firstSelectedMessageIndex = useMemo(() => {
+    const index = messages?.findIndex(
+      ({ id }) => id === firstSelectedMessageId
+    );
+    return index === -1 ? null : index;
+  }, [messages, firstSelectedMessageId]);
+  const lastSelectedMessageIndex = useMemo(() => {
+    const index = messages?.findIndex(({ id }) => id === lastSelectedMessageId);
+    return index === -1 ? null : index;
+  }, [messages, lastSelectedMessageId]);
+  const setFirstSelectedMessageIndex = (index: number) => {
+    const message = messages?.[index];
+    if (message) {
+      setFirstSelectedMessageId(message.id);
+    }
+  };
+  const setLastSelectedMessageIndex = (index: number) => {
+    const message = messages?.[index];
+    if (message) {
+      setLastSelectedMessageId(message.id);
+    }
+  };
+  useEffect(() => {
+    setFirstSelectedMessageId(null);
+    setLastSelectedMessageId(null);
+  }, [jumpStatus, visible]);
 
   const scrollMessagesToHeight = (height: number) => {
     messagesRef?.current?.scrollTo(0, height);
@@ -232,7 +265,6 @@ export default function Messages({
     <div
       style={{
         backgroundColor: "#222",
-        height: visible ? "100%" : 0,
         width: visible ? "100%" : 0,
       }}
     >
@@ -438,8 +470,10 @@ export default function Messages({
               style={{
                 overflowY: "scroll",
                 maxHeight: 500,
-                width: "100%",
+                width: "calc(100% + 35px)",
+                transform: "translateX(-35px)",
                 padding: 0,
+                paddingLeft: 35,
               }}
               onScroll={(event) => {
                 const target = event.target as HTMLUListElement;
@@ -457,11 +491,17 @@ export default function Messages({
                   <LoadingMessageItem ref={messagesStartRef} />
                 </>
               )}
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <MessageItem
                   key={message.id}
+                  index={index}
                   message={message}
+                  totalMessages={messages.length}
                   scrollMessagesToHeight={scrollMessagesToHeight}
+                  firstSelectedMessageIndex={firstSelectedMessageIndex}
+                  lastSelectedMessageIndex={lastSelectedMessageIndex}
+                  setFirstSelectedMessageIndex={setFirstSelectedMessageIndex}
+                  setLastSelectedMessageIndex={setLastSelectedMessageIndex}
                 />
               ))}
               {messagesResult && !messagesResult.isLastPageAfter && (
@@ -513,7 +553,7 @@ export default function Messages({
                   ref={searchResultsRef}
                   style={{
                     overflowY: "scroll",
-                    maxHeight: 515,
+                    maxHeight: 465,
                     padding: "0 10px",
                   }}
                   onScroll={(event) => {
@@ -523,9 +563,11 @@ export default function Messages({
                   }}
                   dense
                 >
-                  {searchResultMessages.map((message) => (
+                  {searchResultMessages.map((message, index) => (
                     <MessageItem
                       key={message.id}
+                      index={index}
+                      totalMessages={searchResultMessages.length}
                       message={message}
                       scrollMessagesToHeight={scrollMessagesToHeight}
                       isSearchResult

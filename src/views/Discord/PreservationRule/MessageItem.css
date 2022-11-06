@@ -1,0 +1,63 @@
+.create-snippet-btn-container {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  width: 35px;
+  overflow: hidden;
+  position: absolute;
+  top: 0px;
+  height: "100%";
+  left: -35px;
+}
+
+.create-snippet-btn-container button {
+  background: #a45ee5;
+  transform: translateX(35px);
+  transition-duration: 0.25s;
+  width: 35px;
+  height: 60px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 0;
+  border-radius: 4px 0 0 4px;
+}
+.create-snippet-btn-container button:hover {
+  background: #52168b;
+}
+.message-content:hover .create-snippet-btn-container button {
+  transform: translateX(0px);
+}
+.create-snippet-btn-container button:hover {
+  transform: translateX(0px);
+}
+
+.change-snippet-selection-container {
+  position: absolute;
+  width: 35px;
+  left: -38px;
+  display: flex;
+  flex-direction: column;
+}
+
+.change-snippet-selection-container button {
+  background: rgba(255, 255, 255, 0);
+  transition-duration: 0.25s;
+  border: 0;
+  padding: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.change-snippet-selection-container button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.change-snippet-selection-button-up {
+  border-radius: 4px 4px 0 0;
+}
+.change-snippet-selection-button-down {
+  border-radius: 0 0 4px 4px;
+}

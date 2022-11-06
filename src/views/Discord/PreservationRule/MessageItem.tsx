@@ -1,4 +1,11 @@
-import { Attachment, Download, Launch } from "@mui/icons-material";
+import {
+  Attachment,
+  ContentCut as ContentCutIcon,
+  Download,
+  Launch,
+  Add as AddIcon,
+  Remove as RemoveIcon,
+} from "@mui/icons-material";
 import filesize from "filesize";
 import {
   Typography,
@@ -7,12 +14,13 @@ import {
   Modal,
   Skeleton,
   IconButton,
+  useTheme,
 } from "@mui/material";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import discordLogo from "../../../assets/app-logos/discord.png";
 import { DiscordMessage } from "../../../api/messages";
-import "./Messages.css";
+import "./MessageItem.css";
 import { partition } from "lodash";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch } from "../../../redux";
@@ -82,17 +90,35 @@ export const LoadingMessageItem = forwardRef<
 ));
 
 export const MessageItem = ({
+  index,
   message,
+  totalMessages,
   scrollMessagesToHeight,
   isSearchResult,
+  firstSelectedMessageIndex,
+  lastSelectedMessageIndex,
+  setFirstSelectedMessageIndex,
+  setLastSelectedMessageIndex,
 }: {
+  index: number;
   message: DiscordMessage;
+  totalMessages: number;
   scrollMessagesToHeight: (height: number) => void;
   isSearchResult?: boolean;
+  firstSelectedMessageIndex?: number | null;
+  lastSelectedMessageIndex?: number | null;
+  setFirstSelectedMessageIndex?: (index: number) => void;
+  setLastSelectedMessageIndex?: (index: number) => void;
 }) => {
   const dispatch = useDispatch<Dispatch>();
 
   const myRef = useRef<HTMLLIElement>(null);
+
+  const {
+    palette: {
+      primary: { main: mainColor },
+    },
+  } = useTheme();
 
   const jumpStatus = useSelector(getJumpStatus);
   const jumpedToMessage = useSelector(getJumpedToMessage);
@@ -122,6 +148,14 @@ export const MessageItem = ({
       )
     : [];
 
+  const isCreatingSnippet =
+    firstSelectedMessageIndex != null && lastSelectedMessageIndex != null;
+  const isSelected =
+    !isSearchResult &&
+    isCreatingSnippet &&
+    firstSelectedMessageIndex <= index &&
+    lastSelectedMessageIndex >= index;
+
   return (
     <ListItem
       ref={myRef}
@@ -140,6 +174,7 @@ export const MessageItem = ({
         flexDirection: "column",
         borderTop: isSearchResult ? "none" : "1px solid #666",
         background: isJumpedToMessage ? "#444" : undefined,
+        borderLeft: isSelected ? `2px solid ${mainColor}` : "none",
       }}
       onClick={
         isSearchResult
@@ -155,6 +190,78 @@ export const MessageItem = ({
         >
           <Launch />
         </IconButton>
+      )}
+      {!isSearchResult && !isCreatingSnippet && (
+        <div className="create-snippet-btn-container">
+          <button
+            onClick={() => {
+              setFirstSelectedMessageIndex?.(index);
+              setLastSelectedMessageIndex?.(index);
+            }}
+          >
+            <ContentCutIcon htmlColor="#eee" />
+          </button>
+        </div>
+      )}
+      {isCreatingSnippet && index === firstSelectedMessageIndex && (
+        <>
+          {index > 0 && (
+            <div
+              className="change-snippet-selection-container"
+              style={{ top: -35 }}
+            >
+              <button
+                className="change-snippet-selection-button-up"
+                onClick={() => setFirstSelectedMessageIndex?.(index - 1)}
+              >
+                <AddIcon htmlColor={mainColor} />
+              </button>
+            </div>
+          )}
+          {firstSelectedMessageIndex < lastSelectedMessageIndex && (
+            <div
+              className="change-snippet-selection-container"
+              style={{ top: 0 }}
+            >
+              <button
+                className="change-snippet-selection-button-down"
+                onClick={() => setFirstSelectedMessageIndex?.(index + 1)}
+              >
+                <RemoveIcon htmlColor={mainColor} />
+              </button>
+            </div>
+          )}
+        </>
+      )}
+      {isCreatingSnippet && index === lastSelectedMessageIndex && (
+        <>
+          {firstSelectedMessageIndex < lastSelectedMessageIndex && (
+            <div
+              className="change-snippet-selection-container"
+              style={{ bottom: 0 }}
+            >
+              <button
+                className="change-snippet-selection-button-up"
+                onClick={() => setLastSelectedMessageIndex?.(index - 1)}
+              >
+                <RemoveIcon htmlColor={mainColor} />
+              </button>
+            </div>
+          )}
+          {index < totalMessages - 1 && (
+            <div
+              className="change-snippet-selection-container"
+              style={{ bottom: -35 }}
+            >
+              <button
+                className="change-snippet-selection-button-down"
+                onClick={() => setLastSelectedMessageIndex?.(index + 1)}
+              >
+                <AddIcon htmlColor={mainColor} />
+              </button>
+            </div>
+          )}
+        </>
       )}
       <div style={{ display: "flex", width: "100%" }}>
         <Avatar

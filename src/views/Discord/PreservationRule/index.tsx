@@ -210,7 +210,7 @@ export default function PreservationRule() {
         <Tab label="Word Cloud" />
       </Tabs>
       {selectedTab === 0 && (
-        <Card style={{ height: 598, width: "100%" }}>
+        <Card style={{ height: 598, width: "100%", overflow: "visible" }}>
           <Tabs
             value={selectedMessagesTab}
             onChange={(event, tabIndex) => setSelectedMessagesTab(tabIndex)}
@@ -222,7 +222,7 @@ export default function PreservationRule() {
           <div
             style={{
               backgroundColor: "#222",
-              height: showServers ? "100%" : 0,
+              height: showServers ? undefined : 0,
               width: showServers ? "100%" : 0,
             }}
           >
@@ -286,7 +286,7 @@ export default function PreservationRule() {
           <div
             style={{
               backgroundColor: "#222",
-              height: showChannels ? "100%" : 0,
+              height: showChannels ? undefined : 0,
               width: showChannels ? "100%" : 0,
             }}
           >
@@ -357,7 +357,7 @@ export default function PreservationRule() {
           <div
             style={{
               backgroundColor: "#222",
-              height: showDms ? "100%" : 0,
+              height: showDms ? undefined : 0,
               width: showDms ? "100%" : 0,
             }}
           >
@@ -446,8 +446,8 @@ export default function PreservationRule() {
         </Card>
       )}
       {selectedTab === 1 && (
-        <Card style={{ width: 800, height: 600 }}>
-          <canvas ref={wordCloudRef} width={800} height={600} />
+        <Card style={{ width: 850, height: 600 }}>
+          <canvas ref={wordCloudRef} width={850} height={600} />
         </Card>
       )}
     </div>
