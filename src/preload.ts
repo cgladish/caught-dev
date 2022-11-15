@@ -72,6 +72,9 @@ export const api = {
     ),
   },
   preservationRules: {
+    restartInitialPreservationRuleBackup: makeInvoker<
+      typeof PreservationRulesApi.restartInitialPreservationRuleBackup
+    >("preservationRules", "restartInitialPreservationRuleBackup"),
     createPreservationRule: makeInvoker<
       typeof PreservationRulesApi.createPreservationRule
     >("preservationRules", "createPreservationRule"),

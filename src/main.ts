@@ -89,6 +89,11 @@ if (require("electron-squirrel-startup")) {
     startApiListener("discord", "fetchDmChannels", DiscordApi.fetchDmChannels);
     startApiListener(
       "preservationRules",
+      "restartInitialPreservationRuleBackup",
+      PreservationRulesApi.restartInitialPreservationRuleBackup
+    );
+    startApiListener(
+      "preservationRules",
       "createPreservationRule",
       PreservationRulesApi.createPreservationRule
     );

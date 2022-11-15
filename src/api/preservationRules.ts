@@ -38,6 +38,24 @@ export type PreservationRuleInput = Omit<
   initialBackupComplete?: boolean;
 };
 
+export const restartInitialPreservationRuleBackup = async (
+  preservationRuleId: number
+): Promise<void> => {
+  const db = await getDb();
+  const preservationRuleEntity = await db<PreservationRuleEntity>(
+    TableName.PreservationRule
+  )
+    .where({ id: preservationRuleId })
+    .first();
+  if (!preservationRuleEntity) {
+    throw new Error("Failed to fetch preservation rule with the provided id");
+  }
+  const preservationRule = entityToType(preservationRuleEntity);
+  if (preservationRule.appName === "discord") {
+    addInitialBackupToQueue(preservationRule);
+  }
+};
+
 export const createPreservationRule = async (
   {
     appName,

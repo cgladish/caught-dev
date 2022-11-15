@@ -10,6 +10,7 @@ import {
   LinearProgressProps,
   Typography,
 } from "@mui/material";
+import { Replay as ReplayIcon } from "@mui/icons-material";
 import { sortBy } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -190,18 +191,37 @@ export default function PreservationRules() {
                           marginTop: 20,
                         }}
                       >
-                        <Typography
-                          style={{ whiteSpace: "nowrap", marginRight: 10 }}
-                          color="text.secondary"
-                        >
-                          {ruleBackupProgress.status === "queued" && "Queued"}
-                          {ruleBackupProgress.status === "preparing" &&
-                            "Preparing to preserve..."}
-                          {ruleBackupProgress.status === "started" &&
-                            `Preserved ${ruleBackupProgress.currentMessages.toLocaleString()} messages of ${ruleBackupProgress.totalMessages.toLocaleString()} total`}
-                          {ruleBackupProgress.status === "complete" &&
-                            "Preservation complete"}
-                        </Typography>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <Typography
+                            style={{ whiteSpace: "nowrap", marginRight: 2 }}
+                            color="text.secondary"
+                          >
+                            {ruleBackupProgress.status === "queued" && "Queued"}
+                            {ruleBackupProgress.status === "preparing" &&
+                              "Preparing to preserve..."}
+                            {ruleBackupProgress.status === "started" &&
+                              `Preserved ${ruleBackupProgress.currentMessages.toLocaleString()} messages of ${Math.max(
+                                ruleBackupProgress.totalMessages,
+                                ruleBackupProgress.currentMessages
+                              ).toLocaleString()} total`}
+                            {ruleBackupProgress.status === "errored" &&
+                              "Error during backup"}
+                            {ruleBackupProgress.status === "complete" &&
+                              "Preservation complete"}
+                          </Typography>
+                          {ruleBackupProgress.status === "errored" && (
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                window.api.preservationRules.restartInitialPreservationRuleBackup(
+                                  preservationRule.id
+                                )
+                              }
+                            >
+                              <ReplayIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                        </div>
                         {["pending", "started", "errored"].includes(
                           ruleBackupProgress.status
                         ) && (
